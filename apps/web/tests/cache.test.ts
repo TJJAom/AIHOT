@@ -244,3 +244,64 @@ test("a web server assigned port zero serves its own canonical address", async (
     assert.ok((await response.text()).includes(`rel="canonical" href="${ephemeral.origin}/about"`));
   } finally { await ephemeral.stop(); }
 });
+
+test("a trusted HTTPS site upgrades HTTP before serving pages or accepting credentials", async () => {
+  let apiRequests = 0;
+  const mediaCsp = "default-src 'none'; style-src 'unsafe-inline'; sandbox";
+  const secureSite = await startWebServer(fakeApi((url, res) => {
+    apiRequests++;
+    if (url.pathname === "/api/site/sandbox") {
+      res.setHeader("Content-Security-Policy", mediaCsp);
+      return { ok: true };
+    }
+    if (url.pathname === "/api/admin/me") {
+      res.statusCode = 401;
+      return { code: "unauthorized" };
+    }
+  }), { SITE_URL: "https://aihot.example", TRUST_PROXY: "true" });
+  try {
+    for (const [pathname, method] of [["/admin/login?return=%2Fadmin", "GET"], ["/api/auth/password", "POST"], ["//evil.example/path?q=1", "GET"]]) {
+      const response = await fetch(secureSite.origin + pathname, {
+        method, redirect: "manual", headers: { "X-Forwarded-Proto": "http", "X-Forwarded-Host": "evil.example" },
+        ...(method === "POST" ? { body: "password=fixture" } : {}),
+      });
+      assert.equal(response.status, 308, pathname);
+      assert.equal(response.headers.get("location"), "https://aihot.example" + pathname);
+      assert.equal(new URL(response.headers.get("location")!).origin, "https://aihot.example");
+      assert.equal(response.headers.get("cache-control"), "no-store");
+      await response.text();
+    }
+    assert.equal(apiRequests, 0, "HTTP credentials never reach the API");
+    for (const pathname of ["/privacy", "/api/health", "/api/admin/me", "/missing-page"]) {
+      const response = await fetch(secureSite.origin + pathname, { headers: { "X-Forwarded-Proto": "https" }, redirect: "manual" });
+      if (pathname === "/api/admin/me") assert.equal(response.status, 401);
+      assert.equal(response.headers.get("strict-transport-security"), "max-age=86400", pathname);
+      assert.equal(response.headers.get("x-content-type-options"), "nosniff", pathname);
+      assert.equal(response.headers.get("x-frame-options"), "SAMEORIGIN", pathname);
+      assert.equal(response.headers.get("content-security-policy"), "frame-ancestors 'self'", pathname);
+      assert.equal(response.headers.get("referrer-policy"), "strict-origin-when-cross-origin", pathname);
+      assert.equal(response.headers.get("permissions-policy"), "camera=(), microphone=(), geolocation=()", pathname);
+      await response.text();
+    }
+    const media = await fetch(secureSite.origin + "/api/site/sandbox", { headers: { "X-Forwarded-Proto": "https" } });
+    assert.equal(media.headers.get("content-security-policy"), mediaCsp, "the API's stronger media sandbox is preserved");
+    assert.equal(media.headers.get("x-frame-options"), "SAMEORIGIN");
+    await media.text();
+    const local = await fetch(secureSite.origin + "/privacy", { redirect: "manual" });
+    assert.equal(local.status, 200, "the loopback maintenance entry remains available");
+    assert.equal(local.headers.get("strict-transport-security"), null);
+    await local.text();
+  } finally { await secureSite.stop(); }
+});
+
+test("HTTPS enforcement does not trust forwarded headers without a trusted proxy", async () => {
+  const local = await startWebServer(fakeApi(), { SITE_URL: "https://aihot.example", TRUST_PROXY: "false" });
+  try {
+    for (const scheme of ["http", "https"]) {
+      const response = await fetch(local.origin + "/privacy", { headers: { "X-Forwarded-Proto": scheme }, redirect: "manual" });
+      assert.equal(response.status, 200);
+      assert.equal(response.headers.get("strict-transport-security"), null);
+      await response.text();
+    }
+  } finally { await local.stop(); }
+});

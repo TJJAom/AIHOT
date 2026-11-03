@@ -21,6 +21,8 @@ const HOST = process.env.WEB_HOST || "127.0.0.1";
  * limits (sign-in attempts, feedback).
  */
 const TRUST_PROXY = process.env.TRUST_PROXY === "true";
+const configuredSite = process.env.SITE_URL ? new URL(process.env.SITE_URL) : null;
+const HTTPS_ORIGIN = configuredSite?.protocol === "https:" ? configuredSite.origin : null;
 const CLIENT_DIR = path.resolve(import.meta.dirname, "build/client");
 
 const TYPES: Record<string, string> = {
@@ -77,6 +79,12 @@ async function serveStatic(pathname: string, res: import("node:http").ServerResp
 
 // One bad request must never take the process down: answer it and keep serving.
 const server = createServer((req, res) => {
+  // Tunnel deployments reach this listener directly, without Caddy's response headers.
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "SAMEORIGIN");
+  res.setHeader("Content-Security-Policy", "frame-ancestors 'self'");
+  res.setHeader("Referrer-Policy", "strict-origin-when-cross-origin");
+  res.setHeader("Permissions-Policy", "camera=(), microphone=(), geolocation=()");
   handle(req, res).catch((error: unknown) => {
     const bad = error instanceof BadRequest || error instanceof URIError;
     if (!bad) logError(error, { msg: "web request failed", method: req.method, path: (req.url ?? "").split("?")[0]!.slice(0, 200) });
@@ -139,6 +147,14 @@ function pageResponse(req: import("node:http").IncomingMessage, res: import("nod
 
 async function handle(req: import("node:http").IncomingMessage, res: import("node:http").ServerResponse) {
   const raw = req.url ?? "/";
+  const scheme = TRUST_PROXY ? req.headers["x-forwarded-proto"] : undefined;
+  if (HTTPS_ORIGIN && scheme === "http") {
+    if (!raw.startsWith("/")) throw new BadRequest("invalid request target");
+    // Keep the configured authority even for a path starting with //; never use the request Host.
+    res.writeHead(308, { Location: HTTPS_ORIGIN + raw, "Cache-Control": "no-store" });
+    return res.end();
+  }
+  if (HTTPS_ORIGIN && scheme === "https") res.setHeader("Strict-Transport-Security", "max-age=86400");
   const qi = raw.indexOf("?");
   const pathname = qi >= 0 ? raw.slice(0, qi) : raw;
   const search = qi >= 0 ? raw.slice(qi) : "";
