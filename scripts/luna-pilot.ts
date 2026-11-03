@@ -21,7 +21,8 @@ export function selectPilotArticles<T extends DatedArticle>(articles: T[], now =
 
 // 此界線仍在 chatJson → paidRequest 內；回執與既有預算檢查不會被繞過。
 // 不估算字數後擅自截文：超出單批限制就拒絕，保留原文及錯誤供檢查。
-export function createLunaTransport(upstream: typeof fetch, alreadySent = 0, refusal: (message: string) => Error = message => new Error(message)) {
+export function createLunaTransport(upstream: typeof fetch, alreadySent = 0, refusal: (message: string) => Error = message => new Error(message), maxRequests = 80) {
+  if (!Number.isSafeInteger(maxRequests) || maxRequests < 1) throw new Error("請求上限必須是正整數");
   let sent = alreadySent;
   let stopped = false;
   let tail = Promise.resolve();
@@ -32,7 +33,7 @@ export function createLunaTransport(upstream: typeof fetch, alreadySent = 0, ref
     await previous;
     try {
       if (stopped) throw refusal("本批已停止，不再傳送付費請求");
-      if (sent >= 80) throw refusal("本批最多 80 次模型請求");
+      if (sent >= maxRequests) throw refusal(`本批最多 ${maxRequests} 次模型請求`);
       if (String(input) !== "https://api.openai.com/v1/chat/completions" || init?.method !== "POST") throw refusal("本批只允許 OpenAI Chat Completions");
       if (typeof init.body !== "string" || Buffer.byteLength(init.body) > 196608) throw refusal("單次輸入超過試跑限制");
       const body = JSON.parse(init.body) as Record<string, unknown>;

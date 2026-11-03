@@ -42,6 +42,15 @@ test("80 次後拒絕新付費請求，計數不因錯誤或重新導向重置",
   assert.equal(calls, 1);
 });
 
+test("今日批次可明確提高請求上限，十篇試跑預設仍維持 80 次", async () => {
+  let calls = 0;
+  const transport = createLunaTransport(async () => { calls++; return new Response("{}"); }, 80, message => new Error(message), 82);
+  await transport.fetch(endpoint, request());
+  await transport.fetch(endpoint, request());
+  await assert.rejects(transport.fetch(endpoint, request()), /82/);
+  assert.equal(calls, 2);
+});
+
 test("拒絕其他模型、端點、超長輸入與過高輸出額度", async () => {
   const bad = [
     { url: "http://ollama:11434/v1/chat/completions", init: request() },
