@@ -62,6 +62,8 @@ async function main() {
   const { computeHotRanking } = await import("@aihot/backend/events/hot");
   const { digestReports, digestInputsHash } = await import("@aihot/backend/publication/story-evidence");
   const { publishArticle } = await import("@aihot/backend/publication/publish");
+  const { composeArticleReading, planArticleReadings } = await import("@aihot/backend/editorial/reading");
+  const { articleReadingHtml } = await import("@aihot/backend/publication/reading");
   const { CAPABILITIES, modelSources } = await import("@aihot/backend/editorial/models");
   const { ProviderRejectedError } = await import("@aihot/backend/providers/receipts");
   for (const capability of Object.values(CAPABILITIES)) process.env[capability.env] = "default";
@@ -184,6 +186,11 @@ async function main() {
       }
       manifest.digests.push({ storyId, updated: result.updated }); manifest.requests = transport.requests(); await save();
       console.log(JSON.stringify({ stage: "digest", storyId, ...result, requests: manifest.requests }));
+    }
+    for (const item of await planArticleReadings(manifest.items.flatMap(i => i.articleId ? [i.articleId] : []))) {
+      const reading = await composeArticleReading(item.articleId, item.inputHash);
+      assert.ok(["written", "current"].includes(reading.status) && await articleReadingHtml(item.articleId), `文章 ${item.articleId} 尚無完整整理內文`);
+      manifest.requests = transport.requests(); await save();
     }
     await computeHotRanking();
     manifest.state = manifest.sources.some(s => s.error || s.unknownDates) || manifest.items.some(i => i.state === "unavailable") ? "partial" : "completed";

@@ -11,6 +11,7 @@ import { evidenceCondition, listedCondition } from "./scope.ts";
 import { itemUrl, siteUrl } from "./links.ts";
 import { hasItemPage, publicSourceName } from "./rules.ts";
 import { topicLinks, topicMembership } from "./topics.ts";
+import { articleReadingHtml } from "./reading.ts";
 
 interface DetailRow extends ItemRow {
   body_html: string | null;
@@ -55,7 +56,7 @@ async function loadRow(id: string): Promise<DetailRow | null> {
  */
 function readingBody(
   language: "zh" | "original",
-  zh: { html: string; kind: "translation" | "original" } | null,
+  zh: { html: string; kind: "translation" | "original" | "reading" } | null,
   original: string | null,
   complete: boolean,
   page: (html: string) => { html: string; outline: OutlineEntry[] },
@@ -129,6 +130,10 @@ export async function loadItemDetail(id: string, language: "zh" | "original" = "
     const zh = chinese ? { html: row.body_html, kind: "original" as const } : row.tr_html ? { html: row.tr_html, kind: "translation" as const } : null;
     reading = readingBody(language, zh, chinese ? null : row.body_html, chinese ? true : row.tr_complete ?? false, (html) => withOutline(proxyBodyImages(html)));
   }
+  const authored = await articleReadingHtml(id);
+  if (authored && (language === "zh" || !reading.body)) {
+    reading = readingBody("zh", { html: authored, kind: "reading" }, null, true, withOutline);
+  }
 
   let group: SiteItemDetail["group"] = null;
   if (row.fact_id) {
@@ -191,6 +196,8 @@ export async function exportMarkdown(id: string): Promise<{ filename: string; bo
   lines.push(`- 原文：${row.url}`, "");
   if (row.summary) lines.push("## 摘要", "", row.summary, "");
   if (row.selected && row.seat && row.reason) lines.push(`## ${ITEM_COPY.reasonLabel}`, "", row.reason, "");
+  const authored = await articleReadingHtml(id);
+  if (authored) lines.push("## 文章內容 · AI 重點整理", "", bodyToMarkdown(authored, row.url).replaceAll("<", "&lt;").replaceAll(">", "&gt;"), "");
   if (showsPost(row) && row.x_post) {
     const post = xView(row);
     if (post?.text) lines.push("## 正文", "", post.text, "");

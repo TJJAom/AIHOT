@@ -21,7 +21,11 @@ test('the public agent page uses the Taiwan locale and approved site identity', 
   assert.match($('body').text(), /全部 AI 動態/);
   const terms = await fetch(`${web.origin}/terms`);
   assert.equal(terms.status, 200, web.logs());
-  assert.match(cheerio.load(await terms.text())('body').text(), /尚未生效/);
+  const termsText = cheerio.load(await terms.text())('body').text();
+  assert.match(termsText, /生效日期2026-11-03/);
+  assert.match(termsText, /AI 文章整理依來源材料撰寫重點、背景與細節/);
+  assert.match(termsText, /並非原作者全文或逐字翻譯/);
+  assert.doesNotMatch(termsText, /尚未生效/);
 });
 
 for (const [tab, names] of [

@@ -24,7 +24,7 @@ export interface Capability {
 export const CAPABILITIES = {
   prefilter: { label: "精選預篩（是否屬於這個行業，寬召回）", env: "PREFILTER_MODEL", default: DEFAULTS.prefilter ?? "default", purposes: ["prefilter_article"] },
   score: { label: "精選評分（兩次獨立評分，按信源分級與類別的門檻）", env: "SCORE_MODEL", default: DEFAULTS.score ?? "default", purposes: ["score_article"] },
-  understand: { label: "內容理解（入選和接近入選的標題、摘要、推薦理由，能看圖時看首圖）", env: "UNDERSTAND_MODEL", default: DEFAULTS.understand ?? "default", purposes: ["understand_article"] },
+  understand: { label: "內容理解（標題、摘要、推薦理由與文章重點整理）", env: "UNDERSTAND_MODEL", default: DEFAULTS.understand ?? "default", purposes: ["understand_article", "article_reading"] },
   summarize: { label: "標題摘要（其餘文章的中文標題與摘要）", env: "SUMMARIZE_MODEL", default: DEFAULTS.summarize ?? "default", purposes: ["summarize_article"] },
   wording: { label: "改用詞（標題、摘要、理由用了本站不用的詞時，只改這些詞）", env: "WORDING_MODEL", default: DEFAULTS.wording ?? "default", purposes: ["mend_wording"], idle: () => !READER_WORDING.length },
   structure: { label: "結構抽取（分類、標籤、主體公司、事件事實，不寫讀者文字）", env: "STRUCTURE_MODEL", default: DEFAULTS.structure ?? "default", purposes: ["structure_article"] },

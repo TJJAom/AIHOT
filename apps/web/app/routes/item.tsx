@@ -315,7 +315,7 @@ function ItemView({ item, followups }: Loaded) {
   };
 
   const bodyHtml = lang === "zh" ? (item.body?.zh ?? item.body?.original) : (item.body?.original ?? item.body?.zh);
-  const bodyLabel = !item.body ? null : lang === "zh" && item.body.zhKind === "translation" ? "正文 · AI 翻譯" : lang === "original" ? "正文 · 原文" : "正文";
+  const bodyLabel = !item.body ? null : item.body.zhKind === "reading" ? "文章內容 · AI 重點整理" : lang === "zh" && item.body.zhKind === "translation" ? "正文 · AI 翻譯" : lang === "original" ? "正文 · 原文" : "正文";
   const isX = item.channel === "x" && !!item.x;
   // Without a reliable date from the original, the time shown is when it was collected, labelled as such.
   const shownAt = item.publishedAt ?? item.discoveredAt;
@@ -565,6 +565,7 @@ function ItemView({ item, followups }: Loaded) {
               {hasTranslation && lang === "zh" && !item.body.complete && (
                 <p className="mb-5 rounded-control bg-bg-sunk px-3 py-2 text-[13px] text-ink-3">譯文尚不完整，完整內容請切換到原文。</p>
               )}
+              {item.body.zhKind === "reading" && <p className="mb-5 text-[13px] leading-relaxed text-ink-3">依來源材料整理重點、背景與細節，並非原文全文或逐字翻譯；完整報導請閱讀原文。</p>}
               <ArticleBody html={bodyHtml} />
             </section>
           )}
