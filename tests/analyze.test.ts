@@ -12,12 +12,14 @@ import { analyzeArticle, buildMaterial, loadAnalyzeInput, normalizeStructure, se
 import { createSource, updateSource } from "@aihot/backend/admin/sources";
 import { queueProcessing } from "@aihot/backend/jobs/content";
 import { QUEUES, stopBoss } from "@aihot/backend/jobs/queue";
-import { compactAnswerFirstSummary, enforceIdentity, MAX_BODY_CHARS, parseTranslateOutput, stripEcho } from "@aihot/backend/editorial/writing";
+import { finalizeCopy, MAX_BODY_CHARS, parseTranslateOutput, stripEcho } from "@aihot/backend/editorial/writing";
 import { READER_WORDING } from "@aihot/industry/wording";
 import { SELECTION } from "@aihot/industry/selection";
 import { ITEM_TYPES } from "@aihot/industry/taxonomy";
 import { normalizeTags } from "@aihot/backend/editorial/vocabulary";
 import { promptText } from "@aihot/backend/editorial/prompts";
+import { publishArticle } from "@aihot/backend/publication/publish";
+import { loadItemDetail } from "@aihot/backend/publication/detail";
 
 test("Simplified model tags become the site's Traditional tags without losing classification", () => {
   assert.deepEqual(normalizeTags(["模型发布", "视频", "数据/训练"]), ["模型釋出", "影片", "資料/訓練"]);
@@ -43,7 +45,8 @@ const CLASSED_SOURCE = `test-analyze-classed-${T}`;
 
 interface Req { step: AnalysisStep; marker: string; user: string }
 const requests: Req[] = [];
-const MARKERS = ["CLEAR", "RESCUE", "LOW", "OFFTOPIC", "BARE", "VAGUE", "THIN", "SENSITIVE", "推文", "WORDY", "REFUSAL", "RENUMBER", "UNMENDED", "ECOSYS"];
+const MARKERS = ["CLEAR", "RESCUE", "LOW", "OFFTOPIC", "BARE", "VAGUE", "THIN", "SENSITIVE", "推文", "WORDY", "REFUSAL", "RENUMBER", "UNMENDED", "ECOSYS", "FULLCOPY", "SHORTROUTE"];
+const COMPLETE_SUMMARY = "Import AI 479 介紹 Realtime-Bench 的測試結果：在即時互動任務中，GPT-6 Astra（high）於 wall clock 條件下的通過率最高，為 36%。基準包含 50 項遊戲與網頁任務，並以 wall clock、paused clock 和 token clock 三種條件測試模型。本文也介紹 Google DeepMind 的 Genie 4 研究預覽，以及 Metis 提出的神經與符號推理架構研究方向。";
 // The scores sit a few points around the pack's T1 threshold and understand floor, so each case means
 // the same after a site recalibrates them: selected when the two add up to 2 × T1, written like a
 // selected item when they add up to more than 2 × FLOOR, translated otherwise.
@@ -56,6 +59,7 @@ const scoreAnswers: Record<string, number[]> = {
   CLEAR: [T1 + 3, T1 - 1], RESCUE: [FLOOR + 1, FLOOR], LOW: [FLOOR, FLOOR - 1], THIN: [T1, T1], SENSITIVE: [T1, T1], 推文: [FLOOR, FLOOR],
   BARE: [FLOOR - 2, FLOOR - 4], VAGUE: [T1, T1 + 2], WORDY: [T1, T1], REFUSAL: [T1, T1], RENUMBER: [T1, T1], UNMENDED: [T1, T1],
   ECOSYS: [CLASS_FLOOR, CLASS_FLOOR - 1],
+  FULLCOPY: [T1, T1], SHORTROUTE: [FLOOR, FLOOR - 1],
 };
 
 const WORDY = ["WORDY", "REFUSAL", "RENUMBER", "UNMENDED"];
@@ -71,6 +75,8 @@ const provider = await stub((_hit, req) => {
   const answer = (content: unknown) => ({ id: `stub-${requests.length}`, model: "stub", choices: [{ message: { content: typeof content === "string" ? content : JSON.stringify(content) } }], usage: { prompt_tokens: 10, completion_tokens: 5, total_tokens: 15 } });
   if (step === "prefilter") return answer({ label: marker === "OFFTOPIC" || marker === "BARE" ? "BLOCK" : marker === "VAGUE" ? "UNKNOWN" : "PASS", reason: "測試" });
   if (step === "score") return answer({ attentionScore: scoreAnswers[marker]!.shift() });
+  if (step === "understand" && marker === "FULLCOPY") return answer({ itemType: "tutorial_explainer", authorRole: "relayer", tags: [], editorialJudgment: "介紹即時互動評測與世界模型。", titleZh: "Import AI 479 的即時評測與世界模型", summaryZh: COMPLETE_SUMMARY });
+  if (step === "summarize" && marker === "SHORTROUTE") return answer(`title_zh: Import AI 479 的即時評測與世界模型\nsummary_zh: ${COMPLETE_SUMMARY}`);
   // Copy with a word a site keeps from readers (added to the pack's list below), and its mended form: whole (WORDY),
   // refused by the provider, with a number changed, or with as many such words as before.
   if (step === "understand" && WORDY.includes(marker)) return answer({ itemType: ITEM_TYPES[0], authorRole: "principal", tags: [], editorialJudgment: `理由裡有禁用詞 ${marker}`, titleZh: `標題裡有禁用詞 ${marker}`, summaryZh: `${marker} 的摘要。第二句補充 3 個數字。` });
@@ -129,6 +135,19 @@ test("a selected item: prefilter, two scores, the content understanding and the 
   assert.equal(r.output.fact.evidence, "a lab released a model");
   const score = requests.find((q) => q.marker === "CLEAR" && q.step === "score")!;
   assert.match(score.user, /【標題】\nCLEAR model release/, "the score reads the original title, before any writing");
+});
+
+test("完整摘要在理解與翻譯流程發布後仍保留後半段重點，不增加改寫請求", async () => {
+  for (const [marker, writer] of [["FULLCOPY", "understand"], ["SHORTROUTE", "summarize"]] as const) {
+    const id = await article(marker, { bodyText: `${marker}: ${LONG} Google DeepMind Genie 4, Metis, GPT-6 Astra, Import AI 479 and Realtime-Bench compare 50 tasks and a 36% pass rate. (${T})` });
+    await analyzeArticle(id);
+    await publishArticle(id);
+    const detail = await loadItemDetail(id);
+    assert.equal(detail.kind, "found");
+    if (detail.kind !== "found") throw new Error("已發布文章沒有閱讀頁");
+    assert.equal(detail.item.summary, COMPLETE_SUMMARY, "閱讀頁須保留模型摘要中的測試條件、Genie 4 與 Metis");
+    assert.deepEqual(calls(marker).sort(), ["prefilter", "score", "score", "structure", writer].sort(), "不能為摘要長度新增模型請求");
+  }
 });
 
 test("a word the site keeps from readers goes back once to be changed; copy without one is not sent", async () => {
@@ -256,22 +275,23 @@ test("a short post in Chinese is its own copy; a content-filter refusal is trans
   assert.deepEqual(calls("SENSITIVE").filter((s) => s === "understand" || s === "summarize"), ["understand", "summarize"]);
 });
 
-test("guards: a company the input does not name is not written in; long summaries are cut at sentences", () => {
+test("完整摘要保留句子、列舉與段落，仍拒絕來源未提及的公司", () => {
   const input = { title: "某實驗室釋出新模型", text: "某實驗室釋出了一個新模型，引數規模和價格都有說明。", sourceKind: "rss" };
-  const guarded = enforceIdentity(input, { titleZh: "OpenAI 釋出新模型", summaryZh: "某實驗室釋出新模型。" });
+  const guarded = finalizeCopy(input, { titleZh: "OpenAI 釋出新模型", summaryZh: "某實驗室釋出新模型。" });
   assert.deepEqual([guarded.titleZh, guarded.summaryZh, guarded.identityGuard.outcome], ["某實驗室釋出新模型", "某實驗室釋出新模型。", "fallback"]);
   // The identity lexicon: a Chinese rendering of a company the input names in English is no invention.
   const alibaba = { title: "Alibaba ships a new coding model", text: "Alibaba released a coding model with pricing details.", sourceKind: "rss" };
-  assert.equal(enforceIdentity(alibaba, { titleZh: "阿里巴巴釋出程式設計模型", summaryZh: "阿里巴巴釋出了程式設計模型並公佈價格。" }).identityGuard.outcome, "pass");
+  assert.equal(finalizeCopy(alibaba, { titleZh: "阿里巴巴釋出程式設計模型", summaryZh: "阿里巴巴釋出了程式設計模型並公佈價格。" }).identityGuard.outcome, "pass");
   const long = "第一句交代了誰做了什麼以及關鍵結果，這一句本身已經足夠說明核心事件的來龍去脈。".repeat(3) + "第二句補充數字。".repeat(20);
-  assert.ok(compactAnswerFirstSummary(long).length <= 190);
+  assert.equal(finalizeCopy(input, { titleZh: input.title, summaryZh: long }).summaryZh, long);
+  assert.equal(finalizeCopy(input, { titleZh: input.title, summaryZh: `${long}\n\nOpenAI 另行發布模型。` }).summaryZh, "", "後半段未受來源支持的公司仍須攔下");
   // A short first sentence and a long second one: the card once ended "…可連線 Google Ads 和 Meta 賬號在 Google。".
   const lovable = "Lovable 推出增長工具，在原有建應用聊天視窗中提供增長計劃、廣告投放和 SEO 能力。使用者設定目標後，Lovable 依據應用上下文生成可執行計劃；可連線 Google Ads 和 Meta 賬號在 Google、YouTube、Facebook、Instagram 投放廣告，廣告上線前需使用者審批，計費直接走 Google Ads 和 Meta 賬號，Lovable 不加收服務費；SEO 方面覆蓋索引基礎、內建 Semrush 關鍵詞機會分析和站外社群推廣建議。功能現已在 Free、Pro 和 Business 計劃可用。";
-  assert.equal(compactAnswerFirstSummary(lovable), "Lovable 推出增長工具，在原有建應用聊天視窗中提供增長計劃、廣告投放和 SEO 能力。", "whole sentences, never half of one");
-  // Only a first sentence longer than the limit is cut, at a clause, never inside an enumeration.
+  assert.equal(finalizeCopy({ ...input, text: lovable }, { titleZh: input.title, summaryZh: lovable }).summaryZh, lovable, "完整保留廣告平台、費用與方案資訊");
+  // 長句與段落也不能因字數門檻被截掉。
   const runOn = "某實驗室釋出新模型，支援" + "甲乙丙、".repeat(39) + "甲乙丙，" + "補充說明".repeat(20) + "。";
-  const head = compactAnswerFirstSummary(runOn).slice(0, -1);
-  assert.ok(runOn.startsWith(head) && "，；".includes(runOn[head.length]!), head);
+  const paragraphs = `${runOn}\n\n第二段補充條件。`;
+  assert.equal(finalizeCopy(input, { titleZh: input.title, summaryZh: paragraphs }).summaryZh, paragraphs);
   assert.deepEqual(parseTranslateOutput("title_zh: 標題\nsummary_zh: 第一句。\n第二句。"), { titleZh: "標題", summaryZh: "第一句。\n第二句。", bodyZh: "" });
   assert.equal(parseTranslateOutput("title_zh: 標題\nbody_zh: 我們懂你。\n\n來源：X：PixVerse (@PixVerse)").bodyZh, "我們懂你。", "a repeated prompt line is dropped");
 });
