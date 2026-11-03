@@ -36,7 +36,7 @@ test("day headers name the year only for a day outside today's year", () => {
   assert.equal(monthDay("2019-02-19", "2026-10-19"), "2019年2月19日");
   assert.equal(monthDay("2025-12-31", "2026-01-01"), "2025年12月31日");
   assert.equal(monthDay("2019-02-19"), "2月19日");
-  // The pages' dates (a story's report days, a topic's "更新" line, "月日 时:分") do the same, by Beijing's year.
+  // The pages' dates (a story's report days, a topic's "更新" line, "月日 時:分") do the same, by Beijing's year.
   const october = Date.parse("2026-10-05T09:00:00+08:00");
   assert.equal(pageMonthDay("2026-10-05", october), "10月5日");
   assert.equal(pageMonthDay("2026-01-01", october), "1月1日");

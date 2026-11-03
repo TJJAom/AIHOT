@@ -5,7 +5,7 @@ import { describePublicationTime } from "../sources/dates.ts";
 // revision before any step.
 //   1. prefilter: does the material belong to this industry at all (wide recall). Only BLOCK stops an
 //      item; a BLOCK on an original post without text counts as UNKNOWN;
-//   2. score: two independent scores against the source's threshold (tier and class, industry/selection.ts) decide 精选;
+//   2. score: two independent scores against the source's threshold (tier and class, industry/selection.ts) decide 精選;
 //   3. structure: category, tags, subjects and the current news fact, beside scoring;
 //   4. writing, once the structure is in: the Chinese title, summary and reason by the content
 //      understanding for selected and near-selected items, by the cheaper title/summary prompts for the rest;
@@ -56,7 +56,7 @@ export const SCORE_CALLS = 2;
 /**
  * The threshold on the mean score for a source (industry/selection.ts): its tier's, raised to its
  * class's floor; a class never lowers it. Selected when score1 + score2 >= 2 × threshold. Tiers
- * without a threshold are not scored for 精选.
+ * without a threshold are not scored for 精選.
  */
 export function selectionThreshold(source: { tier: string; selectionClass?: string | null }): number | null {
   const tier = SELECTION.thresholds[source.tier];
@@ -100,9 +100,9 @@ export function buildScoreInput(a: AnalyzeInputArticle): string {
   if (!body) body = a.title;
   const at = a.publishedAt;
   return [
-    "请按系统规则评估以下单篇材料所代表的事件。只输出 attentionScore。",
-    `【发布时间（北京时间）】\n${at ? a.publicationTime === undefined || a.publicationTime?.includes("T") ? scoreInputTime(at) : describePublicationTime(at, a.publicationTime) : "未知（收录时间不代表发布时间）"}`,
-    `【标题】\n${a.title.trim()}`,
+    "請按系統規則評估以下單篇材料所代表的事件。只輸出 attentionScore。",
+    `【釋出時間（北京時間）】\n${at ? a.publicationTime === undefined || a.publicationTime?.includes("T") ? scoreInputTime(at) : describePublicationTime(at, a.publicationTime) : "未知（收錄時間不代表釋出時間）"}`,
+    `【標題】\n${a.title.trim()}`,
     `【完整正文】\n${body.length > MAX_BODY_CHARS ? body.slice(0, MAX_BODY_CHARS) : body}`,
   ].join("\n\n");
 }
@@ -391,9 +391,9 @@ async function mendWording(a: AnalyzeInputArticle, w: NonNullable<AnalysisRun["w
     res = await chatJson({
       model: await modelFor("wording"), purpose: "mend_wording", subject: subjectOf(a), promptVersion: PROMPT_VERSIONS.wording, system: MEND_SYSTEM,
       user: [
-        `来源：${t.sourceName ?? "（未注明）"}`, `原题：${t.title}`,
+        `來源：${t.sourceName ?? "（未註明）"}`, `原題：${t.title}`,
         `中文稿：\n${JSON.stringify({ titleZh: w.titleZh, summaryZh: w.summaryZh, reasonZh: w.reasonZh })}`,
-        `问题：\n${problems.map((p) => `- ${p}`).join("\n")}`,
+        `問題：\n${problems.map((p) => `- ${p}`).join("\n")}`,
       ].join("\n\n"),
       schema: MendSchema, temperature: 0.1, maxTokens: 2048, attemptTag: tagged(opts.attemptTag, "wording"),
     });

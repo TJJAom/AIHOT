@@ -1,105 +1,105 @@
-# 架构
+# 架構
 
 ```mermaid
 flowchart LR
-  S["信源<br/>RSS · 网页 · JSON · X · 公众号 · 外部推送"] --> C["采集<br/>判重 · 抓原文"]
-  C --> J["判断与写作<br/>预筛 · 评分 · 标题摘要 · 结构化"]
-  J --> G["归组<br/>事件 · 热度 · 综述"]
-  J --> P["公开读取层<br/>publication/"]
+  S["信源<br/>RSS · 網頁 · JSON · X · 公眾號 · 外部推送"] --> C["採集<br/>判重 · 抓原文"]
+  C --> J["判斷與寫作<br/>預篩 · 評分 · 標題摘要 · 結構化"]
+  J --> G["歸組<br/>事件 · 熱度 · 綜述"]
+  J --> P["公開讀取層<br/>publication/"]
   G --> P
-  P --> R["日报 · 周报 · 月报"]
-  P --> O["网页 · RSS · API v1 · MCP · llms.txt · 站点地图 · 分享图"]
+  P --> R["日報 · 週報 · 月報"]
+  P --> O["網頁 · RSS · API v1 · MCP · llms.txt · 站點地圖 · 分享圖"]
 ```
 
-## 三个进程
+## 三個程序
 
-| 进程 | 位置 | 做什么 |
+| 程序 | 位置 | 做什麼 |
 |---|---|---|
-| api | `apps/api/` | Fastify。网站自用接口（`/api/site/`）、公开 API（`/api/v1/`）、RSS、MCP、后台接口、图片代理、分享图 |
-| worker | `apps/worker/` | pg-boss 任务队列和定时任务：抓信源、调模型、归组、热度、日报、告警、清理 |
-| web | `apps/web/` | React Router 服务端渲染的网页。只通过 HTTP 读 api，不碰数据库 |
+| api | `apps/api/` | Fastify。網站自用介面（`/api/site/`）、公開 API（`/api/v1/`）、RSS、MCP、後臺介面、圖片代理、分享圖 |
+| worker | `apps/worker/` | pg-boss 任務佇列和定時任務：抓信源、調模型、歸組、熱度、日報、告警、清理 |
+| web | `apps/web/` | React Router 服務端渲染的網頁。只透過 HTTP 讀 api，不碰資料庫 |
 
-业务代码都在 `packages/backend/`，前后端共用的类型和常量在 `packages/contracts/`。这个站自己的名字、文案、品牌和页面在 `site/`，行业的分类、信源、提示词和门槛在 `industry/`，只属于这个站的功能在 `modules/`（见下文“模块”）。
+業務程式碼都在 `packages/backend/`，前後端共用的型別和常量在 `packages/contracts/`。這個站自己的名字、文案、品牌和頁面在 `site/`，行業的分類、信源、提示詞和門檻在 `industry/`，只屬於這個站的功能在 `modules/`（見下文“模組”）。
 
-## 几条不变的规则
+## 幾條不變的規則
 
-- **一个公开读取层**：网页、RSS、API、MCP、站点地图、分享图读的都是 `packages/backend/src/publication/`。公开范围、精选席位（机器出口每条新闻只出一条）与事实证据条件只在 `publication/scope.ts` 定义；新增出口也遵循当前的撤回和全文许可。已出刊报告保留当期写作，但引用是否可公开、来源名和引用时间仍按当前资料判断；撤回也要移除依赖该引用的导读与封面。
-- **缓存不延长旧内容的寿命**：可变内容按响应的 `Cache-Control` 到期重新验证，站点地图的进程、磁盘与 HTTP 缓存共用同一个截止时间，不能在发送时重新计时；MCP 的 HTTP 响应使用 `no-store`。自建代理或 CDN 同样要遵守，配置要求见 [部署](deploy.md#配域名和-https) 的“配域名和 HTTPS”。
-- **页面不调模型**：读者打开页面只读数据库里已经有的结果；模型只在 worker 的任务里调用。
-- **花钱的请求有回执**：每个付费请求（模型、X、公众号、Jina）先记一张回执，拿到结果先存再用。进程重启、任务重试时，复用已经付过钱的结果，不重复花钱（`providers/receipts.ts`）。结果不明的回执超过 30 分钟后自动放行一次；因它停在失败状态的文章会重新入队，继续未完成的正文提取或分析。再次结果不明时，由管理员在“运行”页核对后放行。
-- **预算熔断**：每个付费服务有每分钟、每小时、每天的上限，超过就暂停（后台“设置 → 付费请求上限”）。
-- **安全阀**：`COLLECT_ENABLED`、`MODEL_CALLS_ENABLED`、`FEISHU_CONTENT_PUSH_ENABLED`、`FEISHU_INTERNAL_ENABLED`、`INDEXNOW_SUBMIT_ENABLED` 只决定“发不发出去”，不决定走哪套逻辑；只有设成 `true` 才打开，没写就是关。`scripts/init-env.ts` 生成的 `.env` 会打开采集和模型调用，只调界面时可以改成 `false`；测试里推送一直关着，采集和模型调用只连本地假服务。
-- **公开内容匿名**：管理员和访客看到的一样；读者的收藏、已读存在浏览器里。后台只允许管理员。
-- **旧文不刷屏**：发现时已发布超过 48 小时的资料、新信源第一次导入的存量、回灌的推送，按原文时间归档，不进“今天”、不推送；第一次导入之后不再收列表里更早的存量。没有可信发布时间的资料先不公开，读到日期后再判断新旧。
-- **来源可追溯**：每条精选都链接原文；站内是否显示全文由信源的 `site_fulltext` 决定，默认只显示摘要。
-- **规则由所属模块维护**：后台调用内容、事件、通知与恢复模块，不直接改写它们的状态；业务模块不反过来依赖后台。人工修改、公开结果与恢复所需记录一起提交。
-- **跨进程接口共享类型**：后台接口以 `packages/contracts/src/admin.ts` 为准，任务载荷以 `jobs/queue.ts` 的 `JobData` 为准，发送方和接收方一起检查。前端仍只通过 HTTP 访问后端。
+- **一個公開讀取層**：網頁、RSS、API、MCP、站點地圖、分享圖讀的都是 `packages/backend/src/publication/`。公開範圍、精選席位（機器出口每條新聞只出一條）與事實證據條件只在 `publication/scope.ts` 定義；新增出口也遵循當前的撤回和全文許可。已出刊報告保留當期寫作，但引用是否可公開、來源名和引用時間仍按當前資料判斷；撤回也要移除依賴該引用的導讀與封面。
+- **快取不延長舊內容的壽命**：可變內容按響應的 `Cache-Control` 到期重新驗證，站點地圖的程序、磁碟與 HTTP 快取共用同一個截止時間，不能在傳送時重新計時；MCP 的 HTTP 響應使用 `no-store`。自建代理或 CDN 同樣要遵守，配置要求見 [部署](deploy.md#配域名和-https) 的“配域名和 HTTPS”。
+- **頁面不調模型**：讀者開啟頁面只讀資料庫裡已經有的結果；模型只在 worker 的任務裡呼叫。
+- **花錢的請求有回執**：每個付費請求（模型、X、公眾號、Jina）先記一張回執，拿到結果先存再用。程序重啟、任務重試時，複用已經付過錢的結果，不重複花錢（`providers/receipts.ts`）。結果不明的回執超過 30 分鐘後自動放行一次；因它停在失敗狀態的文章會重新入隊，繼續未完成的正文提取或分析。再次結果不明時，由管理員在“執行”頁核對後放行。
+- **預算熔斷**：每個付費服務有每分鐘、每小時、每天的上限，超過就暫停（後臺“設定 → 付費請求上限”）。
+- **安全閥**：`COLLECT_ENABLED`、`MODEL_CALLS_ENABLED`、`FEISHU_CONTENT_PUSH_ENABLED`、`FEISHU_INTERNAL_ENABLED`、`INDEXNOW_SUBMIT_ENABLED` 只決定“發不發出去”，不決定走哪套邏輯；只有設成 `true` 才開啟，沒寫就是關。`scripts/init-env.ts` 生成的 `.env` 會開啟採集和模型呼叫，只調介面時可以改成 `false`；測試裡推送一直關著，採集和模型呼叫只連本地假服務。
+- **公開內容匿名**：管理員和訪客看到的一樣；讀者的收藏、已讀存在瀏覽器裡。後臺只允許管理員。
+- **舊文不刷屏**：發現時已釋出超過 48 小時的資料、新信源第一次匯入的存量、回灌的推送，按原文時間歸檔，不進“今天”、不推送；第一次匯入之後不再收列表裡更早的存量。沒有可信釋出時間的資料先不公開，讀到日期後再判斷新舊。
+- **來源可追溯**：每條精選都連結原文；站內是否顯示全文由信源的 `site_fulltext` 決定，預設只顯示摘要。
+- **規則由所屬模組維護**：後臺呼叫內容、事件、通知與恢復模組，不直接改寫它們的狀態；業務模組不反過來依賴後臺。人工修改、公開結果與恢復所需記錄一起提交。
+- **跨程序介面共享型別**：後臺介面以 `packages/contracts/src/admin.ts` 為準，任務載荷以 `jobs/queue.ts` 的 `JobData` 為準，傳送方和接收方一起檢查。前端仍只透過 HTTP 訪問後端。
 
-这些模块边界由 `tests/architecture.test.ts` 检查；调整边界时同时更新约定与检查。站点身份和每一步的模型从 `site/` 读，行业分类和提示词从 `industry/` 读，代码里不写死某个站的值。
+這些模組邊界由 `tests/architecture.test.ts` 檢查；調整邊界時同時更新約定與檢查。站點身份和每一步的模型從 `site/` 讀，行業分類和提示詞從 `industry/` 讀，程式碼裡不寫死某個站的值。
 
-## 目录
+## 目錄
 
-| 位置 | 内容 |
+| 位置 | 內容 |
 |---|---|
-| `site/` | 这个站自己的：站名文案、每一步的模型、品牌与 Logo、条款页、网站根目录的四个固定文件（`public/`，替换占位符后发布）、更新日志，以及启用哪些模块（`site/modules/`） |
-| `industry/` | 行业包：分类标签、主题、示范信源、提示词、门槛 |
-| `modules/` | 只属于这个站的功能，一个功能一个文件夹（见下文“模块”）；框架本身不带模块 |
-| `packages/backend/src/sources/` | 六种信源的读取器，抓取调度（`collect.ts`） |
-| `packages/backend/src/content/` | 资料入库、判重、正文提取和清洗 |
-| `packages/backend/src/editorial/` | 判断与写作：`analyze.ts`（流程）、`prompts.ts`（读提示词）、`models.ts`（每一步用哪个模型） |
-| `packages/backend/src/events/` | 事件归组、热度、事件综述 |
-| `packages/backend/src/publication/` | 公开读取层 |
-| `packages/backend/src/reports/` | 日报、周报、月报 |
-| `packages/backend/src/providers/` | 模型、向量、X、公众号、Jina 的调用，回执与预算 |
-| `packages/backend/src/notify/` | 飞书推送 |
-| `packages/backend/src/operations/` | 告警、备份、清理、IndexNow |
-| `packages/backend/src/admin/` | 后台接口 |
-| `apps/web/app/routes/` | 每个页面一个文件，路由表在 `apps/web/app/routes.ts` |
-| `database/migrations/` | 数据库迁移，按完整文件名排序执行和记账 |
-| `scripts/` | 初始化、迁移、种子数据、评测、检查脚本 |
-| `tests/` | 后端测试（数据库名必须以 `_test` 或 `_ci` 结尾，见下文） |
+| `site/` | 這個站自己的：站名文案、每一步的模型、品牌與 Logo、條款頁、網站根目錄的四個固定檔案（`public/`，替換佔位符後釋出）、更新日誌，以及啟用哪些模組（`site/modules/`） |
+| `industry/` | 行業包：分類標籤、主題、示範信源、提示詞、門檻 |
+| `modules/` | 只屬於這個站的功能，一個功能一個資料夾（見下文“模組”）；框架本身不帶模組 |
+| `packages/backend/src/sources/` | 六種信源的讀取器，抓取排程（`collect.ts`） |
+| `packages/backend/src/content/` | 資料入庫、判重、正文提取和清洗 |
+| `packages/backend/src/editorial/` | 判斷與寫作：`analyze.ts`（流程）、`prompts.ts`（讀提示詞）、`models.ts`（每一步用哪個模型） |
+| `packages/backend/src/events/` | 事件歸組、熱度、事件綜述 |
+| `packages/backend/src/publication/` | 公開讀取層 |
+| `packages/backend/src/reports/` | 日報、週報、月報 |
+| `packages/backend/src/providers/` | 模型、向量、X、公眾號、Jina 的呼叫，回執與預算 |
+| `packages/backend/src/notify/` | 飛書推送 |
+| `packages/backend/src/operations/` | 告警、備份、清理、IndexNow |
+| `packages/backend/src/admin/` | 後臺介面 |
+| `apps/web/app/routes/` | 每個頁面一個檔案，路由表在 `apps/web/app/routes.ts` |
+| `database/migrations/` | 資料庫遷移，按完整檔名排序執行和記賬 |
+| `scripts/` | 初始化、遷移、種子資料、評測、檢查指令碼 |
+| `tests/` | 後端測試（資料庫名必須以 `_test` 或 `_ci` 結尾，見下文） |
 
-## 模块
+## 模組
 
-框架里没有、只有你这个站要的功能（比如一个专门的榜单或监控页），做成模块：一个功能一个文件夹 `modules/<名字>/`，是一个名为 `@aihot/<名字>` 的 npm 包，装着它自己的后端、接口、页面、样式、数据库迁移和测试。
+框架裡沒有、只有你這個站要的功能（比如一個專門的榜單或監控頁），做成模組：一個功能一個資料夾 `modules/<名字>/`，是一個名為 `@aihot/<名字>` 的 npm 包，裝著它自己的後端、介面、頁面、樣式、資料庫遷移和測試。
 
-| 文件 | 内容 |
+| 檔案 | 內容 |
 |---|---|
-| `module.ts` | 它的地址：页面、跳转、交给 api 处理的路径（类型见 `packages/contracts/src/modules.ts`） |
-| `server.ts` | 它接进后端的插口：接口、定时任务、队列、事件回调、后台页面的数据等（`packages/backend/src/modules.ts`，每个插口注明读它的文件） |
-| `web.tsx` | 它接进网页的插口：页面、导航项、主题页与后台的部件等（`apps/web/app/modules.ts`）；只在某一页出现的部件给出加载函数，随那一页的代码加载 |
-| `migrations/` | 它自己的表，和 `database/migrations/` 一起按文件名排序执行 |
-| `tests/` | 它的测试，`npm test` 一起跑 |
-| 其他文件 | 它自己的图片等静态文件也放在模块文件夹里：在 `server.ts` 的 `http` 插口里注册路由，用 `apps/api/src/routes/static.ts` 的 `sendFile` 发出（类型、ETag、缓存头和 404 都由它处理，文件名自己校验），地址写进 `module.ts` 的 `apiPaths` |
+| `module.ts` | 它的地址：頁面、跳轉、交給 api 處理的路徑（型別見 `packages/contracts/src/modules.ts`） |
+| `server.ts` | 它接進後端的插口：介面、定時任務、佇列、事件回撥、後臺頁面的資料等（`packages/backend/src/modules.ts`，每個插口註明讀它的檔案） |
+| `web.tsx` | 它接進網頁的插口：頁面、導航項、主題頁與後臺的部件等（`apps/web/app/modules.ts`）；只在某一頁出現的部件給出載入函式，隨那一頁的程式碼載入 |
+| `migrations/` | 它自己的表，和 `database/migrations/` 一起按檔名排序執行 |
+| `tests/` | 它的測試，`npm test` 一起跑 |
+| 其他檔案 | 它自己的圖片等靜態檔案也放在模組資料夾裡：在 `server.ts` 的 `http` 插口裡註冊路由，用 `apps/api/src/routes/static.ts` 的 `sendFile` 發出（型別、ETag、快取頭和 404 都由它處理，檔名自己校驗），地址寫進 `module.ts` 的 `apiPaths` |
 
-写好以后在 `site/modules/` 的三份清单里列上它：`index.ts` 列地址，`server.ts` 列后端，`web.ts` 列网页，没有的那份不列；再在 `site/package.json` 的 `dependencies` 里写上它。用 Docker 部署的，在 `Dockerfile` 里照着其他包加一行 `COPY modules/<名字>/package.json modules/<名字>/`。框架的代码不导入任何模块，只读这三份清单，所以合并本仓库以后的更新时，不容易和你自己的功能冲突。插口不够用时，在框架里加一个通用的插口，而不是把这个功能写进框架。
+寫好以後在 `site/modules/` 的三份清單裡列上它：`index.ts` 列地址，`server.ts` 列後端，`web.ts` 列網頁，沒有的那份不列；再在 `site/package.json` 的 `dependencies` 裡寫上它。用 Docker 部署的，在 `Dockerfile` 裡照著其他包加一行 `COPY modules/<名字>/package.json modules/<名字>/`。框架的程式碼不匯入任何模組，只讀這三份清單，所以合併本倉庫以後的更新時，不容易和你自己的功能衝突。插口不夠用時，在框架里加一個通用的插口，而不是把這個功能寫進框架。
 
-模块通过 `agent.abilities` 提供 MCP 工具。`scripts/mcp-check.ts` 始终检查完整工具集合；模块可在 `mcp.checkArgs` 中提供能在空数据库上成功的检查参数。未提供时，只有入参 schema 接受 `{}` 的工具会用 `{}` 实际调用；其余工具只检查发现，不猜参数。模块工具的业务行为由模块自己的测试验证。
+模組透過 `agent.abilities` 提供 MCP 工具。`scripts/mcp-check.ts` 始終檢查完整工具集合；模組可在 `mcp.checkArgs` 中提供能在空資料庫上成功的檢查引數。未提供時，只有入參 schema 接受 `{}` 的工具會用 `{}` 實際呼叫；其餘工具只檢查發現，不猜引數。模組工具的業務行為由模組自己的測試驗證。
 
-## 数据库迁移
+## 資料庫遷移
 
-已经发布的迁移是部署历史，不能改写或删除；修正放进新的文件。引擎和模块的迁移遵循同一套约定：按完整文件名排序执行，并以完整文件名记录是否已经执行；编号相同的不同文件分别执行，同一完整文件名不能出现在两个目录中。从 `0055` 起，每个文件只放一条允许在线执行的语句，PR 会拒绝不符合约定的新增迁移，也不允许用较小编号绕过检查。这样避免前一条语句锁住表后，又在同一事务里等待别的表或扫描大量数据。
+已經發布的遷移是部署歷史，不能改寫或刪除；修正放進新的檔案。引擎和模組的遷移遵循同一套約定：按完整檔名排序執行，並以完整檔名記錄是否已經執行；編號相同的不同檔案分別執行，同一完整檔名不能出現在兩個目錄中。從 `0055` 起，每個檔案只放一條允許線上執行的語句，PR 會拒絕不符合約定的新增遷移，也不允許用較小編號繞過檢查。這樣避免前一條語句鎖住表後，又在同一事務裡等待別的表或掃描大量資料。
 
-新增列优先使用可空列或常量默认值；给已有表加 CHECK、外键时先 `NOT VALID`，再用另一个迁移验证。索引使用单独的 `CREATE INDEX CONCURRENTLY IF NOT EXISTS`；不能在发布迁移里做大批 UPDATE、DELETE 或用 DO 隐藏它们。数据回填需另做分批、可观测的操作，并先在备份副本上验证。
+新增列優先使用可空列或常量預設值；給已有表加 CHECK、外來鍵時先 `NOT VALID`，再用另一個遷移驗證。索引使用單獨的 `CREATE INDEX CONCURRENTLY IF NOT EXISTS`；不能在釋出遷移裡做大批 UPDATE、DELETE 或用 DO 隱藏它們。資料回填需另做分批、可觀測的操作，並先在備份副本上驗證。
 
-多个筛选条件存在相关性、查询计划因此严重低估行数时，可以为这些列创建 MCV 联合统计，再用单独的迁移 `ANALYZE` 指定表的这些列。先用真实分布验证收益；不增加没有依据的统计对象，也不在迁移里做全库分析或跳过被锁住的表后假定成功。
+多個篩選條件存在相關性、查詢計劃因此嚴重低估行數時，可以為這些列建立 MCV 聯合統計，再用單獨的遷移 `ANALYZE` 指定表的這些列。先用真實分佈驗證收益；不增加沒有依據的統計物件，也不在遷移裡做全庫分析或跳過被鎖住的表後假定成功。
 
-改类型、删列等破坏性变更需要单独设计升级与回退步骤，在 [部署文档](deploy.md#更新) 说明对已有数据的影响；当前在线迁移检查不会直接放行。代码已不再使用的表，确认可以删掉它的数据后，单独一个迁移文件写 `DROP TABLE IF EXISTS <表>`（不带 CASCADE，仍有对象依赖它时迁移失败），同样在部署文档里写明。需要扩展允许的语句时，先证明它不会长期阻塞正在服务的请求，并补齐相应检查，不能关闭检查或修改旧账本。
+改型別、刪列等破壞性變更需要單獨設計升級與回退步驟，在 [部署文件](deploy.md#更新) 說明對已有資料的影響；當前線上遷移檢查不會直接放行。程式碼已不再使用的表，確認可以刪掉它的資料後，單獨一個遷移檔案寫 `DROP TABLE IF EXISTS <表>`（不帶 CASCADE，仍有物件依賴它時遷移失敗），同樣在部署文件裡寫明。需要擴充套件允許的語句時，先證明它不會長期阻塞正在服務的請求，並補齊相應檢查，不能關閉檢查或修改舊賬本。
 
-## 对外出口
+## 對外出口
 
-事件的 `related` 关联在建立时须有至少两篇报道支撑。关联历史保留；桥接报道明确撤回、失去公开事实报道资格、改为综合稿、移出原事实，或后续归组判断否定关系后，有效证据不足两篇就不公开展示，恢复足够证据后可重新展示。报道自然超出召回窗口、沿用归属的普通修订不使关联过期。没有可核对桥接判断的既有关联，不从记录缺失推断撤回；事件本身不可公开阅读时仍不推荐。`storyline` 的语义不随这项规则改变，所有公开出口共用读取规则。
+事件的 `related` 關聯在建立時須有至少兩篇報道支撐。關聯歷史保留；橋接報道明確撤回、失去公開事實報道資格、改為綜合稿、移出原事實，或後續歸組判斷否定關係後，有效證據不足兩篇就不公開展示，恢復足夠證據後可重新展示。報道自然超出召回視窗、沿用歸屬的普通修訂不使關聯過期。沒有可核對橋接判斷的既有關聯，不從記錄缺失推斷撤回；事件本身不可公開閱讀時仍不推薦。`storyline` 的語義不隨這項規則改變，所有公開出口共用讀取規則。
 
-| 地址 | 内容 |
+| 地址 | 內容 |
 |---|---|
-| `/` `/all` `/hot` `/topics` `/daily` `/weekly` `/monthly` | 精选、全部动态、热门事件、主题、日报周报月报 |
-| `/feed.xml` `/feed/full.xml` `/feed/all.xml` `/feed/daily.xml` `/feed/weekly.xml` `/feed/monthly.xml` | RSS：精选、精选全文、全部、日报、周报、月报；另有按分类的 `/feed/category/<key>.xml` 和分类全文版 `/feed/full/category/<key>.xml` |
-| `/api/v1/` | 公开 API，文档在 `/openapi-v1.json`；给 Agent 读的 Markdown 从 `/api/v1/agent` 开始；说明页在 `/agent` |
-| `/api/mcp` | MCP 服务：最新、搜索、热点、事件、日报、周报、月报各一个工具，工具名前缀是 `site/site.ts` 的 `mcpPrefix` |
-| `/llms.txt` `/sitemap.xml` `/robots.txt` | 给大模型和搜索引擎的说明（`robots.txt` 等根目录文件在 `site/public/`） |
-| `/admin` | 后台 |
+| `/` `/all` `/hot` `/topics` `/daily` `/weekly` `/monthly` | 精選、全部動態、熱門事件、主題、日報週報月報 |
+| `/feed.xml` `/feed/full.xml` `/feed/all.xml` `/feed/daily.xml` `/feed/weekly.xml` `/feed/monthly.xml` | RSS：精選、精選全文、全部、日報、週報、月報；另有按分類的 `/feed/category/<key>.xml` 和分類全文版 `/feed/full/category/<key>.xml` |
+| `/api/v1/` | 公開 API，文件在 `/openapi-v1.json`；給 Agent 讀的 Markdown 從 `/api/v1/agent` 開始；說明頁在 `/agent` |
+| `/api/mcp` | MCP 服務：最新、搜尋、熱點、事件、日報、週報、月報各一個工具，工具名字首是 `site/site.ts` 的 `mcpPrefix` |
+| `/llms.txt` `/sitemap.xml` `/robots.txt` | 給大模型和搜尋引擎的說明（`robots.txt` 等根目錄檔案在 `site/public/`） |
+| `/admin` | 後臺 |
 
-## 测试
+## 測試
 
 ```bash
 npm run typecheck
@@ -107,4 +107,4 @@ DATABASE_URL=postgres://127.0.0.1:5432/myhot_test npm test
 npm run build -w @aihot/web && npm run test:web
 ```
 
-`DATABASE_URL` 指向的库名必须以 `_test` 或 `_ci` 结尾；没有会自动创建并迁移。每个测试文件在它的一份副本上并行运行，所以数据库账号要有建库权限（`CREATEDB`）。测试不访问任何外部服务：模型和付费接口都由本地假服务回答。
+`DATABASE_URL` 指向的庫名必須以 `_test` 或 `_ci` 結尾；沒有會自動建立並遷移。每個測試檔案在它的一份副本上並行執行，所以資料庫賬號要有建庫許可權（`CREATEDB`）。測試不訪問任何外部服務：模型和付費介面都由本地假服務回答。

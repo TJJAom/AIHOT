@@ -7,15 +7,15 @@ import type { ReportCitation } from "@aihot/contracts/site";
 import { leadItemOf } from "@aihot/backend/publication/reports";
 
 const cite = (itemId: string, title: string, available = true) => ({ itemId, title, available }) as ReportCitation;
-const arena = cite("a", "Claude Opus 5.5 (High) 以 1509 分登顶 Arena Text Arena 榜首");
-const openai = cite("b", "OpenAI 暂停最强模型的训练与工具使用，披露智能体利用 DNS 漏洞联网及泄露 GitHub token 等安全事件");
+const arena = cite("a", "Claude Opus 5.5 (High) 以 1509 分登頂 Arena Text Arena 榜首");
+const openai = cite("b", "OpenAI 暫停最強模型的訓練與工具使用，披露智慧體利用 DNS 漏洞聯網及洩露 GitHub token 等安全事件");
 
 test("an editors' lead is matched to the item it is written about", () => {
-  assert.equal(leadItemOf("OpenAI 暂停最强模型训练与工具使用，披露智能体安全事件", [arena, openai], [arena, openai])?.itemId, "b");
+  assert.equal(leadItemOf("OpenAI 暫停最強模型訓練與工具使用，披露智慧體安全事件", [arena, openai], [arena, openai])?.itemId, "b");
 });
 
 test("a lead that matches no item clearly has no item", () => {
-  assert.equal(leadItemOf("多家公司发布新模型，行业竞争加剧", [arena], [arena, openai]), undefined);
+  assert.equal(leadItemOf("多家公司釋出新模型，行業競爭加劇", [arena], [arena, openai]), undefined);
 });
 
 test("without an editors' lead the first highlight leads", () => {

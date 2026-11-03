@@ -1,9 +1,9 @@
-# 资产
+# 資產
 
-站点直接从这里提供这些文件。随文件的 NOTICE 和 LICENSE 一起保留。
+站點直接從這裡提供這些檔案。隨檔案的 NOTICE 和 LICENSE 一起保留。
 
-| 目录 | 内容 | 注意 |
+| 目錄 | 內容 | 注意 |
 |---|---|---|
-| `og-fonts/` | Noto Sans SC 400/700（SIL OFL 1.1，见目录里的 LICENSE） | 只用于服务端生成分享图；网页用系统字体，不发字体请求 |
+| `og-fonts/` | Noto Sans SC 子集與 Noto Sans TC 400/700（SIL OFL 1.1，見 LICENSE 與 OFL-NotoSansTC.txt） | TC 補足繁體字形，用於伺服器分享圖與繁體報頭；網頁優先使用繁體系統字型，不發字型請求 |
 
-站点自己的图标、Logo、报头字在 `site/brand/`，换行业时换那里的文件。
+站點自己的圖示、Logo、報頭字在 `site/brand/`，換行業時換那裡的檔案。

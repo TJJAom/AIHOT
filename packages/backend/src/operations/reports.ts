@@ -16,8 +16,8 @@ export const pct = (a: number, b: number) => (b ? `${a >= b ? "+" : ""}${(((a - 
 export const n = (v: number) => v.toLocaleString("en-US");
 
 /** Who changed a source, as the owner reads it: the admin pages, or the AI's scripts. */
-const by = (actor: string) => actor.startsWith("admin:") ? "后台" : /^(ops-script|codex)/.test(actor) ? "AI" : actor;
-const brief = (reason: string | null) => !reason ? "没写原因" : [...reason].length > 60 ? `${[...reason].slice(0, 60).join("")}…` : reason;
+const by = (actor: string) => actor.startsWith("admin:") ? "後臺" : /^(ops-script|codex)/.test(actor) ? "AI" : actor;
+const brief = (reason: string | null) => !reason ? "沒寫原因" : [...reason].length > 60 ? `${[...reason].slice(0, 60).join("")}…` : reason;
 const excluded = (config: unknown) => {
   const c = (config ?? {}) as { denyUrlPrefixes?: string[]; denyCategories?: string[] };
   return [...(c.denyUrlPrefixes ?? []), ...(c.denyCategories ?? [])];
@@ -36,7 +36,7 @@ async function sourceChanges(since: Date): Promise<string[]> {
   const fenced: string[] = [];
   const fencedIds = new Set<string>();
   for (const r of rows) {
-    const who = `${by(r.actor)}，${beijingDay(r.at)}${r.module_only ? `，只给${usesText(r.uses)}用` : ""}`;
+    const who = `${by(r.actor)}，${beijingDay(r.at)}${r.module_only ? `，只給${usesText(r.uses)}用` : ""}`;
     // The audit keeps the fields a save sent; a form saved again on a paused source repeats enabled=false.
     if (r.after?.enabled === false && r.before?.enabled !== false && !r.enabled) paused.set(r.id, `· ${r.name}（${who}）：${brief(r.reason)}`);
     const added = excluded(r.after?.config).filter((rule) => !excluded(r.before?.config).includes(rule));
@@ -46,8 +46,8 @@ async function sourceChanges(since: Date): Promise<string[]> {
     }
   }
   return [
-    ...(paused.size ? [`本周停用、现在仍停着的信源 ${paused.size} 个：`, ...paused.values()] : []),
-    ...(fenced.length ? [`本周排除了部分入口的信源 ${fencedIds.size} 个：`, ...fenced] : []),
+    ...(paused.size ? [`本週停用、現在仍停著的信源 ${paused.size} 個：`, ...paused.values()] : []),
+    ...(fenced.length ? [`本週排除了部分入口的信源 ${fencedIds.size} 個：`, ...fenced] : []),
   ];
 }
 
@@ -73,19 +73,19 @@ export async function sourceHealthWeekly(now = Date.now()) {
     sql<{ uses: string[]; failing: boolean }[]>`SELECT uses, health = 'failing' AS failing FROM sources WHERE enabled AND ${moduleOnly}`,
   ]);
   const lines = [
-    `本周收录 ${n(items!.week)} 条（上周 ${n(items!.prev)}，${pct(items!.week, items!.prev)}），其中精选 ${n(items!.selected)} 条`,
-    `在用信源 ${counts!.enabled} 个，本周新增 ${counts!.added} 个；抓取失败 ${counts!.failing} 个，不太稳定 ${counts!.degraded} 个`,
+    `本週收錄 ${n(items!.week)} 條（上週 ${n(items!.prev)}，${pct(items!.week, items!.prev)}），其中精選 ${n(items!.selected)} 條`,
+    `在用信源 ${counts!.enabled} 個，本週新增 ${counts!.added} 個；抓取失敗 ${counts!.failing} 個，不太穩定 ${counts!.degraded} 個`,
   ];
   if (served.length) {
     const perUse = new Map<string, number>();
     for (const s of served) for (const u of s.uses) perUse.set(u, (perUse.get(u) ?? 0) + 1);
     const each = [...perUse].map(([u, count]) => `${usesText([u])} ${count}`).join("、");
-    lines.push(`另有只给模块用的信源 ${served.length} 个（${each}），抓取失败 ${served.filter((s) => s.failing).length} 个`);
+    lines.push(`另有隻給模組用的信源 ${served.length} 個（${each}），抓取失敗 ${served.filter((s) => s.failing).length} 個`);
   }
   // The modules' own collectors, a line each.
   for (const m of serverModules()) if (m.sourceHealth) lines.push(...(await m.sourceHealth(now)));
   const changes = await sourceChanges(since);
   if (changes.length) lines.push("", ...changes);
-  await sendAlert("📊 信源周报", lines);
+  await sendAlert("📊 信源週報", lines);
   return { failing: counts!.failing };
 }

@@ -55,7 +55,7 @@ export async function moveToFact(id: string, factPublicId: string, reason: strin
     if (!article) return null;
     const [target] = await tx<{ id: number; story_id: number }[]>`
       SELECT f.id, f.story_id FROM facts f JOIN stories st ON st.id = f.story_id WHERE f.public_id = ${factPublicId} AND st.merged_into IS NULL`;
-    if (!target) throw new Conflict("目标事实不存在，或它所在的事件已被合并");
+    if (!target) throw new Conflict("目標事實不存在，或它所在的事件已被合併");
     const removed = await tx<{ fact_id: number; evidence: string | null }[]>`
       DELETE FROM fact_articles WHERE article_id = ${id} AND (role IN ('primary', 'report') OR fact_id = ${target.id}) RETURNING fact_id, evidence`;
     const facts = removed.map((r) => Number(r.fact_id)).filter((factId) => factId !== Number(target.id));
@@ -80,7 +80,7 @@ export async function moveToFact(id: string, factPublicId: string, reason: strin
   }
   for (const storyId of moved.stories) {
     const [left] = await sql`SELECT 1 FROM facts f JOIN fact_articles fa ON fa.fact_id = f.id WHERE f.story_id = ${storyId} AND fa.role IN ('primary', 'report') LIMIT 1`;
-    if (!left && (await mergeStoryInto(storyId, moved.story, `报道已全部移走，旧地址跳到报道所在事件（最后一篇 ${id}）`, actor))) continue;
+    if (!left && (await mergeStoryInto(storyId, moved.story, `報道已全部移走，舊地址跳到報道所在事件（最後一篇 ${id}）`, actor))) continue;
     await enqueue(QUEUES.digest, { storyId }, { singletonKey: `story:${storyId}` });
   }
   await enqueue(QUEUES.digest, { storyId: moved.story }, { singletonKey: `story:${moved.story}` });
@@ -95,7 +95,7 @@ export async function mergeStories(fromId: number, intoId: number, reason: strin
   if (done) return done;
   const found = await sql<{ id: number }[]>`SELECT id FROM stories WHERE id IN (${fromId}, ${intoId})`;
   if (found.length < 2) throw new Error("story not found");
-  throw new Conflict("两个事件都必须是未合并的事件");
+  throw new Conflict("兩個事件都必須是未合併的事件");
 }
 
 /**

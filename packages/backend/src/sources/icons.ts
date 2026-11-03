@@ -1,5 +1,5 @@
-// Source icons ("来源图标缓存"): the face a source shows next to its reports and on the hot list.
-// X accounts take the avatar on their latest post; 公众号 the account avatar on their latest article
+// Source icons ("來源圖示快取"): the face a source shows next to its reports and on the hot list.
+// X accounts take the avatar on their latest post; 公眾號 the account avatar on their latest article
 // page; sites the best icon their home page declares. A source with none keeps its tinted initial.
 import { sql } from "../db.ts";
 import { guardedFetch, DEFAULT_UA } from "../lib/http-fetch.ts";
@@ -7,7 +7,7 @@ import { produceImage } from "../media/images.ts";
 import { sourceOwnsPost } from "./account.ts";
 
 const BATCH = 200;
-// A site without an icon rarely grows one; 公众号 misses are mostly WeChat turning the server away for a while.
+// A site without an icon rarely grows one; 公眾號 misses are mostly WeChat turning the server away for a while.
 const RETRY_DAYS = 30;
 const MP_RETRY_DAYS = 3;
 const MP_PAUSE_MS = 3000;
@@ -28,7 +28,7 @@ async function refreshXAvatars(): Promise<number> {
   return rows.length;
 }
 
-/** A page's HTML; 公众号 article pages run to several megabytes, home pages rarely past four. */
+/** A page's HTML; 公眾號 article pages run to several megabytes, home pages rarely past four. */
 async function page(url: string, maxBytes = 4_000_000): Promise<{ html: string; url: string } | null> {
   try {
     const res = await guardedFetch(url, { timeoutMs: 15_000, maxBytes, headers: { "user-agent": DEFAULT_UA, accept: "text/html,*/*;q=0.8" } });
@@ -94,7 +94,7 @@ function homeOf(articleUrls: string[], config: Record<string, unknown>): string 
 
 async function findIcon(kind: string, articleUrls: string[], config: Record<string, unknown>): Promise<string | null> {
   if (kind === "mp_account") {
-    // WeChat answers bursts with "未知错误": take the account's two latest articles, slowly.
+    // WeChat answers bursts with "未知錯誤": take the account's two latest articles, slowly.
     for (const url of articleUrls.slice(0, 2)) {
       await new Promise((r) => setTimeout(r, MP_PAUSE_MS));
       const p = await page(url, 10_000_000);
@@ -113,7 +113,7 @@ export async function siteIcon(home: string): Promise<string | null> {
   return firstUsable(p ? iconCandidates(p.html, p.url) : [new URL("/favicon.ico", home).toString()]);
 }
 
-/** Sites and 公众号 without an icon: a batch per run, looking again after RETRY_DAYS (公众号: MP_RETRY_DAYS). */
+/** Sites and 公眾號 without an icon: a batch per run, looking again after RETRY_DAYS (公眾號: MP_RETRY_DAYS). */
 async function findMissingIcons(): Promise<{ checked: number; found: number }> {
   const due = await sql<{ id: string; kind: string; config: Record<string, unknown>; urls: string[] | null }[]>`
     SELECT s.id, s.kind, s.config, a.urls

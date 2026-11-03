@@ -164,7 +164,7 @@ async function createSession(userId: number, userAgent: string | undefined, auth
 export async function completeLogin(code: string, state: string, stateCookie: string | undefined, userAgent: string | undefined) {
   const expected = unsign(stateCookie);
   const given = unsign(state);
-  if (!expected || !given || expected !== given) throw new LoginRejected("登录状态已失效，请重新登录");
+  if (!expected || !given || expected !== given) throw new LoginRejected("登入狀態已失效，請重新登入");
   // What follows the random part is the path (safeReturn, signed), which may itself hold a "|".
   const returnTo = given.includes("|") ? given.slice(given.indexOf("|") + 1) : SIGN_IN_HOME;
   const { user: u, appId } = await feishuUser(code);
@@ -174,7 +174,7 @@ export async function completeLogin(code: string, state: string, stateCookie: st
   const claims: FeishuClaims = { appId, unionId, email };
   const auth: SessionAuth = { method: "feishu", claims, binding: sessionBinding("feishu", claims, secret()) };
   const allowed = (unionId && config.adminUnionIds.includes(unionId)) || (email && config.adminEmails.includes(email));
-  if (!allowed) throw new LoginRejected("这个飞书账号没有后台权限");
+  if (!allowed) throw new LoginRejected("這個飛書賬號沒有後臺許可權");
   const [existing] = await sql<{ id: number }[]>`
     SELECT id FROM admin_users WHERE (${unionId}::text IS NOT NULL AND feishu_union_id = ${unionId}) OR (${email}::text IS NOT NULL AND email = ${email}) LIMIT 1`;
   const [user] = existing
@@ -192,13 +192,13 @@ const PASSWORD_ADMIN = "admin@local";
 /** Password sign-in: a constant-time comparison of digests, so the length leaks nothing either. */
 export async function passwordLogin(password: string, returnTo: string, userAgent: string | undefined) {
   const expected = config.adminPassword;
-  if (!expected || expected.length < 12) throw new LoginRejected("还没有设置管理员密码（环境变量 ADMIN_PASSWORD，至少 12 位）");
+  if (!expected || expected.length < 12) throw new LoginRejected("還沒有設定管理員密碼（環境變數 ADMIN_PASSWORD，至少 12 位）");
   const given = createHmac("sha256", "admin-password").update(password).digest();
   const wanted = createHmac("sha256", "admin-password").update(expected).digest();
-  if (!timingSafeEqual(given, wanted)) throw new LoginRejected("密码不对");
+  if (!timingSafeEqual(given, wanted)) throw new LoginRejected("密碼不對");
   const auth: SessionAuth = { method: "password", claims: null, binding: sessionBinding("password", expected, secret()) };
   const [user] = await sql<{ id: number }[]>`
-    INSERT INTO admin_users (email, display_name, last_login_at) VALUES (${PASSWORD_ADMIN}, '管理员', now())
+    INSERT INTO admin_users (email, display_name, last_login_at) VALUES (${PASSWORD_ADMIN}, '管理員', now())
     ON CONFLICT (email) DO UPDATE SET last_login_at = now() RETURNING id`;
   const token = await createSession(user!.id, userAgent, auth);
   await audit(`admin:${user!.id}`, "auth.login", null, null, null, { method: "password" });

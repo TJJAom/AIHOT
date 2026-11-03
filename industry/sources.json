@@ -1,5 +1,5 @@
 {
-  "$comment": "示范信源：首次启动时导入（scripts/seed.ts），已存在的不会被覆盖。之后在后台“信源”里新建、修改和暂停。字段说明见 docs/customize.md。",
+  "$comment": "示範信源：首次啟動時匯入（scripts/seed.ts），已存在的不會被覆蓋。之後在後臺“信源”裡新建、修改和暫停。欄位說明見 docs/customize.md。",
   "sources": [
     {
       "id": "rss-openai-news",
@@ -78,7 +78,7 @@
       "interval_minutes": 120,
       "tags": [
         "官方",
-        "开源"
+        "開源"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -220,7 +220,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 60,
       "tags": [
-        "媒体"
+        "媒體"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -240,7 +240,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 60,
       "tags": [
-        "媒体"
+        "媒體"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -260,7 +260,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 60,
       "tags": [
-        "媒体"
+        "媒體"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -280,7 +280,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "媒体"
+        "媒體"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -300,7 +300,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 60,
       "tags": [
-        "媒体"
+        "媒體"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -320,7 +320,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 120,
       "tags": [
-        "个人"
+        "個人"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -340,8 +340,8 @@
       "participation_mode": "editorial",
       "interval_minutes": 180,
       "tags": [
-        "个人",
-        "周刊"
+        "個人",
+        "週刊"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false
@@ -361,7 +361,7 @@
       "participation_mode": "editorial",
       "interval_minutes": 180,
       "tags": [
-        "个人"
+        "個人"
       ],
       "site_fulltext": false,
       "syndicate_fulltext": false

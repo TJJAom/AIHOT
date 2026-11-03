@@ -17,9 +17,9 @@ test('hot covers follow current visibility and full-text rights within one ranki
   await sql`INSERT INTO sources (id,name,kind,tier,participation_mode,next_fetch_at)
     VALUES (${source},${source},'rss','T1','editorial','2100-01-01')`;
   const [story] = await sql<{id:number;public_id:string}[]>`INSERT INTO stories (public_id,title)
-    VALUES (${randomUUID()},'封面范围') RETURNING id,public_id`;
+    VALUES (${randomUUID()},'封面範圍') RETURNING id,public_id`;
   const [fact] = await sql<{id:number}[]>`INSERT INTO facts (public_id,story_id,title)
-    VALUES (${randomUUID()},${story!.id},'封面范围') RETURNING id`;
+    VALUES (${randomUUID()},${story!.id},'封面範圍') RETURNING id`;
   for (const [id, image] of [['cover-representative',null],['cover-primary','primary'],['cover-fallback','fallback']] as const) {
     await sql`INSERT INTO articles (id,source_id,identity_key,url,title,discovered_at,timeline_at,media)
       VALUES (${id},${source},${id},${'https://example.org/'+id},${id},${at},${at},
@@ -28,7 +28,7 @@ test('hot covers follow current visibility and full-text rights within one ranki
     await sql`INSERT INTO publications (article_id,source_id,title,url,timeline_at,discovered_at,sort_at,body_mode,eligible,channel,story_id,fact_id,score)
       VALUES (${id},${source},${id},${'https://example.org/'+id},${at},${at},${at},${image ? 'full' : 'summary'},true,'news',${story!.id},${fact!.id},${image === 'primary' ? 90 : 80})`;
   }
-  const entry: HotEntry = { rank:1,storyId:story!.id,storyPublicId:story!.public_id,title:'封面范围',heat:10,trend:'flat',trendPct:0,badges:[],
+  const entry: HotEntry = { rank:1,storyId:story!.id,storyPublicId:story!.public_id,title:'封面範圍',heat:10,trend:'flat',trendPct:0,badges:[],
     participantCount:2,sourceCount:1,signalCount:0,reportCount:3,sourceNames:[source],latestAt:at.toISOString(),firstReportAt:at.toISOString(),
     representativeItemId:'cover-representative',representativeUrl:'https://example.org/cover-representative',representativeSource:source,participants:[] };
   await sql`INSERT INTO hot_rankings (computed_at,rule_version,entries,published)

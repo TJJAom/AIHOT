@@ -4,8 +4,8 @@ import { HOT_FACE_LIMIT, type HotParticipant } from "@aihot/contracts/site";
 import { SourceAvatar } from "../../components/ui/SourceAvatar";
 
 /**
- * Who is talking about a hot story: overlapping faces of the 精选组 sources in the order the server
- * gives (T1, T1.5, T2), then a count for everyone else, 氛围组 included. Hover lists every name; where
+ * Who is talking about a hot story: overlapping faces of the 精選組 sources in the order the server
+ * gives (T1, T1.5, T2), then a count for everyone else, 氛圍組 included. Hover lists every name; where
  * the faces are their own control (not inside a link), a tap or Enter opens the list, so phones and
  * keyboards reach it too.
  */
@@ -71,7 +71,7 @@ function FacesButton({ participants, total, names, children }: { participants: H
         title={names}
         aria-expanded={open}
         aria-controls={id}
-        aria-label={`${total} 位参与者，查看名单`}
+        aria-label={`${total} 位參與者，檢視名單`}
         onClick={(e) => {
           e.preventDefault();
           e.stopPropagation();
@@ -85,7 +85,7 @@ function FacesButton({ participants, total, names, children }: { participants: H
         {children}
       </button>
       {open && createPortal(
-        <span ref={popup} id={id} role="dialog" aria-label="参与讨论的来源" style={at} className="fixed z-50 max-h-[240px] w-[240px] overflow-y-auto rounded-control border border-line bg-raised p-3 text-[12.5px] leading-relaxed text-ink-2 shadow-[var(--shadow-pop)]">
+        <span ref={popup} id={id} role="dialog" aria-label="參與討論的來源" style={at} className="fixed z-50 max-h-[240px] w-[240px] overflow-y-auto rounded-control border border-line bg-raised p-3 text-[12.5px] leading-relaxed text-ink-2 shadow-[var(--shadow-pop)]">
           <span className="block">{listed.map((p) => p.name).join("、")}</span>
           {more > 0 && <span className="mt-2 block text-[11.5px] text-ink-4">另有 {more} 位未列出</span>}
         </span>, document.body

@@ -1,31 +1,31 @@
-# 参与贡献
+# 參與貢獻
 
-欢迎提交可复现的问题、文档修正，以及对其他行业也有用的改进。中文或英文都可以。
+歡迎提交可復現的問題、文件修正，以及對其他行業也有用的改進。中文或英文都可以。
 
-## 去哪里交流
+## 去哪裡交流
 
-- [Issues](https://github.com/KKKKhazix/AIHOT/issues/new/choose)：可复现的 Bug 和有明确场景的功能建议。
-- [部署与使用问答](https://github.com/KKKKhazix/AIHOT/discussions/categories/q-a)：安装、配置、部署和使用问题；问题解决后可以标记答案。
-- [想法交流](https://github.com/KKKKhazix/AIHOT/discussions/categories/ideas)：先讨论方向和使用场景。
-- [作品展示](https://github.com/KKKKhazix/AIHOT/discussions/categories/show-and-tell)：分享你搭建的行业热点站和实践经验。
-- 安全漏洞请按 [安全报告说明](SECURITY.md) 私密提交。
+- [Issues](https://github.com/KKKKhazix/AIHOT/issues/new/choose)：可復現的 Bug 和有明確場景的功能建議。
+- [部署與使用問答](https://github.com/KKKKhazix/AIHOT/discussions/categories/q-a)：安裝、配置、部署和使用問題；問題解決後可以標記答案。
+- [想法交流](https://github.com/KKKKhazix/AIHOT/discussions/categories/ideas)：先討論方向和使用場景。
+- [作品展示](https://github.com/KKKKhazix/AIHOT/discussions/categories/show-and-tell)：分享你搭建的行業熱點站和實踐經驗。
+- 安全漏洞請按 [安全報告說明](SECURITY.md) 私密提交。
 
-## 贡献范围
+## 貢獻範圍
 
-优先欢迎部署体验、通用采集能力、处理流程、公开接口、可访问性、文档和可复现故障的改进。大幅调整架构或产品行为前，先在 Issue 或讨论区说明场景和方案，避免投入后才发现方向不合适。
+優先歡迎部署體驗、通用採集能力、處理流程、公開介面、可訪問性、文件和可復現故障的改進。大幅調整架構或產品行為前，先在 Issue 或討論區說明場景和方案，避免投入後才發現方向不合適。
 
-只适合你所在行业的信源和精选标准，在自己的仓库里改 `industry/`；站名、品牌和页面改 `site/`；只有你的站需要的功能做成模块放进 `modules/`（见 [架构](docs/architecture.md#模块)）。步骤参考 [定制文档](docs/customize.md)。出于合规和风险考虑，完整运营信源名单暂不分享；本仓库也不持续维护微博、小红书等平台的专用采集适配，可以按 [信源文档](docs/sources.md) 接入你自行维护的外部采集结果。
+只適合你所在行業的信源和精選標準，在自己的倉庫裡改 `industry/`；站名、品牌和頁面改 `site/`；只有你的站需要的功能做成模組放進 `modules/`（見 [架構](docs/architecture.md#模組)）。步驟參考 [定製文件](docs/customize.md)。出於合規和風險考慮，完整營運信源名單暫不分享；本倉庫也不持續維護微博、小紅書等平台的專用採集適配，可以按 [信源文件](docs/sources.md) 接入你自行維護的外部採集結果。
 
-## 提交改动
+## 提交改動
 
-1. Fork 本仓库，从最新的 `main` 创建自己的分支。若只是搭建一个独立站点，可以用 [Use this template](https://github.com/KKKKhazix/AIHOT/generate)；模板生成的项目没有共享提交历史，后续贡献代码或合并上游更新更适合用 Fork。
-2. 阅读 [AGENTS.md](AGENTS.md) 和改动对应的文档。保持一次 PR 解决一个清楚的问题，不夹带无关重构，也不夹带重装依赖带来的 `package-lock.json` 改动。依赖升级、Agent 规则文件（`AGENTS.md`、`CLAUDE.md`、`.agents/`、`.claude/`）和二进制文件不接受外部 PR 修改，需要时先开 Issue，由维护者来改。
-3. 按 [部署文档](docs/deploy.md) 配置本地环境。使用独立测试库，开发时关闭采集、模型调用和外部推送；不使用生产数据库或真实付费服务做测试。
-4. 验证改动涉及的行为，在 PR 中写明运行结果；来自 Fork 的 CI 要维护者批准后才运行，不能代替本地检查。代码改动执行 `npm run typecheck`、`npm test`、网页构建与网页测试；后端测试库名必须以 `_test` 或 `_ci` 结尾（没有会自动创建并迁移），每个测试文件在它的副本上并行运行，所以测试数据库账号要有 `CREATEDB` 权限。运行中的站点可用 `node scripts/smoke.ts --base http://localhost:3000` 检查。纯文档或模板改动核对链接、语法和实际展示即可，不需要为了凑数量新增测试。
-   改数据库时，已经发布的迁移不改，修正放进新文件；新文件只放一条允许在线执行的语句，PR 会自动检查，本地可以先跑 `node scripts/check-migrations.ts --base main`。规则见 [迁移约定](docs/architecture.md#数据库迁移)。
-   备份恢复测试还需要 `tar` 和与服务端版本兼容的 `pg_dump`/`pg_restore`；测试会创建并清理独立的临时恢复库和文件目录，不访问真实对象存储。
-5. 向本仓库 `main` 提交 PR，关联相关 Issue，并勾选 “Allow edits by maintainers”：小问题维护者可以直接在你的分支上改好再合并，不用你再跑一趟。还在改就开草稿，改好再标为就绪。页面改动附截图；涉及配置或升级步骤时同步更新文档，已部署的站点升级时要做的事写进 [部署文档](docs/deploy.md) 的“更新”一节。
+1. Fork 本倉庫，從最新的 `main` 建立自己的分支。若只是搭建一個獨立站點，可以用 [Use this template](https://github.com/KKKKhazix/AIHOT/generate)；模板生成的專案沒有共享提交歷史，後續貢獻程式碼或合併上游更新更適合用 Fork。
+2. 閱讀 [AGENTS.md](AGENTS.md) 和改動對應的文件。保持一次 PR 解決一個清楚的問題，不夾帶無關重構，也不夾帶重灌依賴帶來的 `package-lock.json` 改動。依賴升級、Agent 規則檔案（`AGENTS.md`、`CLAUDE.md`、`.agents/`、`.claude/`）和二進位制檔案不接受外部 PR 修改，需要時先開 Issue，由維護者來改。
+3. 按 [部署文件](docs/deploy.md) 配置本地環境。使用獨立測試庫，開發時關閉採集、模型呼叫和外部推送；不使用生產資料庫或真實付費服務做測試。
+4. 驗證改動涉及的行為，在 PR 中寫明執行結果；來自 Fork 的 CI 要維護者批准後才執行，不能代替本地檢查。程式碼改動執行 `npm run typecheck`、`npm test`、網頁構建與網頁測試；後端測試庫名必須以 `_test` 或 `_ci` 結尾（沒有會自動建立並遷移），每個測試檔案在它的副本上並行執行，所以測試資料庫賬號要有 `CREATEDB` 許可權。執行中的站點可用 `node scripts/smoke.ts --base http://localhost:3000` 檢查。純文件或模板改動核對連結、語法和實際展示即可，不需要為了湊數量新增測試。
+   改資料庫時，已經發布的遷移不改，修正放進新檔案；新檔案只放一條允許線上執行的語句，PR 會自動檢查，本地可以先跑 `node scripts/check-migrations.ts --base main`。規則見 [遷移約定](docs/architecture.md#資料庫遷移)。
+   備份恢復測試還需要 `tar` 和與服務端版本相容的 `pg_dump`/`pg_restore`；測試會建立並清理獨立的臨時恢復庫和檔案目錄，不訪問真實物件儲存。
+5. 向本倉庫 `main` 提交 PR，關聯相關 Issue，並勾選 “Allow edits by maintainers”：小問題維護者可以直接在你的分支上改好再合併，不用你再跑一趟。還在改就開草稿，改好再標為就緒。頁面改動附截圖；涉及配置或升級步驟時同步更新文件，已部署的站點升級時要做的事寫進 [部署文件](docs/deploy.md) 的“更新”一節。
 
-`main` 通过 PR 合并。准备合并时，请把 PR 分支整理成一个提交，保留正确的作者署名；更新已经推送的分支用 `git push --force-with-lease`。分支要包含最新的 `main`，GitHub 的 `check` 和 `docker` 在这个提交上通过后，维护者用 rebase 方式合并，保留你的作者信息。
+`main` 透過 PR 合併。準備合併時，請把 PR 分支整理成一個提交，保留正確的作者署名；更新已經推送的分支用 `git push --force-with-lease`。分支要包含最新的 `main`，GitHub 的 `check` 和 `docker` 在這個提交上透過後，維護者用 rebase 方式合併，保留你的作者資訊。
 
-请勿提交 `.env`、密钥、管理员密码、Cookie、生产数据或未获授权的素材；日志和截图也要先移除敏感信息。代码沿用 [MIT 许可证](LICENSE)，品牌和第三方素材说明见 [NOTICE](NOTICE)。
+請勿提交 `.env`、金鑰、管理員密碼、Cookie、生產資料或未獲授權的素材；日誌和截圖也要先移除敏感資訊。程式碼沿用 [MIT 許可證](LICENSE)，品牌和第三方素材說明見 [NOTICE](NOTICE)。

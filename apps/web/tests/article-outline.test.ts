@@ -9,7 +9,7 @@ import { fakeApi, itemDetail, startWebServer, visit, type WebServer } from "./we
 test("a short laptop window keeps several outline entries and can reach the last one", async () => {
   const outline = Array.from({ length: 40 }, (_, i) => ({ id: `section-${i}`, level: 2, text: `Section ${i}` }));
   const item = itemDetail({
-    id: "outline-short", title: "目录可达检查", reason: "固定推荐理由。".repeat(12), tags: ["标签甲", "标签乙", "标签丙"], outline,
+    id: "outline-short", title: "目錄可達檢查", reason: "固定推薦理由。".repeat(12), tags: ["標籤甲", "標籤乙", "標籤丙"], outline,
     body: { zh: outline.map((o) => `<h2 id="${o.id}">${o.text}</h2><p>${"固定正文。".repeat(100)}</p>`).join(""), original: null, zhKind: "original", complete: true },
   });
   const api = fakeApi((url) => (url.pathname === "/api/site/items/outline-short" ? item : undefined));
@@ -20,7 +20,7 @@ test("a short laptop window keeps several outline entries and can reach the last
     for (const height of [657, 560]) {
       const page = await browser.newPage({ viewport: { width: 1366, height }, reducedMotion: "reduce" });
       await page.goto(web.origin + "/items/outline-short");
-      const nav = page.getByRole("navigation", { name: "本文目录" });
+      const nav = page.getByRole("navigation", { name: "本文目錄" });
       await expect(nav).toBeVisible();
       await page.waitForTimeout(100);
       const entry = await nav.locator("a").first().evaluate((a) => a.getBoundingClientRect().height);
@@ -40,7 +40,7 @@ test("a short laptop window keeps several outline entries and can reach the last
 // WebKit can send Home/End to the page even when an overflowing outline contains CSS overscroll.
 test("outline keyboard scrolling stays inside its boundary in WebKit", async () => {
   const outline = Array.from({ length: 40 }, (_, i) => ({ id: `section-${i}`, level: 2, text: `Section ${i}` }));
-  const item = itemDetail({ id: "outline-keys", title: "键盘目录检查", outline,
+  const item = itemDetail({ id: "outline-keys", title: "鍵盤目錄檢查", outline,
     body: { zh: outline.map(o => `<h2 id="${o.id}">${o.text}</h2><p>${"固定正文。".repeat(100)}</p>`).join(""), original: null, zhKind: "original", complete: true },
   });
   const web = await startWebServer(fakeApi(url => url.pathname === "/api/site/items/outline-keys" ? item : undefined));
@@ -48,7 +48,7 @@ test("outline keyboard scrolling stays inside its boundary in WebKit", async () 
   try {
     const page = await browser.newPage({ viewport: { width: 1366, height: 768 }, reducedMotion: "reduce" });
     await visit(page, web.origin + "/items/outline-keys");
-    const nav = page.getByRole("navigation", { name: "本文目录" });
+    const nav = page.getByRole("navigation", { name: "本文目錄" });
     await expect(nav).toBeVisible();
     for (const [boundary, keys] of [["end", ["End", "PageDown", "ArrowDown", "Space"]], ["start", ["Home", "PageUp", "ArrowUp", "Shift+Space"]]] as const) {
       for (const key of keys) {

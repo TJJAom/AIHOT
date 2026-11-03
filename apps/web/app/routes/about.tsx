@@ -13,7 +13,7 @@ import { SignalRiver, type RiverSource } from "../features/about/SignalRiver";
 import { PhoneBar } from "../components/shell/PhoneBar";
 import type { Screen } from "../components/shell/screens";
 
-export const handle: Screen = { tab: "me", name: "关于" };
+export const handle: Screen = { tab: "me", name: "關於" };
 export { pageHeaders as headers } from "../lib/api.server";
 export const { clientLoader, shouldRevalidate } = pageReuse<typeof loader>();
 
@@ -26,14 +26,14 @@ export async function loader({ request }: { request: Request }) {
 }
 
 export function meta() {
-  return pageMeta({ title: "关于", description: ABOUT.description, path: "/about", image: "/og/pages/about.png", jsonLd: organizationLd() });
+  return pageMeta({ title: "關於", description: ABOUT.description, path: "/about", image: "/og/pages/about.png", jsonLd: organizationLd() });
 }
 
 const NO_SOURCES: RiverSource[] = [];
 
-/** 3.6 万 from ten thousand up, digits with separators below. */
+/** 3.6 萬 from ten thousand up, digits with separators below. */
 function figure(n: number): { value: string; unit: string } {
-  return n >= 10_000 ? { value: (n / 10_000).toFixed(1).replace(/\.0$/, ""), unit: "万" } : { value: n.toLocaleString("en-US"), unit: "" };
+  return n >= 10_000 ? { value: (n / 10_000).toFixed(1).replace(/\.0$/, ""), unit: "萬" } : { value: n.toLocaleString("en-US"), unit: "" };
 }
 
 function Figure({ n, unit }: { n: number; unit: string }) {
@@ -52,9 +52,9 @@ function Figure({ n, unit }: { n: number; unit: string }) {
 const KIND_ORDER: Array<[string, string]> = [
   ["x_search", "X"],
   ["rss", "RSS"],
-  ["web_list", "网页"],
-  ["mp_account", "公众号"],
-  ["json_list", "接口"],
+  ["web_list", "網頁"],
+  ["mp_account", "公眾號"],
+  ["json_list", "介面"],
 ];
 
 /**
@@ -81,31 +81,31 @@ function stagesOf(stats: SiteStats | null): Stage[] {
   return [
     {
       no: "01",
-      title: "采集",
-      figure: stats && <Figure n={stats.sources} unit="个信源" />,
+      title: "採集",
+      figure: stats && <Figure n={stats.sources} unit="個信源" />,
       text: ABOUT.steps.collect,
       note: kinds,
     },
     {
       no: "02",
-      title: "收录",
-      figure: stats && <Figure n={stats.items} unit="条动态" />,
+      title: "收錄",
+      figure: stats && <Figure n={stats.items} unit="條動態" />,
       text: ABOUT.steps.store,
-      note: stats && <>过去 24 小时收进 {stats.day.collected.toLocaleString("en-US")} 条</>,
+      note: stats && <>過去 24 小時收進 {stats.day.collected.toLocaleString("en-US")} 條</>,
     },
     {
       no: "03",
-      title: "精选",
+      title: "精選",
       figure: stats && <Figure n={stats.selected} unit={REPORTS.metricUnits.selectedCount} />,
       text: ABOUT.steps.select,
-      note: stats && <>过去 24 小时 {stats.day.selected} 条进了精选</>,
+      note: stats && <>過去 24 小時 {stats.day.selected} 條進了精選</>,
     },
     {
       no: "04",
       title: "成刊",
       figure: stats && <Figure n={stats.dailies} unit={REPORTS.metricUnits.reportsCovered} />,
       text: ABOUT.steps.publish,
-      note: "也可以用 RSS、API、MCP 订阅",
+      note: "也可以用 RSS、API、MCP 訂閱",
     },
   ];
 }
@@ -114,13 +114,13 @@ function stagesOf(stats: SiteStats | null): Stage[] {
 function MakerFace({ src }: { src: string }) {
   const [failed, setFailed] = useState(false);
   if (failed) return null;
-  return <img src={src} alt={`${ABOUT.maker?.name ?? ""}的头像`} width={48} height={48} onError={() => setFailed(true)} className="size-11 shrink-0 rounded-full bg-bg-sunk object-cover ring-1 ring-line xl:size-12" />;
+  return <img src={src} alt={`${ABOUT.maker?.name ?? ""}的頭像`} width={48} height={48} onError={() => setFailed(true)} className="size-11 shrink-0 rounded-full bg-bg-sunk object-cover ring-1 ring-line xl:size-12" />;
 }
 
 function QrCard({ src, kind, title, note }: { src: string; kind: string; title: string; note: string }) {
   return (
     <figure className="card flex items-center gap-5 p-5">
-      <img src={src} alt={`${kind}二维码`} width={112} height={112} loading="lazy" className="size-[104px] shrink-0 rounded-tile border border-line bg-white object-contain p-1.5 sm:size-[112px]" />
+      <img src={src} alt={`${kind}二維碼`} width={112} height={112} loading="lazy" className="size-[104px] shrink-0 rounded-tile border border-line bg-white object-contain p-1.5 sm:size-[112px]" />
       <figcaption className="min-w-0">
         <div className="text-[12px] text-ink-4">{kind}</div>
         <div className="mt-1 text-[16px] font-semibold leading-snug text-ink">{title}</div>
@@ -142,7 +142,7 @@ function Maker({ maker, contact }: { maker: NonNullable<typeof ABOUT.maker>; con
   return (
     <section aria-labelledby="maker" className="mt-20 grid gap-10 xl:mt-28 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)] lg:gap-16">
       <div>
-        <Kicker>做这个站的人</Kicker>
+        <Kicker>做這個站的人</Kicker>
         <h2 id="maker" className="mt-4 flex items-center gap-3.5 text-[26px] font-black leading-[1.3] tracking-[-0.02em] text-ink xl:gap-4 xl:text-[34px]">
           {contact?.makerAvatar && <MakerFace src={contact.makerAvatar} />}
           <span>
@@ -154,21 +154,21 @@ function Maker({ maker, contact }: { maker: NonNullable<typeof ABOUT.maker>; con
             <p key={line}>{line}</p>
           ))}
           <p className="text-ink-3">
-            它一直在改，改了什么都写在
+            它一直在改，改了什麼都寫在
             <Link viewTransition to="/changelog" className="text-accent hover:underline">
-              更新日志
+              更新日誌
             </Link>
-            里；有想法、遇到问题，去
+            裡；有想法、遇到問題，去
             <Link viewTransition to="/feedback" className="text-accent hover:underline">
-              反馈页
+              回饋頁
             </Link>
-            告诉我。
+            告訴我。
           </p>
         </div>
       </div>
       {codes.length > 0 && (
         <div className="grid content-start gap-3">
-          <h3 className="text-[15px] font-semibold text-ink">如果觉得有点用，欢迎加入</h3>
+          <h3 className="text-[15px] font-semibold text-ink">如果覺得有點用，歡迎加入</h3>
           {codes}
         </div>
       )}
@@ -176,12 +176,12 @@ function Maker({ maker, contact }: { maker: NonNullable<typeof ABOUT.maker>; con
   );
 }
 
-/** The latest 精选 under the river's paper; it moves on each time an item reaches the paper. */
+/** The latest 精選 under the river's paper; it moves on each time an item reaches the paper. */
 function Latest({ item, className = "" }: { item: SiteStats["latest"][number] | undefined; className?: string }) {
   if (!item) return null;
   return (
     <IntentLink viewTransition to={`/items/${item.id}`} className={`group block ${className}`}>
-      <span className="text-[11px] font-semibold tracking-[0.2em] text-accent">最近精选</span>
+      <span className="text-[11px] font-semibold tracking-[0.2em] text-accent">最近精選</span>
       <span key={item.id} className="animate-fade-up mt-1.5 block">
         <span className="line-clamp-2 text-[13.5px] font-semibold leading-[1.55] text-ink transition-colors group-hover:text-accent">{item.title}</span>
         <span className="mt-1 block truncate text-[12px] text-ink-4">{item.source}</span>
@@ -208,7 +208,7 @@ export default function AboutPage() {
 
   return (
     <div className="mx-auto max-w-[var(--page-max-reading)] pb-14 lg:pt-3">
-      <PhoneBar back={{ to: "/more", label: "我的" }} title={`关于 ${SITE.name}`} />
+      <PhoneBar back={{ to: "/more", label: "我的" }} title={`關於 ${SITE.name}`} />
       <header className="grid items-end gap-8 pt-4 lg:grid-cols-[minmax(0,1fr)_auto] lg:pt-0">
         <div>
           <Kicker>{ABOUT.kicker}</Kicker>
@@ -228,22 +228,22 @@ export default function AboutPage() {
         </div>
         <div className="flex flex-wrap gap-3 lg:pb-2">
           <IntentLink to="/" className={buttonClass("primary", "lg")}>
-            看今天的精选 <IconArrowRight size={15} />
+            看今天的精選 <IconArrowRight size={15} />
           </IntentLink>
           <IntentLink to="/daily" className={buttonClass("secondary", "lg")}>
-            读最新日报
+            讀最新日報
           </IntentLink>
         </div>
       </header>
 
       <section aria-labelledby="how" className="mt-10 xl:mt-14">
         <h2 id="how" className="sr-only">
-          {`${SITE.name} 怎么工作`}
+          {`${SITE.name} 怎麼工作`}
         </h2>
         <SignalRiver sources={sources} focus={focus} onArrive={onArrive} className="h-[230px] sm:h-[300px] lg:h-[360px] 2xl:h-[420px]">
           <Latest item={latest[at]} className="absolute left-[75%] top-[calc(42%+42px)] hidden w-[25%] px-6 lg:block" />
         </SignalRiver>
-        <p className="sr-only">{`示意图：每条线是一个信源；线汇成一束束，代表同一件事的多篇报道；经过精选的闸门，只有少数几束通过，${subjectAfter("汇入每天的", "日报")}。`}</p>
+        <p className="sr-only">{`示意圖：每條線是一個信源；線匯成一束束，代表同一件事的多篇報道；經過精選的閘門，只有少數幾束透過，${subjectAfter("匯入每天的", "日報")}。`}</p>
         <Latest item={latest[at]} className="mt-2 border-t border-line pt-4 lg:hidden" />
         <ol className="mt-4 grid grid-cols-1 border-t border-line-strong sm:grid-cols-2 lg:mt-0 lg:grid-cols-4">
           {stages.map((s, i) => (
@@ -273,14 +273,14 @@ export default function AboutPage() {
       <p className="mt-16 well rounded-card px-5 py-4 text-[13px] leading-[1.85] text-ink-3">
         {ABOUT.copyright[0]}
         <Link viewTransition to="/feedback" className="text-accent hover:underline">
-          反馈页
+          回饋頁
         </Link>
         {ABOUT.copyright[1]}
       </p>
 
       <footer className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5 text-[12.5px] text-ink-4">
         <span>{SITE.footerNote}</span>
-        <nav className="flex gap-5" aria-label="规则与隐私">
+        <nav className="flex gap-5" aria-label="規則與隱私">
           <Link
             viewTransition
             id={ABOUT.termsAnchor ?? undefined}
@@ -290,7 +290,7 @@ export default function AboutPage() {
             {POLICY.terms.name}
           </Link>
           <Link viewTransition to="/privacy" className="transition-colors hover:text-accent">
-            隐私说明
+            隱私說明
           </Link>
         </nav>
       </footer>

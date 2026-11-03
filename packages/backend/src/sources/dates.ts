@@ -90,12 +90,13 @@ export function readPublicationDate(value: string | null | undefined, utcOffset 
 /** Legacy timestamps have lost their source precision; midnight never tells us which it was. */
 export function describePublicationTime(at: Date | null, source: string | null | undefined): string {
   if (!at) return "未知";
-  if (!source) return `${beijingDate(at)} ${beijingTime(at)}（历史记录，原始精度未知）`;
-  if (/^\d{4}-\d{2}-\d{2}$/.test(source)) return `${source}（原文仅有日期，时刻未知）`;
-  return `${beijingDate(at)} ${beijingTime(at)}（北京时间）`;
+  if (!source) return `${beijingDate(at)} ${beijingTime(at)}（歷史記錄，原始精度未知）`;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(source)) return `${source}（原文僅有日期，時刻未知）`;
+  return `${beijingDate(at)} ${beijingTime(at)}（北京時間）`;
 }
 
-const RELATIVE_UNITS: Record<string, number> = { 秒: 1e3, 分钟: 60e3, 分: 60e3, 小时: 3600e3, 天: 86400e3, second: 1e3, minute: 60e3, min: 60e3, m: 60e3, hour: 3600e3, hr: 3600e3, h: 3600e3, day: 86400e3, d: 86400e3 };
+// 來源頁面可能使用簡體或繁體，輸入單位都要保留。
+const RELATIVE_UNITS: Record<string, number> = { 秒: 1e3, 分钟: 60e3, 分鐘: 60e3, 分: 60e3, 小时: 3600e3, 小時: 3600e3, 天: 86400e3, second: 1e3, minute: 60e3, min: 60e3, m: 60e3, hour: 3600e3, hr: 3600e3, h: 3600e3, day: 86400e3, d: 86400e3 };
 const DAYS_BACK: Record<string, number> = { 今天: 0, 昨天: 1, 前天: 2, yesterday: 1 };
 
 /** The calendar day `at` falls on in the given offset, as YYYY-MM-DD. */
@@ -105,9 +106,9 @@ function dayAt(at: Date, utcOffset: string): string {
 }
 
 /**
- * A page's own element printing an age instead of a date ("20小时前", "2天前", "昨天", "今天 15:46", "3 hours ago",
+ * A page's own element printing an age instead of a date ("20小時前", "2天前", "昨天", "今天 15:46", "3 hours ago",
  * "16h ago"), counted back from `now`, the moment it was read. Only the whole text of a date rule's element is read
- * this way, after a byline that leads it ("版面之外·今天 15:46"): a sentence that mentions "两天前" is no date. Some
+ * this way, after a byline that leads it ("版面之外·今天 15:46"): a sentence that mentions "兩天前" is no date. Some
  * listing pages print the age for an article's first days and the date only after, so every new article came in
  * undated and missed that day's news. Hours and minutes keep a time, however many; days keep the calendar day in the
  * source's offset, and "今天/昨天/前天 HH:MM" is that time on that day there.
@@ -124,16 +125,16 @@ export function readRelativeDate(value: string | null | undefined, now: Date, ut
   }
   let ms: number | null = null;
   let unitMs = 0;
-  if (/^(刚刚|just now)$/i.test(v)) ms = 0;
+  if (/^(刚刚|剛剛|just now)$/i.test(v)) ms = 0;
   else if (/^(昨天|前天|yesterday)$/i.test(v)) [ms, unitMs] = [DAYS_BACK[v.toLowerCase()]! * 86400e3, 86400e3];
   else {
-    const m = /^(\d{1,3})\s*(秒|分钟|分|小时|天)前$/.exec(v) ?? /^(\d{1,3})\s*(?:(second|minute|min|hour|hr|day)s?|(m|h|d))\s+ago$/i.exec(v);
+    const m = /^(\d{1,3})\s*(秒|分钟|分鐘|分|小时|小時|天)前$/.exec(v) ?? /^(\d{1,3})\s*(?:(second|minute|min|hour|hr|day)s?|(m|h|d))\s+ago$/i.exec(v);
     const name = (m?.[2] ?? m?.[3])?.toLowerCase();
     if (m && name) [ms, unitMs] = [Number(m[1]) * RELATIVE_UNITS[name]!, RELATIVE_UNITS[name]!];
   }
   if (ms === null) return none;
   const at = new Date(now.getTime() - ms);
-  // The text's own unit sets the precision: "47小时前" keeps its time, though it is more than a day back.
+  // The text's own unit sets the precision: "47小時前" keeps its time, though it is more than a day back.
   if (unitMs < 86400e3) return { publishedAt: at, publicationTime: at.toISOString() };
   const day = dayAt(at, utcOffset);
   return { publishedAt: atOffset(day.slice(0, 4), day.slice(5, 7), day.slice(8, 10), 0, 0, 0, utcOffset), publicationTime: day };

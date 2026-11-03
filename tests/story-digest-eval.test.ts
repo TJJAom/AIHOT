@@ -48,7 +48,7 @@ const answer = (title: string, digest: string, tokens: [number, number]) => ({
 async function source(suffix: string, tier: string) {
   const id = `${key}-${suffix}`;
   await sql`INSERT INTO sources (id,name,kind,tier,participation_mode,config,first_party,next_fetch_at)
-    VALUES (${id},${`来源 ${suffix}`},'rss',${tier},'editorial',${sql.json({})},${tier === "T1"},'2100-01-01')`;
+    VALUES (${id},${`來源 ${suffix}`},'rss',${tier},'editorial',${sql.json({})},${tier === "T1"},'2100-01-01')`;
   return id;
 }
 
@@ -56,7 +56,7 @@ async function story(title: string) {
   const [s] = await sql<{ id: number; public_id: string }[]>`
     INSERT INTO stories (public_id,title,first_report_at,latest_at) VALUES (${randomUUID()},${title},${at(100)},${at(0)}) RETURNING id, public_id::text`;
   const [f] = await sql<{ id: number }[]>`INSERT INTO facts (public_id,story_id,title,subject,action,object,conditions)
-    VALUES (${`f-${randomUUID()}`},${s!.id},${title},'Acme','发布','Atlas','仅限首批客户') RETURNING id`;
+    VALUES (${`f-${randomUUID()}`},${s!.id},${title},'Acme','釋出','Atlas','僅限首批客戶') RETURNING id`;
   return { id: Number(s!.id), publicId: s!.public_id, factId: Number(f!.id) };
 }
 
@@ -67,12 +67,12 @@ async function report(sourceId: string, group: Awaited<ReturnType<typeof story>>
     VALUES (${id},${sourceId},${id},${`https://example.org/${id}`},${opts.title},${date},${date},${date})`;
   const [a] = await sql<{ id: number }[]>`INSERT INTO analyses (article_id,input_revision,origin,relevance,title_zh,summary_zh,score,selected,output)
     VALUES (${id},1,'rule','pass',${opts.title},${opts.title},70,true,
-      ${sql.json({ fact: { evidence: `${opts.title} 原文`, conditions: [{ text: "仅限首批客户", quote: "first customers only" }] } })}) RETURNING id`;
+      ${sql.json({ fact: { evidence: `${opts.title} 原文`, conditions: [{ text: "僅限首批客戶", quote: "first customers only" }] } })}) RETURNING id`;
   await sql`INSERT INTO publications (article_id,analysis_id,source_id,title,summary,url,channel,first_party,timeline_at,discovered_at,published_at,sort_at,
     story_id,fact_id,selected,eligible,visible_after,tags,body_mode,score,visibility)
     VALUES (${id},${a!.id},${sourceId},${opts.title},${`${opts.title} 的摘要`},${`https://example.org/${id}`},'news',true,${date},${date},${date},${date},
     ${group.id},${group.factId},true,true,${date},${[key]},'full',70,${opts.visibility ?? "public"})`;
-  await sql`INSERT INTO fact_articles (fact_id,article_id,role,evidence) VALUES (${group.factId},${id},${opts.role ?? "report"},${`${opts.title} 的证据`})`;
+  await sql`INSERT INTO fact_articles (fact_id,article_id,role,evidence) VALUES (${group.factId},${id},${opts.role ?? "report"},${`${opts.title} 的證據`})`;
   return id;
 }
 
@@ -87,7 +87,7 @@ test("a case exported from an event reaches the model exactly as the site's own 
   // An empty title keeps the event's title, so later steps read the same event the export read.
   const provider = await stub((_hit, req) => {
     bodies.push(req.body);
-    return answer("", "Acme 已向首批客户开放 Atlas 有限测试。", [100, 20]);
+    return answer("", "Acme 已向首批客戶開放 Atlas 有限測試。", [100, 20]);
   });
   pointModels(provider.url, ["deepseek-flash"]);
   const dir = scratch();
@@ -98,16 +98,16 @@ test("a case exported from an event reaches the model exactly as the site's own 
 
   const official = await source("official", "T1");
   const media = await source("media", "T2");
-  const g = await story("Acme 发布 Atlas");
-  const first = await report(official, g, { suffix: "first", title: "Acme 发布 Atlas", hours: 30 });
+  const g = await story("Acme 釋出 Atlas");
+  const first = await report(official, g, { suffix: "first", title: "Acme 釋出 Atlas", hours: 30 });
   // Two reports from the same moment: the site keeps the order it read them in.
-  await report(media, g, { suffix: "B", title: "同一时刻的报道 B", hours: 10 });
-  await report(media, g, { suffix: "a", title: "同一时刻的报道 a", hours: 10 });
+  await report(media, g, { suffix: "B", title: "同一時刻的報道 B", hours: 10 });
+  await report(media, g, { suffix: "a", title: "同一時刻的報道 a", hours: 10 });
   await report(media, g, { suffix: "mention", title: "MENTION ONLY", hours: 5, role: "mention" });
   await report(media, g, { suffix: "withdrawn", title: "WITHDRAWN REPORT", hours: 4, visibility: "withdrawn" });
 
   for (const step of ["first digest", "rewrite after a correction"] as const) {
-    if (step === "rewrite after a correction") await sql`UPDATE publications SET summary = '已经更正的摘要' WHERE article_id = ${first}`;
+    if (step === "rewrite after a correction") await sql`UPDATE publications SET summary = '已經更正的摘要' WHERE article_id = ${first}`;
     const snapshot = path.join(dir, `${step.replace(/\W+/g, "-")}.jsonl`);
     const before = await storyState(g.id);
     const exported = await run(["--stories", g.publicId.toUpperCase(), "--out", snapshot], provider.url);
@@ -121,7 +121,7 @@ test("a case exported from an event reaches the model exactly as the site's own 
 
     assert.equal((await composeStoryDigest(g.id)).updated, true);
     const site = bodies.at(-1)!;
-    assert.ok(step === "first digest" ? site.includes("【新】") : site.includes("经过更正") && site.includes("已经更正的摘要"), step);
+    assert.ok(step === "first digest" ? site.includes("【新】") : site.includes("經過更正") && site.includes("已經更正的摘要"), step);
     const evaluated = await run(["--cases", snapshot, "--out-dir", dir], provider.url);
     assert.equal(evaluated.code, 0, evaluated.stderr);
     assert.equal(bodies.at(-1), site, `${step}: model, system prompt, input and sampling are the site's, byte for byte`);
@@ -138,14 +138,14 @@ const evalCase = (caseId: string, title: string) => ({
     publishedAt: "2026-09-01T09:00:00+08:00",
     source: "Acme",
     firstParty: true,
-    title: `${title}的报道`,
-    summary: "Acme 向首批客户开放 Atlas 有限测试。",
-    fact: { id: 1, subject: "Acme", action: "开放", object: "Atlas", conditions: "仅限首批客户", evidence: "首批客户本月开始试用", structured: null },
+    title: `${title}的報道`,
+    summary: "Acme 向首批客戶開放 Atlas 有限測試。",
+    fact: { id: 1, subject: "Acme", action: "開放", object: "Atlas", conditions: "僅限首批客戶", evidence: "首批客戶本月開始試用", structured: null },
   }],
 });
 
 test("nothing is sent when the calls exceed the limit or the candidate cannot be compared", async (t) => {
-  const provider = await stub(() => answer("", "不应调用的综述文字。", [1, 1]));
+  const provider = await stub(() => answer("", "不應呼叫的綜述文字。", [1, 1]));
   const dir = scratch();
   t.after(async () => {
     await provider.close();
@@ -159,8 +159,8 @@ test("nothing is sent when the calls exceed the limit or the candidate cannot be
   };
   const two = write("two.jsonl", [1, 2].map((n) => JSON.stringify(evalCase(`${marker}-${n}`, `事件 ${n}`))).join("\n"));
   const ten = write("ten.jsonl", Array.from({ length: 10 }, (_, n) => JSON.stringify(evalCase(`${marker}-ten-${n}`, `事件 ${n}`))).join("\n"));
-  const candidate = write("candidate.md", "你是 {{siteName}} 的事件编辑。只输出 JSON：{\"title\": \"...\", \"digest\": \"...\"}\n");
-  const unknownValue = write("unknown.md", "你是 {{siteName}} 的事件编辑，服务 {{audience}}。\n");
+  const candidate = write("candidate.md", "你是 {{siteName}} 的事件編輯。只輸出 JSON：{\"title\": \"...\", \"digest\": \"...\"}\n");
+  const unknownValue = write("unknown.md", "你是 {{siteName}} 的事件編輯，服務 {{audience}}。\n");
   const same = path.join(dir, "same.md");
   copyFileSync(path.join(REPO_ROOT, "industry/prompts/story-digest.md"), same);
 

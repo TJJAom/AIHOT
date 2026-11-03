@@ -43,11 +43,11 @@ test("manual email moderation expires, is visible on every matching report, and 
 });
 
 test("email moderation does not block shared domains, anonymous security reports, or turn forged contacts into automatic bans", async () => {
-  const base = { ip: "203.0.113.236", userAgent: "Firefox", content: "漏洞报告 <script>alert(1)</script> http://127.0.0.1/" };
+  const base = { ip: "203.0.113.236", userAgent: "Firefox", content: "漏洞報告 <script>alert(1)</script> http://127.0.0.1/" };
   const accepted = await submitFeedback({ ...base, email: "other-reader@example.com" });
   assert.ok(accepted.id);
   assert.ok((await submitFeedback({ ...base, content: base.content + " anonymous" })).id);
-  await assert.rejects(banFeedbackEmail((await submitFeedback({ ...base, content: "no contact" })).id, "reason", "test"), /没有可封禁的邮箱/);
+  await assert.rejects(banFeedbackEmail((await submitFeedback({ ...base, content: "no contact" })).id, "reason", "test"), /沒有可封禁的電子郵件/);
   const forged = { ...base, ip: "203.0.113.237", email: "victim@example.com" };
   for (let i = 0; i < 20; i++) await submitFeedback(forged);
   await assert.rejects(submitFeedback(forged), e => e instanceof FeedbackRejected && e.status === 429);

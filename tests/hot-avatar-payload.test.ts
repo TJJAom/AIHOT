@@ -30,7 +30,7 @@ const sourceId = (i: number) => `${t}-${i}`;
 const imageUrl = (i: number) => inputs[i]!.avatar ? `https://example.org/${t}/${i}.png` : null;
 after(closeDb);
 
-test('faces are 精选组 sources by tier (T1, T1.5, T2), at most 6; 氛围组 only counts in +N', async () => {
+test('faces are 精選組 sources by tier (T1, T1.5, T2), at most 6; 氛圍組 only counts in +N', async () => {
   for (const [i, person] of inputs.entries()) {
     await sql`INSERT INTO sources (id,name,kind,tier,participation_mode,icon_url,next_fetch_at)
       VALUES (${sourceId(i)},${name(i)},'rss',${person.tier},${person.kind === 'editorial' ? 'editorial' : 'hot_signal'},${imageUrl(i)},'2100-01-01')`;
@@ -65,7 +65,7 @@ test('faces are 精选组 sources by tier (T1, T1.5, T2), at most 6; 氛围组 o
   const home=(await loadHotStrip())![0]!;
   const hot=(await loadHot()).entries[0]!;
 
-  // T1 (face first), T1.5, T2 (faces first, then stored order), then 氛围组 whatever its tier.
+  // T1 (face first), T1.5, T2 (faces first, then stored order), then 氛圍組 whatever its tier.
   const order=[5,2,3,1,6,8,9,7,0,4];
   assert.deepEqual(full.map(p=>p.name),order.map(name));
   assert.deepEqual(home.participants,full,'home shows the same faces');

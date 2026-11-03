@@ -26,7 +26,7 @@ const jina = http.createServer((req, res) => {
   if (req.url?.endsWith("/nul-response")) {
     hits += 1;
     res.writeHead(200, { "content-type": "text/plain", "x-request-id": "nul-fixture", "x-usage-tokens": "100" });
-    return void res.end("Title: 原文\n\nMarkdown Content:\n正文\0内容😀\n");
+    return void res.end("Title: 原文\n\nMarkdown Content:\n正文\0內容😀\n");
   }
   if (req.headers["x-return-format"] === "html" && req.url?.endsWith("/articles")) {
     res.writeHead(200, { "content-type": "text/plain" });
@@ -171,7 +171,7 @@ test("a received Jina page with NUL persists its receipt and reuses it without a
   const options = { purpose: "source_detail", subject: `source:${SOURCE}-nul` };
   const first = await jinaRead(url, options);
   const second = await jinaRead(url, options);
-  assert.equal(first.markdown, "正文�内容😀");
+  assert.equal(first.markdown, "正文�內容😀");
   assert.equal(second.raw, first.raw);
   assert.equal(second.receiptId, first.receiptId);
   assert.equal(hits, before + 1);

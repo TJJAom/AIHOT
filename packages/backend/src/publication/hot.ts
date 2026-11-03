@@ -79,7 +79,7 @@ async function queryExtras(ranking: HotRanking): Promise<Extras> {
 
 /**
  * What the web adds to a ranking entry: participants with proxied faces in the order Faces shows them
- * (精选组 by tier, a real face before an initial within a tier, then 氛围组), the digest and the latest turn.
+ * (精選組 by tier, a real face before an initial within a tier, then 氛圍組), the digest and the latest turn.
  */
 export async function rankingExtras(ranking: HotRanking) {
   const { faces, texts } = await readExtras(ranking);

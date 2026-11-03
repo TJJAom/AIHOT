@@ -170,11 +170,11 @@ test("site media exposes responsive previews and full lightboxes while RSS retai
 });
 
 test("concurrent cold OG and poster requests all succeed with identical cached bytes", async () => {
-  const card = { kicker: SITE.name, title: "并发渲染验证", subtitle: "同一图片只生成一次" };
+  const card = { kicker: SITE.name, title: "併發渲染驗證", subtitle: "同一圖片只生成一次" };
   const cards = await Promise.all(Array.from({ length: 3 }, () => renderOg(card)));
   for (const result of cards) assert.deepEqual(result, cards[0]);
   assert.equal((await sharp(cards[0]!.png).metadata()).width, 1200);
-  const poster = { url: "https://example.com/items/test", kicker: SITE.name, title: "海报并发验证", summary: null, source: SITE.name, date: "2026-09-28", score: null };
+  const poster = { url: "https://example.com/items/test", kicker: SITE.name, title: "海報併發驗證", summary: null, source: SITE.name, date: "2026-09-28", score: null };
   const posters = await Promise.all(Array.from({ length: 2 }, () => renderPoster(poster)));
   for (const result of posters) assert.deepEqual(result, posters[0]);
   assert.equal((await sharp(posters[0]!.png).metadata()).width, 1080);
@@ -187,9 +187,9 @@ test("share images take added fonts only from <name>-400/-700.ttf beside Noto Sa
 });
 
 test("without added fonts, share images and posters keep their cache keys", { skip: FALLBACK_FONTS.length > 0 }, () => {
-  const card = { kicker: SITE.name, title: "缓存键不变", subtitle: null };
+  const card = { kicker: SITE.name, title: "快取鍵不變", subtitle: null };
   assert.equal(ogEtag(card), createHash("sha256").update(OG_TEMPLATE_VERSION).update(JSON.stringify(card)).digest("hex").slice(0, 24));
-  const poster = { url: "https://example.test/a", kicker: "精选", title: "缓存键不变", summary: null, source: "来源", date: "2026-11-01", score: null };
+  const poster = { url: "https://example.test/a", kicker: "精選", title: "快取鍵不變", summary: null, source: "來源", date: "2026-11-01", score: null };
   assert.equal(posterEtag(poster), createHash("sha256").update(POSTER_TEMPLATE_VERSION).update(JSON.stringify(poster)).digest("hex").slice(0, 24));
 });
 
@@ -561,7 +561,7 @@ test("web body images offer their responsive set as AVIF variants first; RSS and
   const { proxyBodyImages, verifyProxyRequest } = await import("@aihot/backend/media/imgproxy");
   const { proxiedRenditions } = await import("@aihot/backend/media/prepare");
   const { avifCandidates } = await import("@aihot/contracts/site");
-  const html = '<p><img src="https://example.org/wide.png" width="1200" height="600" alt="图"></p>';
+  const html = '<p><img src="https://example.org/wide.png" width="1200" height="600" alt="圖"></p>';
   const web = proxyBodyImages(html);
   const picture = web.match(/<picture\b[^>]*><source type="image\/avif" ([^>]+)>(<img\b[^>]+>)<\/picture>/);
   assert.ok(picture, web);

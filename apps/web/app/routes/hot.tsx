@@ -18,7 +18,7 @@ import { navUp } from "../components/shell/nav";
 import { scrollBehavior } from "../lib/motion";
 import type { Screen } from "../components/shell/screens";
 
-export const handle: Screen = { tab: navUp("/hot").tab, name: "热点" };
+export const handle: Screen = { tab: navUp("/hot").tab, name: "熱點" };
 export { pageHeaders as headers } from "../lib/api.server";
 export const { clientLoader, shouldRevalidate } = pageReuse<typeof loader>();
 
@@ -28,24 +28,24 @@ export async function loader({ request }: { request: Request }) {
 
 export function meta() {
   return pageMeta({
-    title: withSubject("热点榜"),
-    description: `${subjectAfter("过去 48 小时", "圈")}讨论最多的 10 个事件：热度、走势，以及都有谁在报道。`,
+    title: withSubject("熱點榜"),
+    description: `${subjectAfter("過去 48 小時", "圈")}討論最多的 10 個事件：熱度、走勢，以及都有誰在報道。`,
     path: "/hot",
     image: "/og/pages/hot.png",
   });
 }
 
 const BADGES: Record<HotEntryView["badges"][number], { label: string; tone: "hot" | "accent" | "amber"; hint: string }> = {
-  surge: { label: "爆", tone: "hot", hint: "讨论快速增加" },
-  new: { label: "新", tone: "accent", hint: "首报 6 小时内" },
-  rising: { label: "发酵中", tone: "amber", hint: "讨论仍在增加" },
+  surge: { label: "爆", tone: "hot", hint: "討論快速增加" },
+  new: { label: "新", tone: "accent", hint: "首報 6 小時內" },
+  rising: { label: "發酵中", tone: "amber", hint: "討論仍在增加" },
 };
 
 const RANK_COLOR = ["text-rank-1", "text-rank-2", "text-rank-3"];
 const rankColor = (rank: number) => RANK_COLOR[rank - 1] ?? "text-rank-rest";
 const pad = (rank: number) => String(rank).padStart(2, "0");
 
-/** "某媒体、某账号 等 4 个来源 · 7 位参与者". */
+/** "某媒體、某賬號 等 4 個來源 · 7 位參與者". */
 function Voices({ e }: { e: HotEntryView }) {
   const names = e.sourceNames.slice(0, 2);
   return (
@@ -53,11 +53,11 @@ function Voices({ e }: { e: HotEntryView }) {
       {/* Lines break between the phrases, never inside one. */}
       <span className="whitespace-nowrap">
         {names.length > 0 && <span className="text-ink-3">{names.join("、")}</span>}
-        {e.sourceCount > names.length ? ` 等 ${e.sourceCount} 个来源` : names.length ? " 报道" : `${e.sourceCount} 个来源`}
+        {e.sourceCount > names.length ? ` 等 ${e.sourceCount} 個來源` : names.length ? " 報道" : `${e.sourceCount} 個來源`}
       </span>
       <span className="mx-1.5 text-line-strong">·</span>
       <span className="whitespace-nowrap">
-        <span className="num">{e.participantCount}</span> 位参与者
+        <span className="num">{e.participantCount}</span> 位參與者
       </span>
     </span>
   );
@@ -91,16 +91,16 @@ function HeatPanel({ e }: { e: HotEntryView }) {
   return (
     <div className="order-first flex aspect-[2/1] flex-col rounded-panel bg-accent-softer p-4 ring-1 ring-inset ring-line-soft xl:order-none xl:aspect-[16/10] dark:bg-accent-soft">
       <div className="flex items-baseline justify-between text-[11.5px] text-ink-4">
-        <span className="font-semibold text-ink-3">24 小时热度</span>
+        <span className="font-semibold text-ink-3">24 小時熱度</span>
         <span>
           峰值 <span className="mono text-ink-2">{Math.round(peak)}</span>
-          {peakAt >= 0 && <span> · {peakAt === e.spark.length - 1 ? "当前" : `${e.spark.length - 1 - peakAt} 小时前`}</span>}
+          {peakAt >= 0 && <span> · {peakAt === e.spark.length - 1 ? "當前" : `${e.spark.length - 1 - peakAt} 小時前`}</span>}
         </span>
       </div>
       <Sparkline values={e.spark} className="mt-3 min-h-0 w-full flex-1" />
       <div className="mt-2 flex justify-between text-[11px] text-ink-4">
-        <span>24 小时前</span>
-        <span>现在</span>
+        <span>24 小時前</span>
+        <span>現在</span>
       </div>
     </div>
   );
@@ -137,7 +137,7 @@ function Lead({ e }: { e: HotEntryView }) {
         <div className="min-w-0 flex-[1_1_18rem] space-y-2.5">
           {e.latest && (
             <p className="line-clamp-2 text-[13px] leading-[1.7] text-ink-2">
-              <span className="mr-2 text-[12px] font-semibold text-accent">最新进展</span>
+              <span className="mr-2 text-[12px] font-semibold text-accent">最新進展</span>
               {e.latest}
             </p>
           )}
@@ -151,7 +151,7 @@ function Lead({ e }: { e: HotEntryView }) {
           {!panel && <Sparkline values={e.spark} className="h-10 w-[140px]" />}
           <div className="text-right">
             <div className="mono text-[34px] font-semibold leading-none tracking-[-0.03em] text-ink">{Math.round(e.heat)}</div>
-            <div className="mt-1 text-[11.5px] text-ink-4">热度指数</div>
+            <div className="mt-1 text-[11.5px] text-ink-4">熱度指數</div>
           </div>
         </div>
       </div>
@@ -176,8 +176,8 @@ function Runner({ e }: { e: HotEntryView }) {
         <div className="flex min-w-0 flex-col gap-1.5">
           <Faces participants={e.participants} total={e.participantCount} size={20} />
           <span className="text-[12px] text-ink-4">
-            <span className="whitespace-nowrap"><span className="num">{e.sourceCount}</span> 个来源</span> ·{" "}
-            <span className="whitespace-nowrap"><span className="num">{e.participantCount}</span> 位参与者</span>
+            <span className="whitespace-nowrap"><span className="num">{e.sourceCount}</span> 個來源</span> ·{" "}
+            <span className="whitespace-nowrap"><span className="num">{e.participantCount}</span> 位參與者</span>
           </span>
         </div>
         <div className="ml-auto flex items-end gap-3">
@@ -193,7 +193,7 @@ function Runner({ e }: { e: HotEntryView }) {
 function Row({ e }: { e: HotEntryView }) {
   return (
     <li className="group relative grid grid-cols-[30px_minmax(0,1fr)] items-start gap-x-3 px-4 py-3 transition-colors hover:bg-bg-sunk/70 sm:px-5 wide:grid-cols-[44px_minmax(0,1fr)_auto_104px_76px] wide:items-center wide:gap-x-6 wide:px-6 wide:py-3.5 dark:hover:bg-bg-muted/40">
-      <span className={`mono text-[16px] font-semibold leading-[24px] wide:text-[17px] ${rankColor(e.rank)}`} aria-label={`热度排名第 ${e.rank} 位`}>
+      <span className={`mono text-[16px] font-semibold leading-[24px] wide:text-[17px] ${rankColor(e.rank)}`} aria-label={`熱度排名第 ${e.rank} 位`}>
         {pad(e.rank)}
       </span>
       <div className="min-w-0">
@@ -209,7 +209,7 @@ function Row({ e }: { e: HotEntryView }) {
         <div className="mt-2 flex items-center gap-2.5 wide:hidden">
           <Faces participants={e.participants} total={e.participantCount} size={20} />
           <span className="text-[12px] text-ink-4">
-            <span className="num">{e.sourceCount}</span> 个来源
+            <span className="num">{e.sourceCount}</span> 個來源
           </span>
           <span className="ml-auto flex items-center gap-2">
             <span className="mono text-[17px] font-semibold leading-none text-ink">{Math.round(e.heat)}</span>
@@ -229,7 +229,7 @@ function Row({ e }: { e: HotEntryView }) {
   );
 }
 
-/** Opens "热度是怎么算的" at the foot of the page and brings it into view. */
+/** Opens "熱度是怎麼算的" at the foot of the page and brings it into view. */
 function showMethod() {
   const method = document.getElementById("hot-method") as HTMLDetailsElement | null;
   if (!method) return;
@@ -245,11 +245,11 @@ export default function HotPage() {
   return (
     <div className="pb-10">
       <PhoneBar
-        title="热点"
+        title="熱點"
         large
         sub={
           <>
-            过去 {hot.windowHours}{`${subjectAfter(" 小时", "圈")}讨论最多的 `}{hot.entries.length || 10} 件事
+            過去 {hot.windowHours}{`${subjectAfter(" 小時", "圈")}討論最多的 `}{hot.entries.length || 10} 件事
             {hot.computedAt && (
               <>
                 {" · "}
@@ -260,7 +260,7 @@ export default function HotPage() {
         }
         actions={
           <button type="button" onClick={showMethod} className="flex h-11 items-center gap-1 px-3 text-[14px] text-accent active:opacity-50">
-            <IconInfo size={17} /> 怎么算
+            <IconInfo size={17} /> 怎麼算
           </button>
         }
       />
@@ -271,25 +271,25 @@ export default function HotPage() {
               <span className="absolute inline-flex size-full animate-ping rounded-full bg-hot opacity-30" />
               <span className="relative inline-flex size-2 rounded-full bg-hot" />
             </span>
-            实时热度
+            實時熱度
           </div>
-          <h1 className="mt-1.5 text-[24px] font-bold leading-[1.3] tracking-[-0.01em] text-ink lg:text-[26px]">{withSubject("热点榜")}</h1>
-          <p className="mt-1.5 text-[13.5px] text-ink-3">过去 {hot.windowHours}{` 小时，${withSubject("圈")}讨论最多的 `}{hot.entries.length || 10} 件事</p>
+          <h1 className="mt-1.5 text-[24px] font-bold leading-[1.3] tracking-[-0.01em] text-ink lg:text-[26px]">{withSubject("熱點榜")}</h1>
+          <p className="mt-1.5 text-[13.5px] text-ink-3">過去 {hot.windowHours}{` 小時，${withSubject("圈")}討論最多的 `}{hot.entries.length || 10} 件事</p>
         </div>
         {hot.computedAt && (
           <p className="text-[12px] text-ink-4">
-            <span className="num">{monthDayTime(hot.computedAt)}</span> 更新 · 按讨论热度排序
+            <span className="num">{monthDayTime(hot.computedAt)}</span> 更新 · 按討論熱度排序
           </p>
         )}
       </header>
 
       {!lead ? (
         <div className="card rounded-sheet">
-          <EmptyState title="暂时没有热点">还没有足够多来源共同讨论的事件。</EmptyState>
+          <EmptyState title="暫時沒有熱點">還沒有足夠多來源共同討論的事件。</EmptyState>
         </div>
       ) : (
         <>
-          <section aria-label="热度前三" className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:gap-4">
+          <section aria-label="熱度前三" className="grid grid-cols-1 gap-3 lg:grid-cols-12 lg:gap-4">
             <div className="grid grid-cols-1 lg:col-span-7 lg:row-span-2 xl:col-span-8">
               <Lead e={lead} />
             </div>
@@ -301,12 +301,12 @@ export default function HotPage() {
           </section>
 
           {others.length > 0 && (
-            <section aria-label="其余热点" className="mt-6 lg:mt-7">
+            <section aria-label="其餘熱點" className="mt-6 lg:mt-7">
               <div className="mb-3 flex items-baseline justify-between px-1">
                 <h2 className="text-[15px] font-semibold text-ink">
-                  继续看 <span className="num font-normal text-ink-4">No.{pad(others[0]!.rank)}–{pad(others[others.length - 1]!.rank)}</span>
+                  繼續看 <span className="num font-normal text-ink-4">No.{pad(others[0]!.rank)}–{pad(others[others.length - 1]!.rank)}</span>
                 </h2>
-                <span className="hidden text-[12px] text-ink-4 wide:block">参与者 · 24 小时走势 · 热度指数</span>
+                <span className="hidden text-[12px] text-ink-4 wide:block">參與者 · 24 小時走勢 · 熱度指數</span>
               </div>
               <ol className="card divide-y divide-line-soft overflow-hidden">
                 {others.map((e) => (
@@ -321,18 +321,18 @@ export default function HotPage() {
       <details id="hot-method" className="disclosure group/method mt-8 scroll-mt-[calc(var(--bar-h)+16px)] text-[12px] text-ink-4">
         <summary className="flex items-center gap-1.5 py-1 transition-colors hover:text-ink-2">
           <IconInfo size={15} />
-          热度是怎么算的？
+          熱度是怎麼算的？
           <span className="ml-auto inline-flex items-center gap-0.5">
-            <span className="group-open/method:hidden">了解榜单</span>
+            <span className="group-open/method:hidden">瞭解榜單</span>
             <span className="hidden group-open/method:inline">收起</span>
             <IconChevronDown size={13} className="transition-transform duration-200 group-open/method:rotate-180" />
           </span>
         </summary>
         <div className="max-w-[760px] space-y-2 pb-2 pl-[21px] pt-2 leading-[1.75] text-ink-3">
-          <p>热度看的是有多少账号和机构在讨论同一件事：同一家重复发只算一次，越近的讨论分量越重，每过 24 小时减半。它反映讨论有多热闹，不代表报道质量。</p>
-          <p>榜单只看过去 48 小时。走势只拿同一批一直在看的来源比较，反映的是我们看得到的范围，不代表全网人数；没有可比的历史时，不画走势线。</p>
+          <p>熱度看的是有多少賬號和機構在討論同一件事：同一家重複發只算一次，越近的討論分量越重，每過 24 小時減半。它反映討論有多熱鬧，不代表報道質量。</p>
+          <p>榜單隻看過去 48 小時。走勢只拿同一批一直在看的來源比較，反映的是我們看得到的範圍，不代表全網人數；沒有可比的歷史時，不畫走勢線。</p>
           <p>
-            来源名单只列能公开阅读的报道；参与讨论的还有一些不在名单里展示的账号和机构。同一家机构在不同平台发帖合并算一家，所以参与者可能比来源还少。点进事件，可以看各方的报道和观点。
+            來源名單隻列能公開閱讀的報道；參與討論的還有一些不在名單裡展示的賬號和機構。同一家機構在不同平台發帖合併算一家，所以參與者可能比來源還少。點進事件，可以看各方的報道和觀點。
           </p>
           <dl className="flex flex-wrap gap-x-5 gap-y-1.5 pt-1">
             {Object.values(BADGES).map((b) => (

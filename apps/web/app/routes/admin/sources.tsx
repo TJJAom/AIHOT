@@ -15,7 +15,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   return adminGet<AdminSources>(request, `/api/admin/sources${url.search}`);
 }
 
-export const meta: Route.MetaFunction = () => [{ title: `信源 · ${SITE.name} 后台` }];
+export const meta: Route.MetaFunction = () => [{ title: `信源 · ${SITE.name} 後臺` }];
 
 export default function Sources({ loaderData }: Route.ComponentProps) {
   const { rows, totals, page, useLabels } = loaderData;
@@ -31,25 +31,25 @@ export default function Sources({ loaderData }: Route.ComponentProps) {
   return (
     <AdminPage
       title="信源"
-      subtitle="列表按健康度排序：失败的在最前。点进详情可以预览抓取、手动采集、调整频率与参与方式。"
+      subtitle="列表按健康度排序：失敗的在最前。點進詳情可以預覽抓取、手動採集、調整頻率與參與方式。"
       actions={<ButtonLink to="/admin/sources/new" tone="primary">新建信源</ButtonLink>}
     >
       <div className="mb-5 grid grid-cols-2 gap-3 md:grid-cols-4">
         <Stat label="全部" value={num(totals.total)} />
-        <Stat label="启用" value={num(totals.enabled)} />
-        <Stat label="失败" value={num(totals.failing)} tone={totals.failing ? "bad" : "ok"} />
-        <Stat label="不稳定" value={num(totals.degraded)} tone={totals.degraded ? "warn" : undefined} />
+        <Stat label="啟用" value={num(totals.enabled)} />
+        <Stat label="失敗" value={num(totals.failing)} tone={totals.failing ? "bad" : "ok"} />
+        <Stat label="不穩定" value={num(totals.degraded)} tone={totals.degraded ? "warn" : undefined} />
       </div>
       <Card pad={false}>
         <div className="flex flex-col gap-3 border-b border-line p-3 lg:flex-row lg:items-center lg:justify-between">
           <Form method="get" className="flex w-full max-w-md gap-2" preventScrollReset>
             {["kind", "health", "mode", "use"].map((k) => sp.get(k) && <input key={k} type="hidden" name={k} value={sp.get(k)!} />)}
-            <Input name="q" defaultValue={sp.get("q") ?? ""} placeholder="名称、ID 或地址" aria-label="搜索信源" />
+            <Input name="q" defaultValue={sp.get("q") ?? ""} placeholder="名稱、ID 或地址" aria-label="搜尋信源" />
           </Form>
           <div className="flex flex-wrap items-center gap-3">
-            <FilterChips param="health" options={[{ value: "", label: "全部" }, { value: "failing", label: "失败" }, { value: "degraded", label: "不稳定" }, { value: "paused", label: "暂停" }]} />
-            <Select aria-label="类型" className="!w-auto" value={sp.get("kind") ?? ""} onChange={(e) => pick("kind", e.target.value)}>
-              <option value="">全部类型</option>
+            <FilterChips param="health" options={[{ value: "", label: "全部" }, { value: "failing", label: "失敗" }, { value: "degraded", label: "不穩定" }, { value: "paused", label: "暫停" }]} />
+            <Select aria-label="型別" className="!w-auto" value={sp.get("kind") ?? ""} onChange={(e) => pick("kind", e.target.value)}>
+              <option value="">全部型別</option>
               {Object.entries(KIND_LABEL).map(([k, v]) => (
                 <option key={k} value={k}>{v}</option>
               ))}
@@ -82,10 +82,10 @@ export default function Sources({ loaderData }: Route.ComponentProps) {
                 </div>
               ),
             },
-            { key: "kind", label: "类型", render: (r) => <Badge>{KIND_LABEL[r.kind] ?? r.kind}</Badge> },
+            { key: "kind", label: "型別", render: (r) => <Badge>{KIND_LABEL[r.kind] ?? r.kind}</Badge> },
             {
               key: "mode",
-              label: "参与",
+              label: "參與",
               render: (r) => (
                 <div className="flex gap-1">
                   <Badge tone={r.participation_mode === "editorial" ? "accent" : "muted"}>{MODE_LABEL[r.participation_mode] ?? r.participation_mode}</Badge>
@@ -102,15 +102,15 @@ export default function Sources({ loaderData }: Route.ComponentProps) {
               render: (r) => (
                 <span className="inline-flex items-center gap-1.5 whitespace-nowrap">
                   <Dot tone={r.enabled ? healthTone(r.health) : "muted"} />
-                  {r.enabled ? HEALTH_LABEL[r.health] ?? r.health : "已暂停"}
+                  {r.enabled ? HEALTH_LABEL[r.health] ?? r.health : "已暫停"}
                   {r.fail_count > 0 && <span className="num text-[11.5px] text-ink-4">×{r.fail_count}</span>}
                 </span>
               ),
             },
             { key: "ok", label: "上次成功", render: (r) => <Time at={r.last_ok_at} /> },
-            { key: "interval", label: "频率", align: "right", render: (r) => `${r.interval_minutes} 分` },
-            { key: "items", label: "7 天条目", align: "right", render: (r) => num(r.items_7d) },
-            { key: "sel", label: "30 天精选", align: "right", render: (r) => num(r.selected_30d) },
+            { key: "interval", label: "頻率", align: "right", render: (r) => `${r.interval_minutes} 分` },
+            { key: "items", label: "7 天條目", align: "right", render: (r) => num(r.items_7d) },
+            { key: "sel", label: "30 天精選", align: "right", render: (r) => num(r.selected_30d) },
           ]}
         />
       </Card>

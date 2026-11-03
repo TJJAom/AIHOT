@@ -23,7 +23,7 @@ if (!ADMIN) registerAdmin(app);
 after(async () => { await app.close(); await stopBoss(); await closeDb(); });
 
 async function article() {
-  return (await upsertMaterial({ sourceId, url: `https://example.com/${tag()}`, title: "审查材料", bodyText: "正文", bodyStatus: "ok", via: "fetch", publishedAt: new Date() })).articleId;
+  return (await upsertMaterial({ sourceId, url: `https://example.com/${tag()}`, title: "審查材料", bodyText: "正文", bodyStatus: "ok", via: "fetch", publishedAt: new Date() })).articleId;
 }
 
 test("concurrent source intake creates one source for the same feed", async () => {
@@ -76,22 +76,22 @@ test("content corrections, public projection and audit either commit together or
   await sql.unsafe("CREATE TRIGGER refuse_admin_audit BEFORE INSERT ON audit_log FOR EACH ROW EXECUTE FUNCTION refuse_admin_audit()");
   try {
     for (const write of [
-      () => overrideFields(id, { fields: { title: "更正标题" }, version: 0, reason: "校正" }, "test-refuse-audit"),
+      () => overrideFields(id, { fields: { title: "更正標題" }, version: 0, reason: "校正" }, "test-refuse-audit"),
       () => setVisibility(id, { visibility: "withdrawn", version: 0, reason: "校正" }, "test-refuse-audit"),
     ]) {
       await assert.rejects(write(), /audit unavailable/);
       assert.equal((await sql`SELECT 1 FROM editorial_overrides WHERE article_id = ${id}`).length, 0);
       const [p] = await sql`SELECT title, visibility FROM publications WHERE article_id = ${id}`;
-      assert.equal(p!.title, "审查材料");
+      assert.equal(p!.title, "審查材料");
       assert.equal(p!.visibility, "public");
     }
   } finally {
     await sql.unsafe("DROP TRIGGER refuse_admin_audit ON audit_log; DROP FUNCTION refuse_admin_audit()");
   }
-  await overrideFields(id, { fields: { title: "更正标题" }, version: 0, reason: "校正" }, "test");
-  await assert.rejects(setVisibility(id, { visibility: "withdrawn", version: 0, reason: "过期页面" }, "test"), { code: "conflict" });
+  await overrideFields(id, { fields: { title: "更正標題" }, version: 0, reason: "校正" }, "test");
+  await assert.rejects(setVisibility(id, { visibility: "withdrawn", version: 0, reason: "過期頁面" }, "test"), { code: "conflict" });
   const [p] = await sql`SELECT title, visibility FROM publications WHERE article_id = ${id}`;
-  assert.equal(p!.title, "更正标题");
+  assert.equal(p!.title, "更正標題");
   assert.equal(p!.visibility, "public");
 });
 
@@ -117,25 +117,25 @@ test("repeating a completed command returns its job without resetting newer proc
 test("a rejected SEO correction leaves both the decision and public indexing unchanged", async () => {
   const id = await article();
   await sql`INSERT INTO analyses (article_id, input_revision, origin, relevance, summary_zh, selected)
-            VALUES (${id}, 1, 'rule', 'pass', '可收录的正文摘要', false)`;
+            VALUES (${id}, 1, 'rule', 'pass', '可收錄的正文摘要', false)`;
   await publishArticle(id);
   const [before] = await sql`SELECT seo_indexed_at, seo_excluded_at, indexable FROM publications WHERE article_id = ${id}`;
   await sql.unsafe(`CREATE FUNCTION refuse_admin_seo_audit() RETURNS trigger LANGUAGE plpgsql AS $$
     BEGIN IF NEW.actor = 'test-refuse-seo' THEN RAISE EXCEPTION 'audit unavailable'; END IF; RETURN NEW; END $$`);
   await sql.unsafe("CREATE TRIGGER refuse_admin_seo_audit BEFORE INSERT ON audit_log FOR EACH ROW EXECUTE FUNCTION refuse_admin_seo_audit()");
   try {
-    await assert.rejects(setSeoIndexed(id, { indexed: true, reason: "人工收录" }, "test-refuse-seo"), /audit unavailable/);
+    await assert.rejects(setSeoIndexed(id, { indexed: true, reason: "人工收錄" }, "test-refuse-seo"), /audit unavailable/);
     const [after] = await sql`SELECT seo_indexed_at, seo_excluded_at, indexable FROM publications WHERE article_id = ${id}`;
     assert.deepEqual(after, before);
   } finally {
     await sql.unsafe("DROP TRIGGER refuse_admin_seo_audit ON audit_log; DROP FUNCTION refuse_admin_seo_audit()");
   }
-  await setSeoIndexed(id, { indexed: true, reason: "人工收录" }, "test");
+  await setSeoIndexed(id, { indexed: true, reason: "人工收錄" }, "test");
   const [indexed] = await sql`SELECT seo_indexed_at, seo_excluded_at, indexable FROM publications WHERE article_id = ${id}`;
   assert.ok(indexed!.seo_indexed_at);
   assert.equal(indexed!.seo_excluded_at, null);
   assert.equal(indexed!.indexable, true);
-  await setSeoIndexed(id, { indexed: false, reason: "取消收录" }, "test");
+  await setSeoIndexed(id, { indexed: false, reason: "取消收錄" }, "test");
   const [excluded] = await sql`SELECT seo_indexed_at, seo_excluded_at, indexable FROM publications WHERE article_id = ${id}`;
   assert.equal(excluded!.seo_indexed_at, null);
   assert.ok(excluded!.seo_excluded_at);

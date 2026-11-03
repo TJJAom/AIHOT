@@ -1,35 +1,35 @@
-# 事件归组与关系评测
+# 事件歸組與關係評測
 
-站点先用标题和摘要召回最近两周的候选事实（配了向量服务时比向量，没配时比文字重合度），再让模型判断报道之间的关系，同时判断这篇报道相对精选里已有的内容有没有新信息（分数够了的报道要靠这一条才进精选，见 [精选与校准](selection.md)）。关系定义和站点实际使用的提示词在 `industry/prompts/group-*.md`，代码入口在 `packages/backend/src/events/relate.ts` 和 `group.ts`。
+站點先用標題和摘要召回最近兩週的候選事實（配了向量服務時比向量，沒配時比文字重合度），再讓模型判斷報道之間的關係，同時判斷這篇報道相對精選裡已有的內容有沒有新資訊（分數夠了的報道要靠這一條才進精選，見 [精選與校準](selection.md)）。關係定義和站點實際使用的提示詞在 `industry/prompts/group-*.md`，程式碼入口在 `packages/backend/src/events/relate.ts` 和 `group.ts`。
 
-四种关系是：
+四種關係是：
 
-- `SAME_OCCURRENCE`：同一次真实发生，例如同一发布的官方原文和媒体报道。
-- `SAME_STORY`：不是同一次发生，但属于同一具体事件的直接进展，例如发布后的上架、评测或回应。
-- `UNRELATED`：不同的事，即使主体、产品或话题相同。
-- `ROUNDUP`：其中一方是包含多个话题的汇总。
+- `SAME_OCCURRENCE`：同一次真實發生，例如同一發布的官方原文和媒體報道。
+- `SAME_STORY`：不是同一次發生，但屬於同一具體事件的直接進展，例如釋出後的上架、評測或回應。
+- `UNRELATED`：不同的事，即使主體、產品或話題相同。
+- `ROUNDUP`：其中一方是包含多個話題的彙總。
 
-## 用自己的标注样本评测两两关系判断
+## 用自己的標註樣本評測兩兩關係判斷
 
-`scripts/eval-relations.ts` 只评测模型对两篇报道之间关系的判断。它直接复用站点归组时用的 `PAIR_SYSTEM`、`pairUser()`、`PairSchema` 和提示词版本，因此提示词变了，评测也跟着变。它不重新跑候选召回，也不把结果写回事件归组。
+`scripts/eval-relations.ts` 只評測模型對兩篇報道之間關係的判斷。它直接複用站點歸組時用的 `PAIR_SYSTEM`、`pairUser()`、`PairSchema` 和提示詞版本，因此提示詞變了，評測也跟著變。它不重新跑候選召回，也不把結果寫回事件歸組。
 
-把自己的标注数据放在 `.data/` 下（该目录不会提交到 Git）。`industry/relation-gold.example.jsonl` 给了四条虚构示例。每行一条：
+把自己的標註資料放在 `.data/` 下（該目錄不會提交到 Git）。`industry/relation-gold.example.jsonl` 給了四條虛構示例。每行一條：
 
 ```json
 {"caseId":"release-001","a":{"title":"...","source":"...","firstParty":true,"publishedAt":"2026-09-01T09:00:00+08:00","summary":"..."},"b":{"title":"...","source":"...","firstParty":false,"publishedAt":"2026-09-01T09:20:00+08:00","summary":"..."},"samplingContext":{"benchmarkSplit":"development","samplingStratum":"same-release"},"gold":{"relation":"SAME_OCCURRENCE"}}
 ```
 
-`a`、`b` 也可以带和站点内部 `ReportView` 一致的可选 `frame`：
+`a`、`b` 也可以帶和站點內部 `ReportView` 一致的可選 `frame`：
 
 ```json
-{"subject":"Acme","action":"发布","object":"Acme-2","occurredAt":"2026-09-01"}
+{"subject":"Acme","action":"釋出","object":"Acme-2","occurredAt":"2026-09-01"}
 ```
 
-建议把容易混淆的边界样本放进开发集，再留一部分 `benchmarkSplit: "holdout"` 最后检查。`samplingStratum` 是可选的分组标签，用来看错在哪一类，不影响模型输入。
+建議把容易混淆的邊界樣本放進開發集，再留一部分 `benchmarkSplit: "holdout"` 最後檢查。`samplingStratum` 是可選的分組標籤，用來看錯在哪一類，不影響模型輸入。
 
-### 运行
+### 執行
 
-先按正常部署方式配置数据库和模型，再运行：
+先按正常部署方式配置資料庫和模型，再執行：
 
 ```bash
 node --env-file=.env scripts/eval-relations.ts \
@@ -37,7 +37,7 @@ node --env-file=.env scripts/eval-relations.ts \
   --split development
 ```
 
-默认使用“归组复核”这一步当前的模型：后台“模型与评测”页切换过的优先，其次是环境变量 `GROUP_REVIEW_MODEL`，再其次是 `site/models.ts` 的 `DEFAULTS.groupReview`，都没有就用默认模型。也可以显式比较多个已配置的模型：
+預設使用“歸組複核”這一步當前的模型：後臺“模型與評測”頁切換過的優先，其次是環境變數 `GROUP_REVIEW_MODEL`，再其次是 `site/models.ts` 的 `DEFAULTS.groupReview`，都沒有就用預設模型。也可以顯式比較多個已配置的模型：
 
 ```bash
 node --env-file=.env scripts/eval-relations.ts \
@@ -49,30 +49,30 @@ node --env-file=.env scripts/eval-relations.ts \
   --thresholds 0.75,0.8
 ```
 
-可用参数：
+可用引數：
 
-| 参数 | 默认值 | 说明 |
+| 引數 | 預設值 | 說明 |
 |---|---:|---|
-| `--gold` | `.data/relation-gold.jsonl` | 标注样本文件（JSONL） |
-| `--models` | “归组复核”当前的模型 | 逗号分隔的模型名 |
-| `--split` | `all` | `development`、`holdout` 或自己定的分组 |
-| `--n` | `200` | 最多评测多少条 |
-| `--seed` | `7` | 抽样用的随机种子，种子相同，每次抽到的样本相同 |
-| `--concurrency` | `6` | 同时发出的模型请求数 |
-| `--thresholds` | production 的 `STORY_REVIEW_MIN_CONFIDENCE,TIE_MIN_CONFIDENCE` | 判断两篇报道“连进同一事件”时用的置信度门槛；显式传参会覆盖默认值 |
+| `--gold` | `.data/relation-gold.jsonl` | 標註樣本檔案（JSONL） |
+| `--models` | “歸組複核”當前的模型 | 逗號分隔的模型名 |
+| `--split` | `all` | `development`、`holdout` 或自己定的分組 |
+| `--n` | `200` | 最多評測多少條 |
+| `--seed` | `7` | 抽樣用的隨機種子，種子相同，每次抽到的樣本相同 |
+| `--concurrency` | `6` | 同時發出的模型請求數 |
+| `--thresholds` | production 的 `STORY_REVIEW_MIN_CONFIDENCE,TIE_MIN_CONFIDENCE` | 判斷兩篇報道“連進同一事件”時用的置信度門檻；顯式傳參會覆蓋預設值 |
 
-完整报告写到 `.data/eval/relations-*.json`。每个模型会得到：
+完整報告寫到 `.data/eval/relations-*.json`。每個模型會得到：
 
-- 4 × 4 的对照表：每种标注关系被模型判成了哪种关系；
-- 每种关系的查准率、查全率、F1 和样本数（只统计成功得到结构化判断的样本）；
-- `coverage`：成功得到结构化判断的样本占全部金标样本的比例；
-- `accuracy` 与四类 macro-F1：只衡量成功得到结构化判断后的判断质量；`completeAccuracy` 则用全部金标样本作分母，把调用失败或回答不合格式也算作没有正确完成；
-- 把 `SAME_OCCURRENCE`、`SAME_STORY` 都算作“连进同一事件”时，各个置信度门槛下的查准率、查全率和 F1，同时给出同一批样本的 `coverage` 与 `completeAccuracy`；
-- 调用出错的条数、token 用量、每次请求的平均耗时和整次评测的总耗时；
-- 每条样本的判断、置信度、模型写的差别说明（`difference`）和回执编号。
+- 4 × 4 的對照表：每種標註關係被模型判成了哪種關係；
+- 每種關係的查準率、查全率、F1 和樣本數（只統計成功得到結構化判斷的樣本）；
+- `coverage`：成功得到結構化判斷的樣本佔全部金標樣本的比例；
+- `accuracy` 與四類 macro-F1：只衡量成功得到結構化判斷後的判斷質量；`completeAccuracy` 則用全部金標樣本作分母，把呼叫失敗或回答不合格式也算作沒有正確完成；
+- 把 `SAME_OCCURRENCE`、`SAME_STORY` 都算作“連進同一事件”時，各個置信度門檻下的查準率、查全率和 F1，同時給出同一批樣本的 `coverage` 與 `completeAccuracy`；
+- 呼叫出錯的條數、token 用量、每次請求的平均耗時和整次評測的總耗時；
+- 每條樣本的判斷、置信度、模型寫的差別說明（`difference`）和回執編號。
 
-模型调用照常经过回执和预算熔断。相同模型、提示词和输入的重复评测会复用已有回执；同一次运行中输入相同的样本共享一次请求结果，各自按自己的标注计分，失败也共享，不在这次运行里重复请求。报告里的 `reused` 包括共享的成功或失败结果，以及复用的已有成功回执。评测的回执用单独的用途 `eval_relation_pair`，不计入站点归组那几步在后台的统计。
+模型呼叫照常經過回執和預算熔斷。相同模型、提示詞和輸入的重複評測會複用已有回執；同一次執行中輸入相同的樣本共享一次請求結果，各自按自己的標註計分，失敗也共享，不在這次執行裡重複請求。報告裡的 `reused` 包括共享的成功或失敗結果，以及複用的已有成功回執。評測的回執用單獨的用途 `eval_relation_pair`，不計入站點歸組那幾步在後臺的統計。
 
-token 用量和平均耗时按报告引用的回执对应的全部请求尝试汇总，包括之前解析失败的响应；同一张回执不会因为多条样本重复计算。用已有结果重跑时仍显示这些历史用量，不代表这次新增的费用。
+token 用量和平均耗時按報告引用的回執對應的全部請求嘗試彙總，包括之前解析失敗的響應；同一張回執不會因為多條樣本重複計算。用已有結果重跑時仍顯示這些歷史用量，不代表這次新增的費用。
 
-CI 检查 JSONL 解析、固定种子的抽样、各项指标，以及本地假模型服务下的并发复用和重试用量统计，不访问外部模型服务。
+CI 檢查 JSONL 解析、固定種子的抽樣、各項指標，以及本地假模型服務下的併發複用和重試用量統計，不訪問外部模型服務。

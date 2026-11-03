@@ -2,7 +2,7 @@ import { useState } from "react";
 import { copyText } from "../../lib/clipboard";
 import { IconCheck, IconCopy } from "../../components/icons";
 
-export function CopyButton({ text, label = "复制", className = "" }: { text: string; label?: string; className?: string }) {
+export function CopyButton({ text, label = "複製", className = "" }: { text: string; label?: string; className?: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <button
@@ -13,12 +13,12 @@ export function CopyButton({ text, label = "复制", className = "" }: { text: s
         setTimeout(() => setCopied(false), 1500);
       }}
       className={`inline-flex h-7 items-center gap-1 rounded-mark border border-line bg-surface px-2 text-[12px] transition-colors ${copied ? "text-ok" : "text-ink-3 hover:border-line-strong hover:text-ink"} ${className}`}
-      aria-label={copied ? "已复制" : label}
+      aria-label={copied ? "已複製" : label}
     >
       <span key={copied ? "ok" : "copy"} className={copied ? "anim-swap-in" : ""}>
         {copied ? <IconCheck size={14} /> : <IconCopy size={14} />}
       </span>
-      {copied ? "已复制" : label}
+      {copied ? "已複製" : label}
     </button>
   );
 }

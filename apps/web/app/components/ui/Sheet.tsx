@@ -131,7 +131,7 @@ export function Sheet({ open, onClose, title, children, label, centered = false 
   return createPortal(
     <Presence show={open} enter="anim-fade-in" exit="anim-fade-out" duration={220}>
       <div className={`fixed inset-0 z-[70] flex flex-col justify-end ${centered ? "sm:items-center sm:justify-center sm:p-6" : ""}`}>
-        <button type="button" aria-label="关闭" tabIndex={-1} onClick={onClose} className="absolute inset-0 cursor-default bg-[rgba(8,14,15,0.42)]" />
+        <button type="button" aria-label="關閉" tabIndex={-1} onClick={onClose} className="absolute inset-0 cursor-default bg-[rgba(8,14,15,0.42)]" />
         <div
           ref={panel}
           role="dialog"
@@ -148,7 +148,7 @@ export function Sheet({ open, onClose, title, children, label, centered = false 
                 <h2 id={titleId} className="min-w-0 flex-1 text-[17px] font-bold leading-snug text-ink">
                   {title}
                 </h2>
-                <button type="button" aria-label="关闭" onClick={onClose} className="grid size-11 shrink-0 place-items-center rounded-full text-ink-3">
+                <button type="button" aria-label="關閉" onClick={onClose} className="grid size-11 shrink-0 place-items-center rounded-full text-ink-3">
                   <span className="grid size-[30px] place-items-center rounded-full bg-bg-sunk dark:bg-bg-muted">
                     <IconClose size={15} strokeWidth={2} />
                   </span>

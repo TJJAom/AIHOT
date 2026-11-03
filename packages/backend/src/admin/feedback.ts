@@ -68,13 +68,13 @@ export async function updateFeedback(id: number, input: { status?: string; kind?
   if (input.status && !FEEDBACK_STATUSES.includes(input.status as FeedbackStatus)) throw new Error(`unknown status ${input.status}`);
   if (input.kind && !FEEDBACK_KINDS.includes(input.kind as FeedbackKind)) throw new Error(`unknown kind ${input.kind}`);
   const idea = input.idea === undefined ? undefined : input.idea?.trim() || null;
-  if (idea && idea.length > IDEA_MAX) throw new Error(`建议名最多 ${IDEA_MAX} 字`);
+  if (idea && idea.length > IDEA_MAX) throw new Error(`建議名最多 ${IDEA_MAX} 字`);
   return sql.begin(async (tx) => {
     const [before] = await tx`SELECT id, status, kind, idea, note, updated_at FROM feedback WHERE id = ${id} FOR UPDATE`;
     if (!before) return null;
-    if (new Date(before.updated_at as Date).toISOString() !== input.version) throw new Conflict("这条反馈已被修改，请刷新后再操作");
+    if (new Date(before.updated_at as Date).toISOString() !== input.version) throw new Conflict("這條回饋已被修改，請重新整理後再操作");
     const kind = input.kind === undefined ? before.kind : input.kind;
-    if (idea && kind !== "suggestion") throw new Error("只有建议能归入建议池");
+    if (idea && kind !== "suggestion") throw new Error("只有建議能歸入建議池");
     const [after] = await tx`
       UPDATE feedback SET status = coalesce(${input.status ?? null}, status), kind = ${kind},
         idea = ${kind === "suggestion" ? (idea === undefined ? before.idea : idea) : null},
@@ -100,7 +100,7 @@ export async function banSource(sourceHash: string, reason: string, actor: strin
 /** Only explicit moderation of a saved report can pause an email; it is not verified identity. */
 export async function banFeedbackEmail(id: number, reason: string, actor: string) {
   const [row] = await sql<{ email: string | null }[]>`SELECT email FROM feedback WHERE id=${id}`;
-  if (!row?.email?.trim()) throw Object.assign(new Error("这条反馈没有可封禁的邮箱。"), { statusCode: 400 });
+  if (!row?.email?.trim()) throw Object.assign(new Error("這條回饋沒有可封禁的電子郵件。"), { statusCode: 400 });
   const key = feedbackEmailKey(row.email);
   const expiresAt = new Date(Date.now() + 48 * 3600_000);
   await banSource(key, reason, actor, expiresAt);
@@ -133,7 +133,7 @@ export async function eraseFeedback(id: number, reason: string, actor: string) {
   if (!row) return null;
   const file = screenshotPath(row.screenshot_key);
   if (file) await unlink(file).catch(() => {});
-  await sql`UPDATE feedback SET content = '（已按要求删除）', email = NULL, page_url = NULL, screenshot_key = NULL, updated_at = now() WHERE id = ${id}`;
+  await sql`UPDATE feedback SET content = '（已按要求刪除）', email = NULL, page_url = NULL, screenshot_key = NULL, updated_at = now() WHERE id = ${id}`;
   await audit(actor, "feedback.erase", `feedback:${id}`, reason, null, null);
   return { erased: true };
 }

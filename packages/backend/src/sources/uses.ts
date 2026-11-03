@@ -32,6 +32,6 @@ export const SourceUses = z
   .array(z.string())
   .max(10)
   .refine((uses) => uses.every((u) => Object.hasOwn(sourceUses(), u)), {
-    error: () => `信源用途只能是已装模块声明的：${Object.keys(sourceUses()).join("、") || "（没有）"}`,
+    error: () => `信源用途只能是已裝模組宣告的：${Object.keys(sourceUses()).join("、") || "（沒有）"}`,
   })
   .transform((uses) => [...new Set(uses)]);

@@ -39,14 +39,14 @@ async function report(source: string, opts: { selected: boolean; hoursAgo: numbe
   });
   await sql`UPDATE articles SET discovered_at = ${at}, timeline_at = ${at} WHERE id = ${articleId}`;
   await sql`INSERT INTO analyses (article_id, input_revision, origin, relevance, category, title_zh, summary_zh, score, selected, subjects, tags)
-            VALUES (${articleId}, 1, 'rule', 'pass', 'ai-models', ${opts.title ?? `标题${n}-${T}`}, ${`摘要${n}-${T}`}, 80, ${opts.selected}, ${opts.subjects ?? []}, ${[`t-${T}`]})`;
+            VALUES (${articleId}, 1, 'rule', 'pass', 'ai-models', ${opts.title ?? `標題${n}-${T}`}, ${`摘要${n}-${T}`}, 80, ${opts.selected}, ${opts.subjects ?? []}, ${[`t-${T}`]})`;
   return articleId;
 }
 
 test("a folded card's other sources are those of the fact its representative reports", async () => {
   const [story] = await sql<{ id: number }[]>`INSERT INTO stories (public_id, title, first_report_at, latest_at) VALUES (${randomUUID()}, ${`S-${T}`}, now(), now()) RETURNING id`;
-  const [leak] = await sql<{ id: number; public_id: string }[]>`INSERT INTO facts (public_id, story_id, title) VALUES (${`leak-${T}`}, ${story!.id}, '疑似泄露') RETURNING id, public_id`;
-  const [launch] = await sql<{ id: number; public_id: string }[]>`INSERT INTO facts (public_id, story_id, title) VALUES (${`launch-${T}`}, ${story!.id}, '正式发布') RETURNING id, public_id`;
+  const [leak] = await sql<{ id: number; public_id: string }[]>`INSERT INTO facts (public_id, story_id, title) VALUES (${`leak-${T}`}, ${story!.id}, '疑似洩露') RETURNING id, public_id`;
+  const [launch] = await sql<{ id: number; public_id: string }[]>`INSERT INTO facts (public_id, story_id, title) VALUES (${`launch-${T}`}, ${story!.id}, '正式釋出') RETURNING id, public_id`;
   // The leak came first and was not selected; the launch has an official and a media report.
   const leaked = await report(LEAKS, { selected: false, hoursAgo: 20 });
   const official = await report(OFFICIAL, { selected: true, hoursAgo: 2 });
@@ -66,9 +66,9 @@ test("a folded card's other sources are those of the fact its representative rep
 });
 
 test("a query that names a company also finds the articles about it", async () => {
-  const about = await report(MEDIA, { selected: false, hoursAgo: 3, subjects: ["anthropic"], title: `Sonnet 上线 Conductor ${T}` });
-  const mention = await report(MEDIA, { selected: false, hoursAgo: 4, title: `claude 被一篇盘点顺带提到 ${T}` });
-  const other = await report(MEDIA, { selected: false, hoursAgo: 5, title: `无关的新闻 ${T}` });
+  const about = await report(MEDIA, { selected: false, hoursAgo: 3, subjects: ["anthropic"], title: `Sonnet 上線 Conductor ${T}` });
+  const mention = await report(MEDIA, { selected: false, hoursAgo: 4, title: `claude 被一篇盤點順帶提到 ${T}` });
+  const other = await report(MEDIA, { selected: false, hoursAgo: 5, title: `無關的新聞 ${T}` });
   for (const id of [about, mention, other]) await publishArticle(id);
   const search = async (q: string, tab = "") => {
     const res = await app.inject({ method: "GET", url: `/api/site/pool?q=${encodeURIComponent(q)}${tab}` });

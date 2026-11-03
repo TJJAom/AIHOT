@@ -71,8 +71,8 @@ export interface FeedItemSummary extends Pick<ItemSummary, "id" | "title" | "sum
     quoted: Omit<NonNullable<XPostView["quoted"]>, "url"> | null;
   }) | null;
   /**
-   * A selected report whose fact is represented by another report (全部动态 and search): that report,
-   * so the card can say "同一件事，精选收录的是《…》" instead of claiming a seat of its own.
+   * A selected report whose fact is represented by another report (全部動態 and search): that report,
+   * so the card can say "同一件事，精選收錄的是《…》" instead of claiming a seat of its own.
    */
   sameEvent?: { id: string; title: string } | null;
 }
@@ -162,7 +162,7 @@ export interface SiteItemDetail extends ItemSummary {
   bodyLanguage: "zh" | "original";
 }
 
-/** A fact's public reports under the list's filters: what "另外 N 家也报道了" opens. */
+/** A fact's public reports under the list's filters: what "另外 N 家也報道了" opens. */
 export interface GroupReport {
   id: string;
   title: string;
@@ -278,7 +278,7 @@ export interface StoryDetail {
 export type ReportKind = "daily" | "weekly" | "monthly";
 
 /** What each kind of report is called. */
-export const REPORT_NAMES: Record<ReportKind, string> = { daily: "日报", weekly: "周报", monthly: "月报" };
+export const REPORT_NAMES: Record<ReportKind, string> = { daily: "日報", weekly: "週報", monthly: "月報" };
 
 /** An issue's date as Chinese readers write and search it: "10月17日", "10月12日—18日" (or "9月28日—10月4日"), "2026年10月". */
 export function reportDateLabel(kind: ReportKind, key: string): string {
@@ -369,7 +369,7 @@ export interface SiteMeta {
 export interface ChangelogRelease {
   date: string;
   time: string;
-  kind: "更新" | "优化" | "公告" | "下线";
+  kind: "更新" | "最佳化" | "公告" | "下線";
   title: string;
   body: string[];
   /** A notice readers must act on: drawn in the warning red so it cannot be skimmed past. */
@@ -403,11 +403,11 @@ export interface SiteStats {
   items: number;
   selected: number;
   dailies: number;
-  /** The last 24 hours: items found (heat-only sources included), and items that made 精选 (by their place on the timeline). */
+  /** The last 24 hours: items found (heat-only sources included), and items that made 精選 (by their place on the timeline). */
   day: { collected: number; selected: number };
   /** Enabled sources in a daily shuffle, for the about page's river: one line per source. */
   sampleSources: Array<{ name: string; kind: string; heatOnly: boolean }>;
-  /** The latest 精选, newest first. */
+  /** The latest 精選, newest first. */
   latest: Array<{ id: string; title: string; source: string }>;
 }
 

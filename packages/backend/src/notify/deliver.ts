@@ -38,8 +38,8 @@ interface Target {
 export async function ensureContentTargets() {
   await sql`
     INSERT INTO notify_targets (key, purpose, kind, enabled, config_ref, note) VALUES
-      ('feishu-content-main', 'content', 'feishu_webhook', false, 'FEISHU_PUSH_WEBHOOK_URL', '飞书内容主群'),
-      ('feishu-content-mirror', 'content', 'feishu_webhook', false, 'FEISHU_PUSH_MIRROR_WEBHOOK_URL', '飞书内容镜像群')
+      ('feishu-content-main', 'content', 'feishu_webhook', false, 'FEISHU_PUSH_WEBHOOK_URL', '飛書內容主群'),
+      ('feishu-content-mirror', 'content', 'feishu_webhook', false, 'FEISHU_PUSH_MIRROR_WEBHOOK_URL', '飛書內容映象群')
     ON CONFLICT (key) DO NOTHING`;
 }
 
@@ -115,12 +115,12 @@ export async function resendDelivery(id: number, version?: string): Promise<{ st
     SELECT d.status, d.updated_at::text AS version, d.payload, d.target_key, t.config_ref, t.kind, t.enabled, t.enabled_at, d.subject_kind, d.subject_id
     FROM deliveries d JOIN notify_targets t ON t.key = d.target_key WHERE d.id = ${id}`;
   if (!d) throw new Error(`delivery ${id} not found`);
-  if (d.status !== "unknown" && d.status !== "failed") throw new Conflict("这条投递不需要处理");
+  if (d.status !== "unknown" && d.status !== "failed") throw new Conflict("這條投遞不需要處理");
   if (!config.feishuContentPushEnabled || d.kind !== "feishu_webhook") throw new Error("content push is disabled in this environment");
-  if (!d.enabled) throw new Conflict("这个推送群已停用");
+  if (!d.enabled) throw new Conflict("這個推送群已停用");
   const current = d.subject_kind === "selected" ? await selectedContent(d.subject_id) : null;
   if (current && (current.status !== "ready" || (d.enabled_at && current.article.discovered_at < d.enabled_at))) {
-    throw new Conflict("这条内容已不再符合推送条件");
+    throw new Conflict("這條內容已不再符合推送條件");
   }
   const payload = current?.card ?? d.payload;
   const url = d.config_ref ? credential("integrations", d.config_ref) : undefined;
@@ -129,7 +129,7 @@ export async function resendDelivery(id: number, version?: string): Promise<{ st
   // update runs. Only the request that claims the version the operator read may send the card.
   const claimed = await sql`UPDATE deliveries SET status = 'sending', attempts = attempts + 1, payload = ${sql.json(payload as never)}, updated_at = now()
     WHERE id = ${id} AND status IN ('unknown', 'failed') AND updated_at::text = ${version ?? d.version}`;
-  if (!claimed.count) throw new Conflict("这条投递已被其他操作处理，请刷新后重试");
+  if (!claimed.count) throw new Conflict("這條投遞已被其他操作處理，請重新整理後重試");
   return sendDelivery(id, url, payload);
 }
 
@@ -140,9 +140,9 @@ export async function resendDelivery(id: number, version?: string): Promise<{ st
  */
 export async function markStaleDeliveries(): Promise<{ unknown: number; failed: number }> {
   const cutoff = new Date(Date.now() - 15 * 60_000);
-  const unknown = await sql`UPDATE deliveries SET status = 'unknown', response = coalesce(response, '发送中进程中断，是否送达未知'), updated_at = now()
+  const unknown = await sql`UPDATE deliveries SET status = 'unknown', response = coalesce(response, '傳送中程序中斷，是否送達未知'), updated_at = now()
                             WHERE status = 'sending' AND updated_at < ${cutoff}`;
-  const failed = await sql`UPDATE deliveries SET status = 'failed', response = coalesce(response, '发送前进程中断，没有发出'), updated_at = now()
+  const failed = await sql`UPDATE deliveries SET status = 'failed', response = coalesce(response, '傳送前程序中斷，沒有發出'), updated_at = now()
                            WHERE status = 'pending' AND updated_at < ${cutoff}`;
   return { unknown: unknown.count, failed: failed.count };
 }
@@ -152,17 +152,17 @@ export async function resolveDelivery(id: number, input: { outcome: "sent" | "dr
   input = z.object({ outcome: z.enum(["sent", "drop", "resend"]), note: z.string().trim().min(1) }).parse(input);
   const [before] = await sql<{ status: string; version: string }[]>`SELECT status, updated_at::text AS version FROM deliveries WHERE id = ${id}`;
   if (!before) return null;
-  if (before.status !== "unknown" && before.status !== "failed") throw new Conflict("这条投递不需要处理");
+  if (before.status !== "unknown" && before.status !== "failed") throw new Conflict("這條投遞不需要處理");
   let status: string;
   if (input.outcome === "sent") {
-    const changed = await sql`UPDATE deliveries SET status = 'sent', sent_at = coalesce(sent_at, now()), response = ${`人工确认已送达：${input.note}`}, updated_at = now()
+    const changed = await sql`UPDATE deliveries SET status = 'sent', sent_at = coalesce(sent_at, now()), response = ${`人工確認已送達：${input.note}`}, updated_at = now()
       WHERE id = ${id} AND status IN ('unknown', 'failed') AND updated_at::text = ${before.version}`;
-    if (!changed.count) throw new Conflict("这条投递已被其他操作处理，请刷新后重试");
+    if (!changed.count) throw new Conflict("這條投遞已被其他操作處理，請重新整理後重試");
     status = "sent";
   } else if (input.outcome === "drop") {
-    const changed = await sql`UPDATE deliveries SET status = 'failed', response = ${`人工放弃：${input.note}`}, updated_at = now()
+    const changed = await sql`UPDATE deliveries SET status = 'failed', response = ${`人工放棄：${input.note}`}, updated_at = now()
       WHERE id = ${id} AND status IN ('unknown', 'failed') AND updated_at::text = ${before.version}`;
-    if (!changed.count) throw new Conflict("这条投递已被其他操作处理，请刷新后重试");
+    if (!changed.count) throw new Conflict("這條投遞已被其他操作處理，請重新整理後重試");
     status = "failed";
   } else {
     status = (await resendDelivery(id, before.version)).status;

@@ -19,7 +19,7 @@ const keys = Object.fromEntries(kinds.map((kind) => [kind, Array.from({ length: 
 const index = (kind: ReportKind): ReportNavigationEntry[] => keys[kind].map((key, i) => ({ key, issueNumber: i + 1, title: `第${i + 1}期` })).reverse().slice(0, 400);
 function report(kind: ReportKind, key: string): ReportDetail {
   return {
-    kind, key, issueNumber: keys[kind].indexOf(key) + 1, title: "测试刊物", generatedAt: "2020-01-02T00:00:00Z",
+    kind, key, issueNumber: keys[kind].indexOf(key) + 1, title: "測試刊物", generatedAt: "2020-01-02T00:00:00Z",
     lead: null, leadItemId: null, overview: null, highlights: [], sections: [], flashes: [], cover: null, metrics: {}, readingMinutes: 1, prev: null, next: null,
   };
 }
@@ -96,5 +96,5 @@ test("a day of another Beijing year carries its year in the phone chip and the p
   assert.equal(neighbourLabel("daily", "2027-01-01", "prev", endOfYear), "前一日 · 2027年1月1日");
   const newYear = Date.parse("2027-01-01T08:00:00+08:00");
   assert.equal(neighbourLabel("daily", "2026-12-31", "prev", newYear), "前一日 · 2026年12月31日");
-  assert.equal(neighbourLabel("daily", "2027-01-02", "next", newYear), "后一日 · 1月2日");
+  assert.equal(neighbourLabel("daily", "2027-01-02", "next", newYear), "後一日 · 1月2日");
 });

@@ -21,7 +21,7 @@ export const handle: Screen = { tab: "featured", name: "全部" };
 export { pageHeaders as headers } from "../lib/api.server";
 export const { clientLoader, shouldRevalidate } = pageReuse<typeof loader>();
 
-const ALL_TITLE = subjectAfter("全部", "动态");
+const ALL_TITLE = subjectAfter("全部", "動態");
 
 export async function loader({ request }: Route.LoaderArgs) {
   const url = new URL(request.url);
@@ -44,11 +44,11 @@ export function meta({ loaderData }: Route.MetaArgs) {
   const q = f?.q;
   const page = loaderData?.data.page ?? 1;
   const path = listPath("/all", { ...(f && filterParams(f)), q, tab: q && f?.tab === "relevance" ? "relevance" : null, page: page > 1 ? page : null });
-  const title = `${q ? `搜索：${q}` : ALL_TITLE}${page > 1 ? ` · 第 ${page} 页` : ""}`;
+  const title = `${q ? `搜尋：${q}` : ALL_TITLE}${page > 1 ? ` · 第 ${page} 頁` : ""}`;
   const noindex = !!q || hasFeedFilters(f);
   return pageMeta({
     title,
-    description: `${SITE.name} 收录的${subjectAfter("全部", "相关动态")}，可按频道、类别与标签筛选，支持中英文搜索。`,
+    description: `${SITE.name} 收錄的${subjectAfter("全部", "相關動態")}，可按頻道、類別與標籤篩選，支援中英文搜尋。`,
     path,
     noindex,
     jsonLd: noindex ? undefined : itemListLd(path, title, loaderData?.data.items.map((i) => i.title) ?? []),
@@ -81,7 +81,7 @@ export default function AllPage() {
     else sp.delete("tab");
     return `/all?${sp}`;
   };
-  const title = f.q ? `搜索“${f.q}”` : f.tag ? `#${f.tag}` : null;
+  const title = f.q ? `搜尋“${f.q}”` : f.tag ? `#${f.tag}` : null;
   const updated = beijingTime(data.freshness);
   // Searches are remembered in this browser for the phone search (listed in the privacy notice).
   useEffect(() => {
@@ -110,7 +110,7 @@ export default function AllPage() {
       )}
       <ActiveFilters base="/all" category={f.category} channel={f.channel} tag={f.tag} />
 
-      {/* Desktop, as on 精选: the title, then one filter row with the search field aligned on the right. */}
+      {/* Desktop, as on 精選: the title, then one filter row with the search field aligned on the right. */}
       <div className="hidden lg:block">
         <h1 className="text-[24px] font-semibold leading-[1.3] text-ink">{title ?? ALL_TITLE}</h1>
         <div className="mb-5 mt-4 flex items-center justify-between gap-4">
@@ -124,12 +124,12 @@ export default function AllPage() {
           <PillTabs
             size="xs"
             layoutId="all-search-sort"
-            label="搜索排序"
+            label="搜尋排序"
             active={f.tab}
-            items={(["time", "relevance"] as const).map((t) => ({ key: t, label: t === "time" ? "按时间（搜标题和摘要）" : "按相关度（含正文）", to: searchTabHref(t) }))}
+            items={(["time", "relevance"] as const).map((t) => ({ key: t, label: t === "time" ? "按時間（搜標題和摘要）" : "按相關度（含正文）", to: searchTabHref(t) }))}
           />
           <span className="text-[12px] text-ink-4">
-            找到 <span className="num">{data.total >= 2000 ? "2000+" : data.total}</span> 条 · 更新于 <span className="num">{updated}</span>
+            找到 <span className="num">{data.total >= 2000 ? "2000+" : data.total}</span> 條 · 更新於 <span className="num">{updated}</span>
           </span>
         </div>
       )}
@@ -138,16 +138,16 @@ export default function AllPage() {
         {data.items.length === 0 ? (
           <div className="mt-2 lg:card">
             <EmptyState
-              title="没有找到相关内容"
+              title="沒有找到相關內容"
               action={
                 f.q && f.tab === "time" ? (
                   <Link to={searchTabHref("relevance")} className="text-[13px] font-medium text-accent hover:underline">
-                    试试“按相关度”，连正文一起搜
+                    試試“按相關度”，連正文一起搜
                   </Link>
                 ) : undefined
               }
             >
-              {f.q ? "换个说法，或者去掉筛选再试。" : "这个筛选下暂时没有内容。"}
+              {f.q ? "換個說法，或者去掉篩選再試。" : "這個篩選下暫時沒有內容。"}
             </EmptyState>
           </div>
         ) : (
@@ -155,7 +155,7 @@ export default function AllPage() {
         )}
       </div>
       <Pagination page={data.page} pageCount={data.pageCount} href={(p) => pageHref(params, p)} />
-      {data.page >= 50 && <p className="mt-4 text-center text-[12px] text-ink-4">最多提供 50 页，更早的内容请使用搜索或主题页。</p>}
+      {data.page >= 50 && <p className="mt-4 text-center text-[12px] text-ink-4">最多提供 50 頁，更早的內容請使用搜尋或主題頁。</p>}
     </div>
   );
 }

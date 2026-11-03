@@ -1,5 +1,5 @@
 // Failures: an unbroken URL in a report's lead widened the phone layout and pushed the fifth tab off
-// screen; an open "另外 N 家也报道了" took its longest title's width and scrolled a narrow desktop window
+// screen; an open "另外 N 家也報道了" took its longest title's width and scrolled a narrow desktop window
 // sideways (2026-10-16). Pages must fit the window at phone, narrow-phone, unfolded-foldable (669 upright,
 // 711 for an Android foldable, which reads the desktop pages beside the rail) and full-sidebar (941) widths.
 // Narrow desktops read in one column (2026-10-30): what a side column holds there (an article's reason,
@@ -10,13 +10,13 @@ import { chromium, webkit, expect, type Browser, type Page } from "@playwright/t
 import type { ReportDetail, ReportKind } from "@aihot/contracts/site";
 import { FIXTURE_AT as at, fakeApi, feedItem, itemDetail, startWebServer, visit, type WebServer } from "./web-server.ts";
 
-const longText = "查看完整说明 https://example.org/announcements/" + "a".repeat(100) + "。";
-const longTitle = "一条很长的标题".repeat(30);
+const longText = "檢視完整說明 https://example.org/announcements/" + "a".repeat(100) + "。";
+const longTitle = "一條很長的標題".repeat(30);
 const keys = { daily: "2026-10-15", weekly: "2026-W42", monthly: "2026-10" };
 const groupCard = { key: "g1", anchorAt: at, item: feedItem({ id: "rep-1", title: "代表文章" }), group: { factId: "f1", additionalSourceCount: 1, reportCount: 2, memberIds: ["rep-1"] } };
 const outline = Array.from({ length: 4 }, (_, i) => ({ id: `part-${i}`, level: 2, text: `第${i + 1}部分` }));
 const article = itemDetail({
-  id: "fit", title: "宽度检查文章", topics: [{ slug: "fixture-topic", name: "固定主题" }], outline,
+  id: "fit", title: "寬度檢查文章", topics: [{ slug: "fixture-topic", name: "固定主題" }], outline,
   body: { zh: outline.map((o) => `<h2 id="${o.id}">${o.text}</h2><p>${"固定正文。".repeat(40)}</p>`).join(""), original: null, zhKind: "original", complete: true },
 });
 
@@ -36,9 +36,9 @@ const api = fakeApi((url) => {
   if (match) {
     const kind = match[1] as ReportKind;
     const report: ReportDetail = {
-      kind, key: keys[kind], issueNumber: 1, title: "报告宽度", generatedAt: "2026-10-15T00:00:00Z",
-      lead: { title: "今日头条", leadParagraph: longText }, leadItemId: "fixture", overview: longText,
-      highlights: [], sections: [{ label: "动态", summary: null, items: [{ itemId: "fixture", title: "今日头条", summary: longText, sourceName: "Fixture", sourceUrl: "https://example.org/article", sourceIconUrl: null, firstParty: true, publishedAt: null, available: true }] }],
+      kind, key: keys[kind], issueNumber: 1, title: "報告寬度", generatedAt: "2026-10-15T00:00:00Z",
+      lead: { title: "今日頭條", leadParagraph: longText }, leadItemId: "fixture", overview: longText,
+      highlights: [], sections: [{ label: "動態", summary: null, items: [{ itemId: "fixture", title: "今日頭條", summary: longText, sourceName: "Fixture", sourceUrl: "https://example.org/article", sourceIconUrl: null, firstParty: true, publishedAt: null, available: true }] }],
       flashes: [], cover: null, metrics: {}, readingMinutes: 1, prev: null, next: null,
     };
     return { index: [{ key: report.key, issueNumber: 1 }], report };
@@ -59,20 +59,20 @@ const PAGES: Array<{ path: string; ready: (page: Page, width: number) => Promise
   ...["daily", "weekly", "monthly"].map((kind) => ({
     path: `/${kind}`,
     ready: async (page: Page) => {
-      await expect(page.getByRole("heading", { name: "今日头条", exact: true })).toBeVisible();
-      await expect(page.getByRole("link", { name: "周报", exact: true }).filter({ visible: true })).toBeVisible();
+      await expect(page.getByRole("heading", { name: "今日頭條", exact: true })).toBeVisible();
+      await expect(page.getByRole("link", { name: "週報", exact: true }).filter({ visible: true })).toBeVisible();
     },
   })),
   {
     path: "/items/fit",
     ready: async (page: Page) => {
-      await expect(page.getByText("固定推荐理由", { exact: true }).filter({ visible: true })).toBeVisible();
-      await expect(page.getByRole("link", { name: "固定主题" }).filter({ visible: true })).toBeVisible();
+      await expect(page.getByText("固定推薦理由", { exact: true }).filter({ visible: true })).toBeVisible();
+      await expect(page.getByRole("link", { name: "固定主題" }).filter({ visible: true })).toBeVisible();
       await expect(page.getByRole("link", { name: /原文/ }).filter({ visible: true }).first()).toBeVisible();
-      await page.getByRole("button", { name: "目录", exact: true }).filter({ visible: true }).click();
-      await expect(page.getByRole("dialog", { name: "目录" }).getByRole("link", { name: "第4部分" })).toBeVisible();
+      await page.getByRole("button", { name: "目錄", exact: true }).filter({ visible: true }).click();
+      await expect(page.getByRole("dialog", { name: "目錄" }).getByRole("link", { name: "第4部分" })).toBeVisible();
       await page.keyboard.press("Escape");
-      await expect(page.getByRole("dialog", { name: "目录" })).toBeHidden();
+      await expect(page.getByRole("dialog", { name: "目錄" })).toBeHidden();
     },
   },
   {
@@ -80,7 +80,7 @@ const PAGES: Array<{ path: string; ready: (page: Page, width: number) => Promise
     ready: async (page: Page, width: number) => {
       // Desktop opens the group in place; phones open it in a sheet.
       if (width < 700) return expect(page.getByRole("link", { name: "代表文章", exact: true })).toBeVisible();
-      await page.getByRole("button", { name: "另外 1 家也报道了" }).filter({ visible: true }).click();
+      await page.getByRole("button", { name: "另外 1 家也報道了" }).filter({ visible: true }).click();
       await expect(page.getByRole("link", { name: longTitle })).toBeVisible();
     },
   },

@@ -21,7 +21,7 @@ test("topic lists and pool counts share the exact membership predicate", async (
     { title: "Unrelated", original: null, tags: ["entity:anthropic", "entity:openai"], topics: [] },
     { title: "Unrelated", original: "ANTHROPIC launches a model", tags: ["entity:anthropic", "entity:openai"], topics: ["anthropic"] },
     { title: "Metadata", original: null, tags: ["entity:meta", "entity:openai"], topics: [] },
-    { title: "发布Meta的新模型", original: null, tags: ["entity:meta", "entity:openai"], topics: ["meta"] },
+    { title: "釋出Meta的新模型", original: null, tags: ["entity:meta", "entity:openai"], topics: ["meta"] },
     { title: "Unselected", original: null, tags: ["Agent", "entity:anthropic"], topics: ["agent", "anthropic"], selected: false },
     { title: "Withdrawn", original: null, tags: ["Agent", "entity:anthropic"], topics: ["agent", "anthropic"], visibility: "withdrawn" },
     { title: "Future", original: null, tags: ["Agent", "entity:anthropic"], topics: ["agent", "anthropic"], future: true },

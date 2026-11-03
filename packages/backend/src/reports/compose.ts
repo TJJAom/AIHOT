@@ -125,8 +125,8 @@ const OVERVIEW_CHARS = { weekly: 240, monthly: 340 } as const;
 const INTRO_CHARS = 90;
 /** The brief's values for each kind: its name, its span and how long its overview should be. */
 const BRIEF = {
-  weekly: { kindName: "周报", span: "一周", sentences: "三句话", chars: "160" },
-  monthly: { kindName: "月报", span: "个月", sentences: "三到四句话", chars: "240" },
+  weekly: { kindName: "週報", span: "一週", sentences: "三句話", chars: "160" },
+  monthly: { kindName: "月報", span: "個月", sentences: "三到四句話", chars: "240" },
 } as const;
 
 export const PeriodSchema = z.object({
@@ -238,7 +238,7 @@ async function composePeriod(kind: "weekly" | "monthly", key: string, startDate:
   const [lead] = top as [Candidate, ...Candidate[]];
   const content = {
     kind,
-    title: kind === "weekly" ? `${SITE.name} 周报 · ${key}` : `${SITE.name} 月报 · ${key}`,
+    title: kind === "weekly" ? `${SITE.name} 週報 · ${key}` : `${SITE.name} 月報 · ${key}`,
     ...(kind === "weekly" ? { isoLabel: key } : { monthLabel: key }),
     periodStart: startDate,
     periodEnd: endDateInclusive,

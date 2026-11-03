@@ -20,7 +20,7 @@ export function byBeijingDay<T>(list: readonly T[], at: (entry: T) => string): A
   return days;
 }
 
-/** "周六" of a calendar date (YYYY-MM-DD). */
+/** "週六" of a calendar date (YYYY-MM-DD). */
 export function weekdayShort(date: string): string {
   return beijingWeekday(date).replace("星期", "周");
 }
@@ -28,11 +28,11 @@ export function weekdayShort(date: string): string {
 export function relativeTime(iso: string, now = Date.now()): string {
   const t = Date.parse(iso);
   const s = Math.max(0, Math.round((now - t) / 1000));
-  if (s < 60) return "刚刚";
+  if (s < 60) return "剛剛";
   const m = Math.round(s / 60);
-  if (m < 60) return `${m} 分钟前`;
+  if (m < 60) return `${m} 分鐘前`;
   const h = Math.round(m / 60);
-  if (h < 24) return `${h} 小时前`;
+  if (h < 24) return `${h} 小時前`;
   const d = Math.round(h / 24);
   if (d < 30) return `${d} 天前`;
   return beijingDate(iso);

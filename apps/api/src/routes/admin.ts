@@ -126,7 +126,7 @@ export function registerAdmin(app: FastifyInstance) {
   }));
   app.post("/api/admin/selectbench/import", adminHandler(async (req, _reply, admin) => {
     const b = body<{ label: string; report: unknown }>(req);
-    return importSelectBenchRun(b.report, String(b.label || "导入的对比运行"), actorOf(admin));
+    return importSelectBenchRun(b.report, String(b.label || "匯入的對比執行"), actorOf(admin));
   }));
 
   // Attention counts for the navigation, and the audit trail.

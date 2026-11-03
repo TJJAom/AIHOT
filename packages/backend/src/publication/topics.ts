@@ -307,7 +307,7 @@ export async function topicPageCounts(now?: Date, revisions = false): Promise<To
 
 const poolCounts = new Map<string, Cached<number>>();
 
-/** Every listed report of the topic, selected or not (收录). */
+/** Every listed report of the topic, selected or not (收錄). */
 function poolTotal(t: Topic, now?: Date): Promise<number> {
   const read = async (at: Date) => (await sql<{ n: number }[]>`SELECT count(*)::int AS n FROM publications p WHERE ${listedCondition(at)} AND ${inTopic(t)}`)[0]?.n ?? 0;
   if (now) return read(now);

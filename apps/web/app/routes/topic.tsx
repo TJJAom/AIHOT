@@ -48,7 +48,7 @@ function partsOf(data: TopicPage): Part[] {
 
 /**
  * The search snippet: what the topic covers, after when it last changed and its biggest recent events. People search
- * "{name} 最新动态"; the page showed for that query but was rarely clicked while the snippet was the bare definition.
+ * "{name} 最新動態"; the page showed for that query but was rarely clicked while the snippet was the bare definition.
  */
 function description(data: TopicPage, parts: Part[]): string {
   const { topic } = data;
@@ -59,17 +59,17 @@ function description(data: TopicPage, parts: Part[]): string {
 }
 
 export function meta({ loaderData }: Route.MetaArgs) {
-  if (!loaderData) return [{ title: titled("主题不存在") }, { name: "robots", content: "noindex" }];
+  if (!loaderData) return [{ title: titled("主題不存在") }, { name: "robots", content: "noindex" }];
   const data = loaderData.data;
   const { topic, page } = data;
   const parts = partsOf(data);
   const path = page > 1 ? `/topics/${topic.slug}/page/${page}` : `/topics/${topic.slug}`;
-  const text = page > 1 ? `${topic.name}的精选归档第 ${page} 页。${topic.definition}` : description(data, parts);
+  const text = page > 1 ? `${topic.name}的精選歸檔第 ${page} 頁。${topic.definition}` : description(data, parts);
   const crumbs = breadcrumbLd([{ name: SITE.name, path: "/" }, ...UP.crumbs, { name: topic.name, path: `/topics/${topic.slug}` }]);
   return pageMeta({
     title: page > 1
-      ? `${topic.name} 精选 · 第 ${page} 页`
-      : `${topic.name} 最新动态${parts.length ? `与${parts.map((p) => p.name).join("、")}` : ""}`,
+      ? `${topic.name} 精選 · 第 ${page} 頁`
+      : `${topic.name} 最新動態${parts.length ? `與${parts.map((p) => p.name).join("、")}` : ""}`,
     description: text,
     path,
     image: `/og/topics/${topic.slug}.png`,
@@ -79,7 +79,7 @@ export function meta({ loaderData }: Route.MetaArgs) {
       : [
           topicLd({
             path,
-            name: `${topic.name} 最新动态`,
+            name: `${topic.name} 最新動態`,
             description: text,
             dateModified: topic.latest?.at ?? null,
             lists: parts.map((p) => ({ name: p.name, entries: p.entries(p.data) })),
@@ -109,19 +109,19 @@ export default function TopicRoute() {
             {topic.brand && <BrandMark brand={topic.brand} size={34} />}
             <span>
               {topic.name}{" "}
-              <span className="whitespace-nowrap font-semibold text-ink-4">最新动态</span>
+              <span className="whitespace-nowrap font-semibold text-ink-4">最新動態</span>
             </span>
           </h1>
           <p className="mt-1.5 text-pretty text-[13.5px] leading-relaxed text-ink-3">{topic.definition}</p>
           <p className="mt-2.5 flex flex-wrap gap-x-4 gap-y-1 text-[12.5px] text-ink-4">
             <span>
-              <span className="num font-semibold text-ink-2">{topic.total.toLocaleString("zh-CN")}</span>{` ${REPORTS.metricUnits.selectedCount}`}
+              <span className="num font-semibold text-ink-2">{topic.total.toLocaleString("zh-TW")}</span>{` ${REPORTS.metricUnits.selectedCount}`}
             </span>
             <span>
-              近 30 天 <span className="num font-semibold text-ink-2">{topic.recent.toLocaleString("zh-CN")}</span> 条
+              近 30 天 <span className="num font-semibold text-ink-2">{topic.recent.toLocaleString("zh-TW")}</span> 條
             </span>
             <span>
-              共收录 <span className="num font-semibold text-ink-2">{topic.poolTotal.toLocaleString("zh-CN")}</span> 条
+              共收錄 <span className="num font-semibold text-ink-2">{topic.poolTotal.toLocaleString("zh-TW")}</span> 條
             </span>
           </p>
         </div>
@@ -140,13 +140,13 @@ export default function TopicRoute() {
         </div>
       ))}
 
-      <h2 className="sr-only">{page === 1 ? `${topic.name}的精选` : `精选归档 · 第 ${page} 页`}</h2>
+      <h2 className="sr-only">{page === 1 ? `${topic.name}的精選` : `精選歸檔 · 第 ${page} 頁`}</h2>
       {items.length === 0 ? (
         <div className="lg:card">
-          <EmptyState title="这个主题暂时还没有精选内容" />
+          <EmptyState title="這個主題暫時還沒有精選內容" />
         </div>
       ) : (
-        <DayList items={items} headerAside={<span className="num whitespace-nowrap">第 {first}–{last} 条<span className="hidden sm:inline"> · 共 {topic.total.toLocaleString("zh-CN")} 条</span></span>} />
+        <DayList items={items} headerAside={<span className="num whitespace-nowrap">第 {first}–{last} 條<span className="hidden sm:inline"> · 共 {topic.total.toLocaleString("zh-TW")} 條</span></span>} />
       )}
       <Pagination page={page} pageCount={pageCount} href={href} />
     </div>

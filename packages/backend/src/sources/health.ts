@@ -62,19 +62,19 @@ export interface QuietSource extends SourceHealthRow {
   quiet_days: number | null;
 }
 
-export const SOURCE_USE_NAMES: Record<string, string> = { editorial: "编辑内容", hot_signal: "热度信号" };
+export const SOURCE_USE_NAMES: Record<string, string> = { editorial: "編輯內容", hot_signal: "熱度訊號" };
 
 /** A fixable source problem. */
 export type SourceProblem = "failing" | "unstable" | "undated" | "revisions" | "details";
 /** Each fixable problem as it is listed, per source: `action` is for the daily follow-up. */
 export const SOURCE_PROBLEMS: { problem: SourceProblem; title: string; describe: (s: SourceHealthRow) => string; observedAt: (s: SourceHealthRow) => Date | null; action: string }[] = [
-  { problem: "failing", observedAt: s => s.last_failed_at, title: "连续抓取失败", describe: s => `连续失败 ${s.fail_count} 次${s.last_error ? `，${s.last_error}` : ""}`, action: "转给 AI 检查抓取错误" },
-  { problem: "unstable", observedAt: s => s.last_unusable_at, title: "反复读不出条目", describe: s => `近 7 天 ${s.unusable}/${s.runs} 次抓到了页面却没解析出条目`, action: "即使最近成功也需检查，避免继续漏收" },
-  { problem: "undated", observedAt: s => s.last_undated_at, title: "文章缺发布时间", describe: s => `近 7 天缺发布时间 ${s.undated} 篇`,
-    action: "缺时间可能让新闻按历史文章处理" },
-  { problem: "revisions", observedAt: s => s.last_repeated_at, title: "文章反复修订", describe: s => `近 7 天反复修订 ${s.repeated} 篇`,
-    action: "需核对正文是否混入变化内容" },
-  { problem: "details", observedAt: s => s.last_detail_failure_at, title: "详情补全失败", describe: s => `近 7 天失败 ${s.detail_failures}/${s.detail_attempts} 页`, action: "查看抓取记录中的详情地址与错误" },
+  { problem: "failing", observedAt: s => s.last_failed_at, title: "連續抓取失敗", describe: s => `連續失敗 ${s.fail_count} 次${s.last_error ? `，${s.last_error}` : ""}`, action: "轉給 AI 檢查抓取錯誤" },
+  { problem: "unstable", observedAt: s => s.last_unusable_at, title: "反覆讀不出條目", describe: s => `近 7 天 ${s.unusable}/${s.runs} 次抓到了頁面卻沒解析出條目`, action: "即使最近成功也需檢查，避免繼續漏收" },
+  { problem: "undated", observedAt: s => s.last_undated_at, title: "文章缺釋出時間", describe: s => `近 7 天缺釋出時間 ${s.undated} 篇`,
+    action: "缺時間可能讓新聞按歷史文章處理" },
+  { problem: "revisions", observedAt: s => s.last_repeated_at, title: "文章反覆修訂", describe: s => `近 7 天反覆修訂 ${s.repeated} 篇`,
+    action: "需核對正文是否混入變化內容" },
+  { problem: "details", observedAt: s => s.last_detail_failure_at, title: "詳情補全失敗", describe: s => `近 7 天失敗 ${s.detail_failures}/${s.detail_attempts} 頁`, action: "檢視抓取記錄中的詳情地址與錯誤" },
 ];
 
 /** A run error that is the network or the origin's answer, not our reading of the page (fetch_runs.error, 10-01..11-01). */

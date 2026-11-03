@@ -9,7 +9,7 @@ export interface ReaderCopy {
   reasonZh: string | null;
 }
 
-const FIELDS: Array<[keyof ReaderCopy, string]> = [["titleZh", "标题"], ["summaryZh", "摘要"], ["reasonZh", ITEM_COPY.reasonLabel]];
+const FIELDS: Array<[keyof ReaderCopy, string]> = [["titleZh", "標題"], ["summaryZh", "摘要"], ["reasonZh", ITEM_COPY.reasonLabel]];
 
 /**
  * Every use of a word of the list in a copy, each as a line the model can act on: where, the words around it,

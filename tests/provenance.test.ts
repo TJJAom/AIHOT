@@ -80,9 +80,9 @@ for (const entrance of ["publisher", "source-mode"] as const) test(`${entrance} 
   assert.equal((await groupArticle(fresh, { signalOnly: true })).verdict, "signal-unmatched");
   const judged = await make("already-judged");
   await sql`INSERT INTO analyses(article_id,input_revision,origin,relevance,title_zh,summary_zh,selected)
-    VALUES (${judged},1,'rule','pass','已判断的报道','既有精选已经覆盖全部要点',true)`;
+    VALUES (${judged},1,'rule','pass','已判斷的報道','既有精選已經覆蓋全部要點',true)`;
   await sql`UPDATE articles SET grouping_status='complete',grouped_at=now(),selection_adds_value=false,
-    selection_value_reason='既有精选已覆盖' WHERE id=${judged}`;
+    selection_value_reason='既有精選已覆蓋' WHERE id=${judged}`;
   if (entrance === "publisher") {
     await source("T1", { publisherUrlPrefixes: [scope] });
     for (const [id, name] of [[fresh, "new"], [judged, "already-judged"]]) {
@@ -95,7 +95,7 @@ for (const entrance of ["publisher", "source-mode"] as const) test(`${entrance} 
   const [preserved] = await sql`SELECT grouping_status,selection_adds_value FROM articles WHERE id=${judged}`;
   assert.deepEqual({ ...preserved }, { grouping_status: "complete", selection_adds_value: false }, "current editorial judgement stays reusable");
   await sql`INSERT INTO analyses(article_id,input_revision,origin,relevance,title_zh,summary_zh,selected)
-    VALUES (${fresh},1,'rule','pass','首次编辑判断','新的新闻候选摘要',true)`;
+    VALUES (${fresh},1,'rule','pass','首次編輯判斷','新的新聞候選摘要',true)`;
   await publishArticle(fresh);
   const [pending] = await sql`SELECT p.selection_candidate,p.selected,a.grouping_status FROM publications p JOIN articles a ON a.id=p.article_id WHERE a.id=${fresh}`;
   assert.deepEqual({ ...pending }, { selection_candidate: true, selected: false, grouping_status: "pending" });
@@ -119,7 +119,7 @@ test("attribution reuses an existing current-revision editorial judgement even a
   const url = `${scope}/release`;
   const { articleId } = await upsertMaterial({ sourceId: media, url, title: "Release", bodyText: "Body", via: "fetch" });
   await sql`INSERT INTO analyses (article_id, input_revision, origin, relevance, title_zh, summary_zh, score, selected)
-    VALUES (${articleId}, 1, 'replay', 'pass', '发布', '摘要', 85, true)`;
+    VALUES (${articleId}, 1, 'replay', 'pass', '釋出', '摘要', 85, true)`;
   await sql`UPDATE sources SET participation_mode = 'hot_signal' WHERE id = ${media}`;
   await settleNonEditorial(articleId);
   await source("T1", { publisherUrlPrefixes: [scope] });
@@ -153,7 +153,7 @@ test("a later verified publisher repairs source and author, preserving judgement
   const at = new Date("2026-09-20T00:00:00Z");
   const { articleId } = await upsertMaterial({ sourceId: media, url, title: "Original release", author: "HN submitter", bodyText: "Release body", via: "fetch", discoveredAt: at, publishedAt: at });
   await sql`INSERT INTO analyses (article_id, input_revision, origin, relevance, title_zh, summary_zh, score, selected)
-    VALUES (${articleId}, 1, 'replay', 'pass', '原始发布', '真实摘要', 85, true)`;
+    VALUES (${articleId}, 1, 'replay', 'pass', '原始釋出', '真實摘要', 85, true)`;
   await publishArticle(articleId, { releasedAt: at });
   const [before] = await sql`SELECT * FROM publications WHERE article_id = ${articleId}`;
   const official = await source("T1", { publisherUrlPrefixes: [scope] });

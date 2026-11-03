@@ -1,167 +1,167 @@
-// 站点身份和读者看得到的文案。换成你的行业时，先改这个文件。
-// 网页和后端都读它；改完重新构建（docker compose up --build）即可生效。
-// 域名不在这里：部署时用环境变量 SITE_URL 设置。
+// 站點身份和讀者看得到的文案。換成你的行業時，先改這個檔案。
+// 網頁和後端都讀它；改完重新構建（docker compose up --build）即可生效。
+// 域名不在這裡：部署時用環境變數 SITE_URL 設定。
 
 import type { Founder } from "@aihot/contracts/site-config";
 
 /**
- * 日报、周报、月报什么时候出（北京时间，HH:mm）：日报收这个时间之前的 24 小时，周报在每个自然周之后的周一出，
- * 月报在每月 1 日出。排程、成刊时间窗口、缺期告警和所有提到时间的文案都读它（public/ 里的文件写占位
- * {{dailyTime}}、{{weeklyTime}}、{{monthlyTime}}）；排程每半小时检查一次，所以写整点或半点。
+ * 日報、週報、月報什麼時候出（台灣時間，HH:mm）：日報收這個時間之前的 24 小時，週報在每個自然周之後的週一出，
+ * 月報在每月 1 日出。排程、成刊時間視窗、缺期告警和所有提到時間的文案都讀它（public/ 裡的檔案寫佔位
+ * {{dailyTime}}、{{weeklyTime}}、{{monthlyTime}}）；排程每半小時檢查一次，所以寫整點或半點。
  */
 export const EDITION_TIMES = { daily: "08:00", weekly: "10:00", monthly: "10:30" };
 
-/** “每天 08:00”“每周一 10:00”“每月 1 日 10:30”：写进句子里的出刊时间。 */
+/** “每天 08:00”“每週一 10:00”“每月 1 日 10:30”：寫進句子裡的出刊時間。 */
 export const EDITION_WHEN = {
   daily: `每天 ${EDITION_TIMES.daily}`,
-  weekly: `每周一 ${EDITION_TIMES.weekly}`,
+  weekly: `每週一 ${EDITION_TIMES.weekly}`,
   monthly: `每月 1 日 ${EDITION_TIMES.monthly}`,
 };
 
 export const SITE = {
-  /** 站名：导航、页面标题、分享图、RSS、MCP、后台都用它。 */
-  name: "MyHOT",
+  /** 站名：導航、頁面標題、分享圖、RSS、MCP、後臺都用它。 */
+  name: "日耕 AI 熱點",
   /**
-   * 行业词：拼进默认说法里，比如“AI 日报”“AI 动态”。
-   * 改成“法律”“HR”“黄金”之类，页面上就会变成“法律日报”“法律动态”。
+   * 行業詞：拼進預設說法裡，比如“AI 日報”“AI 動態”。
+   * 改成“法律”“HR”“黃金”之類，頁面上就會變成“法律日報”“法律動態”。
    */
   subject: "AI",
-  /** 首页的完整标题（浏览器标签、搜索结果）。 */
-  homeTitle: "MyHOT — AI 行业动态 · 每日精选与日报",
-  /** 主题目录页（/topics）的标题。 */
-  topicsTitle: "AI 主题：公司与模型、技术方向、内容形态的最新动态",
-  /** 反馈表单输入框里的示例。 */
-  feedbackExample: "例如：我在搜索某个关键词时遇到……我原本想……",
-  /** 反馈页标题下面的一句话。 */
-  feedbackLead: "发现 bug、想要的功能、看不顺眼的地方，都可以告诉我们。",
-  /** 反馈表单邮箱框里的提示。 */
-  feedbackEmailHint: "留下邮箱，我们可以回信联系你",
-  /** 一句话介绍：搜索引擎、分享卡片、RSS、llms.txt 会用。 */
-  description: `从一批 AI 信源里挑出值得看的动态，把同一件事的多篇报道归到一起，${EDITION_WHEN.daily} 出一份日报。`,
-  /** llms.txt 里一句话介绍下面的一段详细介绍（选填）。 */
+  /** 首頁的完整標題（瀏覽器標籤、搜尋結果）。 */
+  homeTitle: "日耕 AI 熱點 — AI 產業動態 · 每日精選與日報",
+  /** 主題目錄頁（/topics）的標題。 */
+  topicsTitle: "AI 主題：公司與模型、技術方向、內容形態的最新動態",
+  /** 回饋表單輸入框裡的示例。 */
+  feedbackExample: "例如：我在搜尋某個關鍵詞時遇到……我原本想……",
+  /** 回饋頁標題下面的一句話。 */
+  feedbackLead: "發現 bug、想要的功能、看不順眼的地方，都可以告訴我們。",
+  /** 回饋表單電子郵件框裡的提示。 */
+  feedbackEmailHint: "留下電子郵件，我們可以回信聯絡你",
+  /** 一句話介紹：搜尋引擎、分享卡片、RSS、llms.txt 會用。 */
+  description: `從一批 AI 信源裡挑出值得看的動態，把同一件事的多篇報道歸到一起，${EDITION_WHEN.daily} 出一份日報。`,
+  /** llms.txt 裡一句話介紹下面的一段詳細介紹（選填）。 */
   llmsIntro: null as string | null,
-  /** 一行小字：分享图、海报下方。 */
-  tagline: "值得关注的 AI 动态",
-  /** 搜索引擎读到的关键词（首页结构化数据）。 */
-  keywords: ["AI 资讯", "AI 新闻", "AI 日报", "AI 行业动态"] as string[],
-  /** 网站开始收录的年份（结构化数据的时间范围，选填）。 */
+  /** 一行小字：分享圖、海報下方。 */
+  tagline: "值得關注的 AI 動態",
+  /** 搜尋引擎讀到的關鍵詞（首頁結構化資料）。 */
+  keywords: ["AI 資訊", "AI 新聞", "AI 日報", "AI 行業動態"] as string[],
+  /** 網站開始收錄的年份（結構化資料的時間範圍，選填）。 */
   since: null as string | null,
-  /** 界面语言（HTML lang、og:locale）。 */
-  locale: "zh-CN",
-  /** 默认域名，只在没设置 SITE_URL 时使用。 */
-  defaultUrl: "http://localhost:3000",
-  /** 标准图标（favicon.ico、icon.png、icon-192.png、apple-icon.png、logo.svg）以外也放在网站根目录的图标，site/brand/ 里的文件名（选填）；manifest.webmanifest 或外站引用了它们时用。 */
+  /** 介面語言（HTML lang、og:locale）。 */
+  locale: "zh-TW",
+  /** 預設域名，只在沒設定 SITE_URL 時使用。 */
+  defaultUrl: "https://aihot.dayacre.com",
+  /** 標準圖示（favicon.ico、icon.png、icon-192.png、apple-icon.png、logo.svg）以外也放在網站根目錄的圖示，site/brand/ 裡的檔名（選填）；manifest.webmanifest 或外站引用了它們時用。 */
   rootIcons: [] as string[],
   /**
-   * MCP 工具名的前缀（小写字母、数字、下划线），工具会叫 myhot_get_latest、myhot_search……
-   * 已经有人接入后就不要再改。
+   * MCP 工具名的字首（小寫字母、數字、下劃線），工具會叫 dayacre_hot_get_latest、dayacre_hot_search……
+   * 已經有人接入後就不要再改。
    */
-  mcpPrefix: "myhot",
+  mcpPrefix: "dayacre_hot",
   /**
-   * 公开接口（MCP、OpenAPI、llms.txt）的版本号，只升不降。
-   * 改了接口里已有的字段或含义时升主版本，并在部署说明里写清。
+   * 公開介面（MCP、OpenAPI、llms.txt）的版本號，只升不降。
+   * 改了介面裡已有的欄位或含義時升主版本，並在部署說明裡寫清。
    */
   interfaceVersion: "4.0.0",
-  /** 对外联系邮箱（选填）：llms.txt 和给 Agent 的使用说明里会写。 */
+  /** 對外聯絡電子郵件（選填）：llms.txt 和給 Agent 的使用說明裡會寫。 */
   contactEmail: null as string | null,
-  /** 关于页底部的一行小字（选填）。 */
-  footerNote: "由 AIHOT 开源框架驱动",
-  /** 中国大陆网站的 ICP 备案号（选填），填了就显示在侧栏底部和“我的”页底部，并链接到工信部备案系统。 */
+  /** 關於頁底部的一行小字（選填）。 */
+  footerNote: "由 AIHOT 開源框架驅動",
+  /** 中國大陸網站的 ICP 備案號（選填），填了就顯示在側欄底部和“我的”頁底部，並連結到工信部備案系統。 */
   icp: null as string | null,
-  /** 中国大陆网站的公安备案信息（选填），填了显示在侧栏底部和“我的”页底部。 */
+  /** 中國大陸網站的公安備案資訊（選填），填了顯示在側欄底部和“我的”頁底部。 */
   psb: null as string | null,
-  /** 源码的 GitHub 仓库地址（选填），填了就在侧栏底部和“我的”页底部显示“GitHub 开源”。 */
-  github: null as string | null,
-  /** 结构化数据里的网站运营者（搜索引擎用）。 */
+  /** 原始碼的 GitHub 倉庫地址（選填），填了就在側欄底部和“我的”頁底部顯示“GitHub 開源”。 */
+  github: "https://github.com/TJJAom/AIHOT" as string | null,
+  /** 結構化資料裡的網站營運者（搜尋引擎用）。 */
   organization: {
-    name: "MyHOT",
-    /** 创始人（选填）。 */
+    name: "日耕工作室",
+    /** 創始人（選填）。 */
     founder: null as Founder | null,
   },
-  /** 抓取信源时报上的名字和版本（User-Agent 里用），不要冒用别的站。 */
-  crawlerName: "MyHOTBot/1.0",
+  /** 抓取信源時報上的名字和版本（User-Agent 裡用），不要冒用別的站。 */
+  crawlerName: "DayacreHotBot/1.0",
 } as const;
 
-/** 使用规则和隐私说明两页（正文在 pages/ 里）。 */
+/** 使用規則和隱私說明兩頁（正文在 pages/ 裡）。 */
 export const POLICY = {
   terms: {
-    /** 页面名：导航、页脚、页面标题都用它。 */
-    name: "使用规则",
-    description: "本站网页、RSS、公开 API 与 MCP 的使用规则。",
-    /** llms.txt 里对这一页的一句说明（选填）。 */
+    /** 頁面名：導航、頁尾、頁面標題都用它。 */
+    name: "使用規則",
+    description: "本站網頁、RSS、公開 API 與 MCP 的使用規則。",
+    /** llms.txt 裡對這一頁的一句說明（選填）。 */
     covers: null as string | null,
-    /** Agent 接入页的 RSS、API 两栏各自提醒的使用规则（选填）。 */
+    /** Agent 接入頁的 RSS、API 兩欄各自提醒的使用規則（選填）。 */
     notes: null as null | { rss: string; api: string },
     /**
-     * 讲清哪些用途要先取得授权的话（选填）：llms 接在 llms.txt“使用说明”的版权说明后面，
-     * agent 写在给 Agent 的使用说明“使用规则”一节的开头。
+     * 講清哪些用途要先取得授權的話（選填）：llms 接在 llms.txt“使用說明”的版權說明後面，
+     * agent 寫在給 Agent 的使用說明“使用規則”一節的開頭。
      */
     license: null as null | { llms: string; agent: string },
     /**
-     * 公开 API、RSS 和 OpenAPI 文件声明使用规则的响应头（选填）：原样附上，再加一个指向这一页的
-     * Link 头（rel="terms-of-service"）；浏览器里的调用方也读得到它们。
+     * 公開 API、RSS 和 OpenAPI 檔案宣告使用規則的響應頭（選填）：原樣附上，再加一個指向這一頁的
+     * Link 頭（rel="terms-of-service"）；瀏覽器裡的呼叫方也讀得到它們。
      */
     headers: null as null | Record<string, string>,
   },
   privacy: {
-    description: "本站如何处理浏览器本地数据、反馈资料与访问日志。",
-    /** llms.txt 里对这一页的一句说明（选填）。 */
+    description: "本站如何處理瀏覽器本地資料、回饋資料與訪問日誌。",
+    /** llms.txt 裡對這一頁的一句說明（選填）。 */
     covers: null as string | null,
   },
   /**
-   * X 帖子本身的文字和图片算不算全文：算的话，只在这篇允许站内全文时显示（信源允许全文、正文也取到了）；
-   * 不算的话总是显示，和标题、摘要一样。
+   * X 帖子本身的文字和圖片算不算全文：算的話，只在這篇允許站內全文時顯示（信源允許全文、正文也取到了）；
+   * 不算的話總是顯示，和標題、摘要一樣。
    */
   xPostIsFullText: true,
 } as const;
 
-/** 导航（电脑侧栏、手机底栏、“我的”页）。 */
+/** 導航（電腦側欄、手機底欄、“我的”頁）。 */
 export const NAV = {
   /**
-   * 不放进导航的引擎入口，目前只支持热点榜（"/hot"）和主题（"/topics"）。页面照样能打开；原来回到它的返回按钮和链接改回精选，
-   * 写 "/hot" 时首页也不放当前热点。
+   * 不放進導航的引擎入口，目前只支援熱點榜（"/hot"）和主題（"/topics"）。頁面照樣能開啟；原來回到它的返回按鈕和連結改回精選，
+   * 寫 "/hot" 時首頁也不放當前熱點。
    */
   hidden: [] as Array<"/hot" | "/topics">,
 };
 
-/** 条目卡片和详情页上的几处说法和显示。 */
+/** 條目卡片和詳情頁上的幾處說法和顯示。 */
 export const ITEM_COPY = {
-  /** 模型写的那句理由叫什么：卡片、详情页、Markdown 导出、给 Agent 的回答和群推送都用它。 */
-  reasonLabel: "推荐理由",
-  /** 读者在网页和分享图上看不看得到 AI 评分。只管显示：公开 API 和 MCP 的数据照样带 score，后台照常显示。 */
+  /** 模型寫的那句理由叫什麼：卡片、詳情頁、Markdown 匯出、給 Agent 的回答和群推送都用它。 */
+  reasonLabel: "推薦理由",
+  /** 讀者在網頁和分享圖上看不看得到 AI 評分。只管顯示：公開 API 和 MCP 的資料照樣帶 score，後臺照常顯示。 */
   showScore: true,
 };
 
-/** 关于页的一张二维码卡片。 */
+/** 關於頁的一張二維碼卡片。 */
 interface ContactCard {
   kind: string;
   title: string;
   note: string;
-  /** 站外链接过的根目录文件名（选填），比如 qr-wechat.jpg：这个地址总是跳到现在的二维码。 */
+  /** 站外連結過的根目錄檔名（選填），比如 qr-wechat.jpg：這個地址總是跳到現在的二維碼。 */
   alias?: string;
 }
 
-/** 关于页的文案。数字（信源数、收录数、精选数、日报期数）来自站内实时统计，不用写在这里。 */
+/** 關於頁的文案。數字（信源數、收錄數、精選數、日報期數）來自站內實時統計，不用寫在這裡。 */
 export const ABOUT = {
-  kicker: `关于 ${SITE.name}`,
-  /** 页面描述（搜索结果、分享卡片）。 */
-  description: `关于 ${SITE.name}：${SITE.description}`,
-  /** 大标题：第一行正常颜色，第二行强调色。 */
-  headline: ["AI 圈每天都有新动静，", "值得看的，只有几条。"] as [string, string],
-  /** 标题下面的一段话。{sources} 会换成实时的信源数（两边自动加空格，所以 {sources} 两边不写空格）；统计没取到时换成 sourcesFallback。 */
-  lead: `${SITE.name} 替你盯着{sources}个信源：抓取、归并、打分、精选，${EDITION_WHEN.daily} 出一份日报。免费，不用注册。`,
-  sourcesFallback: "十几",
-  /** 信源河动画下面的四个环节。 */
+  kicker: `關於 ${SITE.name}`,
+  /** 頁面描述（搜尋結果、分享卡片）。 */
+  description: `關於 ${SITE.name}：${SITE.description}`,
+  /** 大標題：第一行正常顏色，第二行強調色。 */
+  headline: ["AI 圈每天都有新動靜，", "值得看的，只有幾條。"] as [string, string],
+  /** 標題下面的一段話。{sources} 會換成實時的信源數（兩邊自動加空格，所以 {sources} 兩邊不寫空格）；統計沒取到時換成 sourcesFallback。 */
+  lead: `${SITE.name} 替你盯著{sources}個信源：抓取、歸併、打分、精選，${EDITION_WHEN.daily} 出一份日報。免費，不用註冊。`,
+  sourcesFallback: "十幾",
+  /** 信源河動畫下面的四個環節。 */
   steps: {
-    collect: "官方博客、媒体和个人的订阅源都在看；更新越勤的源看得越勤，最快 15 分钟看一次。",
-    store: "抓到的都存下来，同一件事的报道归到一起，热点榜就是从这里算出来的。",
-    select: `模型先看是不是这个行业的事、有没有实际信息，再写中文标题、摘要和${ITEM_COPY.reasonLabel}；营销稿和重复转发进不来。`,
-    publish: `${EDITION_WHEN.daily} 出日报，${EDITION_WHEN.weekly} 出周报，${EDITION_WHEN.monthly} 出月报。`,
+    collect: "官方部落格、媒體和個人的訂閱源都在看；更新越勤的源看得越勤，最快 15 分鐘看一次。",
+    store: "抓到的都存下來，同一件事的報道歸到一起，熱點榜就是從這裡算出來的。",
+    select: `模型先看是不是這個行業的事、有沒有實際資訊，再寫中文標題、摘要和${ITEM_COPY.reasonLabel}；營銷稿和重複轉發進不來。`,
+    publish: `${EDITION_WHEN.daily} 出日報，${EDITION_WHEN.weekly} 出週報，${EDITION_WHEN.monthly} 出月報。`,
   },
   /**
-   * 作者块（选填），null 就不显示。
-   * avatarSourceId：一个 X 账号信源的 id，头像取它的（选填）。
-   * 二维码在后台“设置”里上传，或者放进 site/brand/contact/；没有二维码就不显示那张卡片。
+   * 作者塊（選填），null 就不顯示。
+   * avatarSourceId：一個 X 賬號信源的 id，頭像取它的（選填）。
+   * 二維碼在後臺“設定”裡上傳，或者放進 site/brand/contact/；沒有二維碼就不顯示那張卡片。
    */
   maker: null as null | {
     name: string;
@@ -170,73 +170,73 @@ export const ABOUT = {
     wechat?: ContactCard;
     feishu?: ContactCard;
   },
-  /** 页面底部的版权与下架说明，中间接“反馈页”的链接。 */
-  copyright: [`${SITE.name} 是聚合摘要和阅读索引，原文版权归各来源所有。如果你是来源方，希望更正、下架或调整展示方式，可以通过`, "联系我们。"] as [string, string],
-  /** 页面底部“使用规则”链接的锚点 id（选填）：外部文档写死过这个锚点就填上，以后不要改。 */
+  /** 頁面底部的版權與下架說明，中間接“回饋頁”的連結。 */
+  copyright: [`${SITE.name} 是聚合摘要和閱讀索引，原文版權歸各來源所有。如果你是來源方，希望更正、下架或調整展示方式，可以透過`, "聯絡我們。"] as [string, string],
+  /** 頁面底部“使用規則”連結的錨點 id（選填）：外部文件寫死過這個錨點就填上，以後不要改。 */
   termsAnchor: null as string | null,
 } as const;
 
-/** 后台页面上给管理员的提示（选填）。 */
+/** 後臺頁面上給管理員的提示（選填）。 */
 export const ADMIN = {
-  /** “反馈”页标题下的一行。 */
+  /** “回饋”頁標題下的一行。 */
   feedbackNote: null as string | null,
-  /** 确认框里补的一句本站规定：封禁反馈来源时。 */
+  /** 確認框裡補的一句本站規定：封禁回饋來源時。 */
   banNote: null as string | null,
-  /** 确认框里补的一句本站规定：调整付费服务的请求上限时。 */
+  /** 確認框裡補的一句本站規定：調整付費服務的請求上限時。 */
   budgetNote: null as string | null,
 };
 
-/** Agent 接入页的示例。 */
+/** Agent 接入頁的示例。 */
 export const AGENT = {
-  /** MCP 工具表里“搜索”一行：能搜什么、可以怎么问。 */
-  search: { scope: "按公司、产品、人物或话题搜最近 7 天", ask: "这家公司最近发了什么？" },
+  /** MCP 工具表裡“搜尋”一行：能搜什麼、可以怎麼問。 */
+  search: { scope: "按公司、產品、人物或話題搜最近 7 天", ask: "這家公司最近發了什麼？" },
 };
 
-/** 日报、周报、月报版面上的说法。 */
+/** 日報、週報、月報版面上的說法。 */
 export const REPORTS = {
-  /** 报头下面的出版者一行。 */
+  /** 報頭下面的出版者一行。 */
   imprint: SITE.name.toUpperCase(),
-  /** 报头旁边的一个词。 */
+  /** 報頭旁邊的一個詞。 */
   motto: SITE.subject as string,
-  /** 每种报告页面的描述（搜索结果、分享卡片），不带句号；llms.txt 介绍周报、月报时也用它。 */
+  /** 每種報告頁面的描述（搜尋結果、分享卡片），不帶句號；llms.txt 介紹週報、月報時也用它。 */
   descriptions: {
-    daily: `${SITE.name} ${subjectAfter(`${EDITION_WHEN.daily}（北京时间）发布的`, "行业精编日报")}`,
-    weekly: subjectAfter("每周", "行业综合回顾"),
-    monthly: subjectAfter("每月", "行业盘点"),
+    daily: `${SITE.name} ${subjectAfter(`${EDITION_WHEN.daily}（台灣時間）釋出的`, "行業精編日報")}`,
+    weekly: subjectAfter("每週", "行業綜合回顧"),
+    monthly: subjectAfter("每月", "行業盤點"),
   },
   /**
-   * 一期里的一条怎么称呼（“4 件大事”）：没有头条时的标题（“这一天的 4 件 AI 大事”）、报头和往期目录的条数、
-   * 周报月报没有总述时的那句话，以及订阅说明里的“按栏目分好的大事”都用它。
+   * 一期裡的一條怎麼稱呼（“4 件大事”）：沒有頭條時的標題（“這一天的 4 件 AI 大事”）、報頭和往期目錄的條數、
+   * 週報月報沒有總述時的那句話，以及訂閱說明裡的“按欄目分好的大事”都用它。
    */
   entry: { measure: "件", noun: "大事" },
-  /** 报头上其余几个数字后面的说法；精选数和日报期数在关于页、主题页也这样写。 */
-  metricUnits: { sourcesCount: "个来源", firstPartyEvents: "件一手发布", selectedCount: "条精选", reportsCovered: "期日报" },
-  /** 报告分享图上“共几条”的说法。 */
+  /** 報頭上其餘幾個數字後面的說法；精選數和日報期數在關於頁、主題頁也這樣寫。 */
+  metricUnits: { sourcesCount: "個來源", firstPartyEvents: "件一手釋出", selectedCount: "條精選", reportsCovered: "期日報" },
+  /** 報告分享圖上“共幾條”的說法。 */
   shareUnit: "件大事",
-  /** 日报时段内有资料经过评判、但没有新大事时的标题与导语。 */
-  quiet: { title: "今日安静，无大事发生", paragraph: `${subjectAfter("北京时间 {start} 至 {end}，没有新的", "大事")}。` },
+  /** 日報時段內有資料經過評判、但沒有新大事時的標題與導語。 */
+  quiet: { title: "今日安靜，無大事發生", paragraph: `${subjectAfter("台灣時間 {start} 至 {end}，沒有新的", "大事")}。` },
 };
 
-/** 运维告警（只发给站长）里随部署而变的几处说法。 */
+/** 運維告警（只發給站長）裡隨部署而變的幾處說法。 */
 export const ALERTS = {
-  /** 多少分钟没有收录新文章就告警“网站停止收录新内容”（最多一天）；环境变量 ALERT_QUIET_MINUTES 优先。 */
+  /** 多少分鐘沒有收錄新文章就告警“網站停止收錄新內容”（最多一天）；環境變數 ALERT_QUIET_MINUTES 優先。 */
   quietMinutes: 360,
-  /** 编辑信源一直抓取成功、只是没有新文章时，多少分钟才告警（最多一天）。 */
+  /** 編輯信源一直抓取成功、只是沒有新文章時，多少分鐘才告警（最多一天）。 */
   quietWhileFetchingMinutes: 720,
-  /** 同一条告警里，“没有”后面补一句平时的收录量；null 就不写。 */
+  /** 同一條告警裡，“沒有”後面補一句平時的收錄量；null 就不寫。 */
   usualFlow: null as string | null,
-  /** worker 停了的告警里，怎么看它的日志。 */
-  workerLogs: "看 worker 的日志（docker compose logs worker）",
+  /** worker 停了的告警裡，怎麼看它的日誌。 */
+  workerLogs: "看 worker 的日誌（docker compose logs worker）",
 };
 
-/** 后台新建信源时的默认设置。 */
+/** 後臺新建信源時的預設設定。 */
 export const SOURCE_DEFAULTS = {
-  /** 站内展示全文；false 时只显示摘要和原文链接。 */
+  /** 站內展示全文；false 時只顯示摘要和原文連結。 */
   siteFulltext: false,
 };
 
 /**
- * 社区站的信源（填信源 id）：算热度时按发帖的账号计，一个账号算一个独立来源，而不是整个信源只算一个。
+ * 社群站的信源（填信源 id）：算熱度時按發帖的賬號計，一個賬號算一個獨立來源，而不是整個信源只算一個。
  * dev 是 dev.to 的文章流，hn 是 Hacker News 的帖子流。
  */
 export const COMMUNITY_FEEDS: { dev: string[]; hn: string[] } = {
@@ -244,88 +244,88 @@ export const COMMUNITY_FEEDS: { dev: string[]; hn: string[] } = {
   hn: [],
 };
 
-/** 各页分享图（/og/pages/*.png）上的文字。主题目录页的那张按主题数自动生成。 */
+/** 各頁分享圖（/og/pages/*.png）上的文字。主題目錄頁的那張按主題數自動生成。 */
 export const CARDS: Record<string, { kicker: string; title: string; subtitle: string; accent?: "hot" | "amber" }> = {
-  site: { kicker: subjectAfter("每日", "精选"), title: SITE.tagline, subtitle: SITE.description },
-  all: { kicker: subjectAfter("全部", "动态"), title: "所有信源的最新动态，一站看完", subtitle: "按时间汇总各信源的最新动态，可按类别与标签筛选。" },
-  hot: { kicker: "热点榜", title: "过去 48 小时，大家在讨论什么", subtitle: "热度指数、趋势与组成热度的公开来源。", accent: "hot" },
-  daily: { kicker: withSubject("日报"), title: subjectAfter(`每天 ${spokenTime(EDITION_TIMES.daily)}，一份读得完的`, "日报"), subtitle: `${subjectAfter("前一天值得关注的", "动态")}。` },
-  weekly: { kicker: withSubject("周报"), title: `一周${REPORTS.entry.noun}，一次看清`, subtitle: "本周的主线、重要发布与值得回看的讨论。" },
-  monthly: { kicker: withSubject("月报"), title: "一个月的变化", subtitle: "月度主线与关键事件回顾。" },
-  about: { kicker: "关于", title: `关于 ${SITE.name}`, subtitle: SITE.description },
-  terms: { kicker: "使用规则", title: `${SITE.name} 使用规则`, subtitle: "网页、API、RSS 与 MCP 的使用范围。" },
-  privacy: { kicker: "隐私说明", title: `${SITE.name} 隐私说明`, subtitle: "访问日志、浏览器本地数据与反馈资料的处理方式。" },
-  changelog: { kicker: "更新日志", title: `${SITE.name} 更新日志`, subtitle: "功能更新、优化、公告与下线记录。" },
-  feedback: { kicker: "反馈", title: "告诉我们哪里可以更好", subtitle: "内容、功能、接入，或来源方的更正与下架请求。" },
-  agent: { kicker: "Agent 接入", title: `把 ${SITE.name} 接进你的 Agent`, subtitle: "MCP、RSS、API 三种方式，匿名只读，无需 API Key。" },
+  site: { kicker: subjectAfter("每日", "精選"), title: SITE.tagline, subtitle: SITE.description },
+  all: { kicker: subjectAfter("全部", "動態"), title: "所有信源的最新動態，一站看完", subtitle: "按時間彙總各信源的最新動態，可按類別與標籤篩選。" },
+  hot: { kicker: "熱點榜", title: "過去 48 小時，大家在討論什麼", subtitle: "熱度指數、趨勢與組成熱度的公開來源。", accent: "hot" },
+  daily: { kicker: withSubject("日報"), title: subjectAfter(`每天 ${spokenTime(EDITION_TIMES.daily)}，一份讀得完的`, "日報"), subtitle: `${subjectAfter("前一天值得關注的", "動態")}。` },
+  weekly: { kicker: withSubject("週報"), title: `一週${REPORTS.entry.noun}，一次看清`, subtitle: "本週的主線、重要釋出與值得回看的討論。" },
+  monthly: { kicker: withSubject("月報"), title: "一個月的變化", subtitle: "月度主線與關鍵事件回顧。" },
+  about: { kicker: "關於", title: `關於 ${SITE.name}`, subtitle: SITE.description },
+  terms: { kicker: "使用規則", title: `${SITE.name} 使用規則`, subtitle: "網頁、API、RSS 與 MCP 的使用範圍。" },
+  privacy: { kicker: "隱私說明", title: `${SITE.name} 隱私說明`, subtitle: "訪問日誌、瀏覽器本地資料與回饋資料的處理方式。" },
+  changelog: { kicker: "更新日誌", title: `${SITE.name} 更新日誌`, subtitle: "功能更新、最佳化、公告與下線記錄。" },
+  feedback: { kicker: "回饋", title: "告訴我們哪裡可以更好", subtitle: "內容、功能、接入，或來源方的更正與下架請求。" },
+  agent: { kicker: "Agent 接入", title: `把 ${SITE.name} 接進你的 Agent`, subtitle: "MCP、RSS、API 三種方式，匿名只讀，無需 API Key。" },
 };
 
-/** 公开接口的访问约定里随部署而变的几处：给 Agent 的使用说明、llms.txt 会写。 */
+/** 公開介面的訪問約定裡隨部署而變的幾處：給 Agent 的使用說明、llms.txt 會寫。 */
 export const ACCESS = {
-  /** 同一 IP 每分钟大约能请求多少次，超过会收到 429 并带 Retry-After（选填，由部署的反向代理限流）；null 表示不限流，说明里不提。 */
+  /** 同一 IP 每分鐘大約能請求多少次，超過會收到 429 並帶 Retry-After（選填，由部署的反向代理限流）；null 表示不限流，說明裡不提。 */
   ratePerMinute: null as number | null,
-  /** 请写程序同步数据的人报上的 User-Agent（选填），写在 JSON 接口的说明后面。 */
+  /** 請寫程式同步資料的人報上的 User-Agent（選填），寫在 JSON 介面的說明後面。 */
   userAgent: null as string | null,
 };
 
-/** 这个部署自己的几处安排（选填）。 */
+/** 這個部署自己的幾處安排（選填）。 */
 export const DEPLOYMENT = {
-  /** 凭据分组文件（models.env、collectors.env……）默认放在哪个目录，相对仓库根目录；环境变量 AIHOT_CREDENTIALS_DIR 优先，都没有就只读环境变量。 */
+  /** 憑據分組檔案（models.env、collectors.env……）預設放在哪個目錄，相對倉庫根目錄；環境變數 AIHOT_CREDENTIALS_DIR 優先，都沒有就只讀環境變數。 */
   credentialsDir: null as string | null,
-  /** 凭据分组的文件名（放在凭据目录下，选填）：没写的分组用“分组名.env”，比如 models.env。 */
+  /** 憑據分組的檔名（放在憑據目錄下，選填）：沒寫的分組用“分組名.env”，比如 models.env。 */
   credentialFiles: {} as Partial<Record<string, string>>,
-  /** 这个部署额外要求的凭据（[分组, 环境变量名]）；生产 API 启动时检查，默认没有额外要求。 */
+  /** 這個部署額外要求的憑據（[分組, 環境變數名]）；生產 API 啟動時檢查，預設沒有額外要求。 */
   requiredSecrets: [] as const,
-  /** 线上 api 收到的 Host（CDN 回源用的域名，选填）；本地开发时，网页开发服务器转给 api 的请求也换成它，和线上一致。 */
+  /** 線上 api 收到的 Host（CDN 回源用的域名，選填）；本地開發時，網頁開發伺服器轉給 api 的請求也換成它，和線上一致。 */
   originHost: null as string | null,
-  /** 反向代理把没登录的后台访问转去登录时，用哪个请求头带上原来的地址（选填，登录后回到那里）。 */
+  /** 反向代理把沒登入的後臺訪問轉去登入時，用哪個請求頭帶上原來的地址（選填，登入後回到那裡）。 */
   loginReturnHeader: null as string | null,
   /**
-   * 图片代理从原站取图的流量上限：超过后没缓存的图先返回 503，等这一分钟或这一天过去，当天额度用完会进运营日报；
-   * null 就不设上限。环境变量 IMGPROXY_UPSTREAM_MB_PER_MINUTE、IMGPROXY_UPSTREAM_GB_PER_DAY 优先。
+   * 圖片代理從原站取圖的流量上限：超過後沒快取的圖先返回 503，等這一分鐘或這一天過去，當天額度用完會進營運日報；
+   * null 就不設上限。環境變數 IMGPROXY_UPSTREAM_MB_PER_MINUTE、IMGPROXY_UPSTREAM_GB_PER_DAY 優先。
    */
   imageUpstreamBudget: null as null | { mbPerMinute: number; gbPerDay: number },
   /**
-   * 已实测应由服务器直接连接、不走出网代理（EGRESS_PROXY_URL）的域名，采集和图片共用（选填）。
-   * 每次重定向重新按目标域名选路，直连仍检查实际连接地址。
+   * 已實測應由伺服器直接連線、不走出網代理（EGRESS_PROXY_URL）的域名，採集和圖片共用（選填）。
+   * 每次重定向重新按目標域名選路，直連仍檢查實際連線地址。
    */
   directFetchHosts: [] as string[],
   /**
-   * 精选评测（scripts/eval-selection.ts）不带参数时用的金标集：文件（相对仓库根目录）、抽样条数、只抽哪一份、门槛扫描范围。
-   * null 就用 .data/gold.jsonl 的全部样本（最多 200 条），在 40–90 之间扫描。
+   * 精選評測（scripts/eval-selection.ts）不帶引數時用的金標集：檔案（相對倉庫根目錄）、抽樣條數、只抽哪一份、門檻掃描範圍。
+   * null 就用 .data/gold.jsonl 的全部樣本（最多 200 條），在 40–90 之間掃描。
    */
   selectionGold: null as null | { file: string; sample: number; split: string; sweep: [number, number] },
 };
 
-/** RSS 订阅源的说明里随站点而变的说法。 */
+/** RSS 訂閱源的說明裡隨站點而變的說法。 */
 export const FEED_COPY = {
-  /** “全部动态”源的说明里，除了未审内容、低相关条目、低分条目和已合并重复条目，还写明不含的内容（选填）。 */
+  /** “全部動態”源的說明裡，除了未審內容、低相關條目、低分條目和已合併重複條目，還寫明不含的內容（選填）。 */
   allLeavesOut: [] as string[],
 };
 
 /**
- * 公开接口（API、RSS、MCP）里和网页不同的类别（选填）。上线后不要改：接口参数和订阅地址里有类别的 key。
- * merge：并进另一类发布的类别，key 是行业包里的类别，值是它并进的类别（公开接口比网页少一类时用）；
- * feedLabels：分类 RSS 标题里的名字，替换行业包里的 feedLabel（并进了别的类别时，名字常常也要跟着改）。
+ * 公開介面（API、RSS、MCP）裡和網頁不同的類別（選填）。上線後不要改：介面引數和訂閱地址裡有類別的 key。
+ * merge：並進另一類釋出的類別，key 是行業包裡的類別，值是它並進的類別（公開介面比網頁少一類時用）；
+ * feedLabels：分類 RSS 標題裡的名字，替換行業包裡的 feedLabel（並進了別的類別時，名字常常也要跟著改）。
  */
 export const PUBLIC_CATEGORIES = {
   merge: {},
   feedLabels: {},
 } as const;
 
-/** “AI 日报”这类说法：行业词和名词之间，英文词加空格，中文词不加。 */
+/** “AI 日報”這類說法：行業詞和名詞之間，英文詞加空格，中文詞不加。 */
 export function withSubject(noun: string): string {
   return /[A-Za-z0-9]$/.test(SITE.subject) ? `${SITE.subject} ${noun}` : `${SITE.subject}${noun}`;
 }
 
-/** “按主题看 AI”“往期 AI 日报”这类说法：行业词接在中文后面，英文词前加空格，中文词不加；noun 照 withSubject 接上。 */
+/** “按主題看 AI”“往期 AI 日報”這類說法：行業詞接在中文後面，英文詞前加空格，中文詞不加；noun 照 withSubject 接上。 */
 export function subjectAfter(text: string, noun?: string): string {
   const gap = /^[A-Za-z0-9]/.test(SITE.subject) ? " " : "";
   return `${text}${gap}${noun ? withSubject(noun) : SITE.subject}`;
 }
 
-/** “8 点”“10 点 30 分”：口语里的 HH:mm。 */
+/** “8 點”“10 點 30 分”：口語裡的 HH:mm。 */
 function spokenTime(time: string): string {
   const [hour, minute] = time.split(":").map(Number) as [number, number];
-  return `${hour} 点${minute ? ` ${minute} 分` : ""}`;
+  return `${hour} 點${minute ? ` ${minute} 分` : ""}`;
 }

@@ -57,7 +57,7 @@ export async function withSearchCapacity<T>(fn: (db: Db) => Promise<T>): Promise
 export function searchTerms(q: string): string[] {
   return q
     .toLowerCase()
-    // "多模态RAG" means 多模态 and rag: split where Han meets a Latin word. Digits alone stay attached,
+    // "多模態RAG" means 多模態 and rag: split where Han meets a Latin word. Digits alone stay attached,
     // so "10月" is still one term rather than 10 and 月.
     .replace(/(\p{Script=Han})(?=[a-z])/gu, "$1 ")
     .replace(/([a-z][a-z0-9]*)(?=\p{Script=Han})/gu, "$1 ")

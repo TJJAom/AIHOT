@@ -1,5 +1,5 @@
 // Feed filters: the channel and category choice (a row of tabs on desktop, a sheet behind the bar's filter
-// button on phones), the phone bar of 精选 and 全部, and search.
+// button on phones), the phone bar of 精選 and 全部, and search.
 import { useEffect, useRef, useState } from "react";
 import { Form, Link, useNavigation, useSearchParams } from "react-router";
 import { CATEGORY_KEYS, CATEGORY_LABELS, CHANNEL_LABELS, type CategoryKey, type ChannelKey } from "@aihot/contracts/taxonomy";
@@ -25,8 +25,8 @@ function hrefWith(base: string, params: URLSearchParams, patch: Record<string, s
 }
 
 /**
- * The feed's one filter (精选 and 全部动态 alike): none, 一手, or a category. One choice at a time: picking
- * 一手 clears the category and picking a category clears 一手. Older 资讯 / X links still filter; the
+ * The feed's one filter (精選 and 全部動態 alike): none, 一手, or a category. One choice at a time: picking
+ * 一手 clears the category and picking a category clears 一手. Older 資訊 / X links still filter; the
  * choice then shows as none.
  */
 function filterOptions(base: string, params: URLSearchParams, noneLabel: string) {
@@ -44,11 +44,11 @@ function filterKey(category: CategoryKey | null, channel: ChannelKey): string {
 /** Desktop: the filter as a row of tabs beside the search field. */
 export function CategoryTabs({ base, category, channel = "all", layoutId, className = "" }: { base: string; category: CategoryKey | null; channel?: ChannelKey; layoutId: string; className?: string }) {
   const [params] = useSearchParams();
-  return <PillTabs items={filterOptions(base, params, "全部").map(o => ({ ...o, prefetchOnPress: true }))} active={filterKey(category, channel)} layoutId={layoutId} label="筛选" className={className} />;
+  return <PillTabs items={filterOptions(base, params, "全部").map(o => ({ ...o, prefetchOnPress: true }))} active={filterKey(category, channel)} layoutId={layoutId} label="篩選" className={className} />;
 }
 
 /**
- * The phone bar of 精选 and 全部: the brand, the 精选 | 全部 switch (a filter in use carries over), and
+ * The phone bar of 精選 and 全部: the brand, the 精選 | 全部 switch (a filter in use carries over), and
  * buttons for the filter sheet and search.
  */
 export function FeedBar({ base, category, channel }: { base: "/" | "/all"; category: CategoryKey | null; channel: ChannelKey }) {
@@ -60,7 +60,7 @@ export function FeedBar({ base, category, channel }: { base: "/" | "/all"; categ
     <>
       <PhoneBar
         leading={
-          <Link to="/" aria-label={`${SITE.name} 首页`} className="flex h-11 items-center pl-2.5 pr-2 text-ink">
+          <Link to="/" aria-label={`${SITE.name} 首頁`} className="flex h-11 items-center pl-2.5 pr-2 text-ink">
             <Wordmark size={17} />
           </Link>
         }
@@ -68,17 +68,17 @@ export function FeedBar({ base, category, channel }: { base: "/" | "/all"; categ
           <PillTabs
             size="sm"
             layoutId="feed-scope"
-            label="看精选或全部"
+            label="看精選或全部"
             active={base === "/" ? "featured" : "all"}
             items={[
-              { key: "featured", label: "精选", to: scope("/"), resetScroll: true, prefetchOnPress: true },
+              { key: "featured", label: "精選", to: scope("/"), resetScroll: true, prefetchOnPress: true },
               { key: "all", label: "全部", to: scope("/all"), resetScroll: true, prefetchOnPress: true },
             ]}
           />
         }
         actions={
           <>
-            <BarButton label={filtered ? "筛选（已选）" : "筛选"} on={filtered} onClick={() => setSheet(true)}>
+            <BarButton label={filtered ? "篩選（已選）" : "篩選"} on={filtered} onClick={() => setSheet(true)}>
               <IconFilter size={21} />
               {filtered && <span aria-hidden="true" className="absolute right-[9px] top-[9px] size-[7px] rounded-full bg-accent ring-2 ring-bg" />}
             </BarButton>
@@ -95,7 +95,7 @@ export function FeedBar({ base, category, channel }: { base: "/" | "/all"; categ
 function FilterSheet({ open, onClose, base, active }: { open: boolean; onClose: () => void; base: string; active: string }) {
   const [params] = useSearchParams();
   return (
-    <Sheet open={open} onClose={onClose} title="筛选">
+    <Sheet open={open} onClose={onClose} title="篩選">
       <ul className="mx-4 divide-y divide-line-soft">
         {filterOptions(base, params, "不限").map((o) => {
           const on = o.key === active;
@@ -127,13 +127,13 @@ export function ActiveFilters({ base, category, channel, tag }: { base: string; 
   return (
     <div className="flex flex-wrap gap-2 pb-3 pt-1 lg:hidden">
       {label && (
-        <Link to={hrefWith(base, params, { category: null, channel: null })} aria-label={`取消筛选：${label}`} className={chip}>
+        <Link to={hrefWith(base, params, { category: null, channel: null })} aria-label={`取消篩選：${label}`} className={chip}>
           只看{label}
           <IconClose size={14} strokeWidth={2} />
         </Link>
       )}
       {tag && (
-        <Link to={hrefWith(base, params, { tag: null })} aria-label={`取消标签：${tag}`} className={chip}>
+        <Link to={hrefWith(base, params, { tag: null })} aria-label={`取消標籤：${tag}`} className={chip}>
           <span className="truncate">#{tag}</span>
           <IconClose size={14} strokeWidth={2} className="shrink-0" />
         </Link>
@@ -145,7 +145,7 @@ export function ActiveFilters({ base, category, channel, tag }: { base: string; 
 /** Phones: the magnifier in a bar; the search opens over the page with the keyboard up. */
 function SearchButton() {
   return (
-    <BarButton label="搜索" onClick={(event) => openSearch("", event.currentTarget)}>
+    <BarButton label="搜尋" onClick={(event) => openSearch("", event.currentTarget)}>
       <IconSearch size={21} />
     </BarButton>
   );
@@ -178,7 +178,7 @@ export function SearchField({ defaultValue = "", keep = {} }: { defaultValue?: s
     <Form method="get" action="/all" role="search" className="group relative w-full shrink-0 lg:w-60">
       {hidden}
       <label htmlFor="site-search" className="sr-only">
-        搜索标题和摘要
+        搜尋標題和摘要
       </label>
       <IconSearch size={16} className={`pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 transition-colors ${searching ? "text-accent" : "text-ink-4 group-focus-within:text-ink-3"}`} />
       <input
@@ -187,7 +187,7 @@ export function SearchField({ defaultValue = "", keep = {} }: { defaultValue?: s
         name="q"
         value={value}
         onChange={(e) => setValue(e.target.value)}
-        placeholder="搜索标题、摘要…"
+        placeholder="搜尋標題、摘要…"
         maxLength={200}
         autoComplete="off"
         className="h-[42px] w-full rounded-full bg-well pl-10 pr-10 text-[16px] text-ink outline-none ring-1 ring-inset ring-line-soft transition-[background-color,box-shadow] placeholder:text-ink-4 hover:ring-line-strong focus:bg-surface focus:shadow-[0_0_0_3px_var(--accent-soft)] focus:ring-accent sm:text-[14px]"

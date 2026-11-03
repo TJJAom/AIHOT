@@ -10,9 +10,9 @@ import { Wordmark } from "@aihot/site/brand/Logo.tsx";
 import { buttonClass } from "../components/ui/Controls";
 
 const ERRORS: Record<string, string> = {
-  wrong: "密码不对，再试一次。",
-  unset: "还没有设置管理员密码：在 .env 里设置 ADMIN_PASSWORD（至少 12 位），重启后再登录。",
-  "too-many": "尝试次数太多，请 15 分钟后再试。",
+  wrong: "密碼不對，再試一次。",
+  unset: "還沒有設定管理員密碼：在 .env 裡設定 ADMIN_PASSWORD（至少 12 位），重啟後再登入。",
+  "too-many": "嘗試次數太多，請 15 分鐘後再試。",
 };
 
 export async function loader({ request }: Route.LoaderArgs) {
@@ -24,7 +24,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   return { returnTo: target, error: url.searchParams.get("error"), ...options };
 }
 
-export const meta: Route.MetaFunction = () => [{ title: `登录 · ${SITE.name} 后台` }, { name: "robots", content: "noindex, nofollow" }];
+export const meta: Route.MetaFunction = () => [{ title: `登入 · ${SITE.name} 後臺` }, { name: "robots", content: "noindex, nofollow" }];
 
 export const headers: Route.HeadersFunction = () => ({ "Cache-Control": "no-store", "X-Robots-Tag": "noindex, nofollow" });
 
@@ -36,12 +36,12 @@ export default function AdminLogin() {
       <div className="w-full max-w-[360px]">
         <div className="flex items-center justify-center gap-2">
           <Wordmark size={28} className="text-ink" />
-          <span className="text-[15px] font-semibold text-ink-3">后台</span>
+          <span className="text-[15px] font-semibold text-ink-3">後臺</span>
         </div>
         <form method="post" action="/api/auth/password" className="card mt-8 p-6">
           <input type="hidden" name="return" value={returnTo} />
           <label htmlFor="password" className="block text-[13px] font-medium text-ink-2">
-            管理员密码
+            管理員密碼
           </label>
           <input
             id="password"
@@ -58,11 +58,11 @@ export default function AdminLogin() {
             </p>
           )}
           <button type="submit" className={`${buttonClass("primary", "lg")} mt-5 w-full`}>
-            登录
+            登入
           </button>
           {feishu && (
             <a href={`/api/auth/feishu?${new URLSearchParams({ return: returnTo })}`} className={`${buttonClass("secondary", "lg")} mt-3 w-full`}>
-              用飞书登录
+              用飛書登入
             </a>
           )}
         </form>

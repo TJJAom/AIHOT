@@ -8,7 +8,7 @@ import { IconChevronRight } from "../../components/icons";
 import { KINDS, KIND_PATH, archiveGroups, archiveMark, chipLabel, reportPath } from "./format";
 
 /**
- * 日报 / 周报 / 月报 as the site's pill switch: spread across the archive column, or compact in the phone bar
+ * 日報 / 週報 / 月報 as the site's pill switch: spread across the archive column, or compact in the phone bar
  * (opening at the top). Every place keeps its own layoutId: all of them stay mounted, hidden by width.
  */
 export function KindSwitch({ kind, phone = false, layoutId = phone ? "report-kind-phone" : "report-kind" }: { kind: ReportKind; phone?: boolean; layoutId?: string }) {
@@ -17,7 +17,7 @@ export function KindSwitch({ kind, phone = false, layoutId = phone ? "report-kin
       fill={!phone}
       size={phone ? "sm" : "md"}
       layoutId={layoutId}
-      label="切换日报、周报、月报"
+      label="切換日報、週報、月報"
       active={kind}
       items={KINDS.map((k) => ({ key: k, label: REPORT_NAMES[k], to: KIND_PATH[k], resetScroll: phone, prefetchOnPress: true }))}
     />
@@ -34,14 +34,14 @@ export function ReportArchive({ kind, index, current }: { kind: ReportKind; inde
         <KindSwitch kind={kind} />
       </div>
       <div className="border-b border-line-strong pb-2 pl-1 text-[11.5px] font-semibold tracking-[0.3em] text-ink">往期</div>
-      <nav aria-label={`${REPORT_NAMES[kind]}历史`} className="scrollbar-thin -mr-3 flex-1 overflow-y-auto pb-6 pr-3">
+      <nav aria-label={`${REPORT_NAMES[kind]}歷史`} className="scrollbar-thin -mr-3 flex-1 overflow-y-auto pb-6 pr-3">
         {groups.map((g) => (
           <ArchiveGroup key={g.id} g={g} kind={kind} current={current} initiallyOpen={g.id === openId} />
         ))}
       </nav>
       {kind === "daily" && (
         <IntentLink to="/daily/archive" className="flex h-12 shrink-0 items-center justify-between border-t border-line pl-1 pr-1.5 text-[12.5px] font-medium text-ink-2 transition-colors hover:text-accent">
-          日报合订本 <IconChevronRight size={14} />
+          日報合訂本 <IconChevronRight size={14} />
         </IntentLink>
       )}
     </aside>
@@ -95,7 +95,7 @@ function ArchiveGroup({ g, kind, current, initiallyOpen }: {
           );
         })}
       </ul>}
-      {kind === "daily" && !open && <noscript><a href="/daily/archive">查看完整日报归档</a></noscript>}
+      {kind === "daily" && !open && <noscript><a href="/daily/archive">檢視完整日報歸檔</a></noscript>}
     </details>
   );
 }

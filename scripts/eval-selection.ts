@@ -176,7 +176,7 @@ const meta = { split: values.split, n: sample.length, seed: Number(values.seed),
 writeFileSync(file, JSON.stringify({ meta, models: report }, null, 2));
 console.log(`report: ${file}`);
 if (!values["no-import"]) {
-  const run = await importSelectBenchRun({ meta, models: report }, values.label ?? `${values.split} ${sample.length} 条 · ${Object.keys(report).join(" / ")}`, "script:eval-selection");
+  const run = await importSelectBenchRun({ meta, models: report }, values.label ?? `${values.split} ${sample.length} 條 · ${Object.keys(report).join(" / ")}`, "script:eval-selection");
   console.log(`SelectBench run: ${run.id}`);
 }
 await closeDb();

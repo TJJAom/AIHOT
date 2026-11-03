@@ -13,17 +13,17 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   return adminGet<AdminSelectBenchCases>(request, `/api/admin/selectbench/${encodeURIComponent(params.runId)}${new URL(request.url).search}`);
 }
 
-export const meta: Route.MetaFunction = ({ loaderData }) => [{ title: `${loaderData?.run.label ?? "SelectBench"} · ${SITE.name} 后台` }];
+export const meta: Route.MetaFunction = ({ loaderData }) => [{ title: `${loaderData?.run.label ?? "SelectBench"} · ${SITE.name} 後臺` }];
 
-const GOLD: Record<string, [string, "accent" | "muted" | "info"]> = { select: ["应入选", "accent"], reject: ["不选", "muted"], either: ["两可", "info"] };
+const GOLD: Record<string, [string, "accent" | "muted" | "info"]> = { select: ["應入選", "accent"], reject: ["不選", "muted"], either: ["兩可", "info"] };
 
 function verdict(d: AdminSelectBenchDecision | undefined, gold: string) {
   if (!d) return <span className="text-ink-4">—</span>;
-  if (d.decision === null) return <Badge tone="bad" title={d.error ?? undefined}>失败</Badge>;
+  if (d.decision === null) return <Badge tone="bad" title={d.error ?? undefined}>失敗</Badge>;
   const right = gold === "either" || d.decision === gold;
   return (
     <span className="inline-flex items-center gap-1.5">
-      <Badge tone={right ? (d.decision === "select" ? "ok" : "muted") : "bad"}>{d.decision === "select" ? "入选" : "不选"}</Badge>
+      <Badge tone={right ? (d.decision === "select" ? "ok" : "muted") : "bad"}>{d.decision === "select" ? "入選" : "不選"}</Badge>
       <span className="num text-[12px] text-ink-3">{d.score ?? "—"}</span>
     </span>
   );
@@ -43,7 +43,7 @@ export default function SelectBenchRun({ loaderData: d }: Route.ComponentProps) 
   return (
     <AdminPage
       title={d.run.label}
-      subtitle={<>{bj(d.run.created_at, true)} · {d.run.split ?? "—"} · {num(d.run.sample_size)} 条 · 提示 {d.run.prompt_version ?? "未记录"} · <Link className="text-accent" to="/admin/selectbench">全部运行</Link></>}
+      subtitle={<>{bj(d.run.created_at, true)} · {d.run.split ?? "—"} · {num(d.run.sample_size)} 條 · 提示 {d.run.prompt_version ?? "未記錄"} · <Link className="text-accent" to="/admin/selectbench">全部執行</Link></>}
     >
       <div className="mb-5 grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
         {d.run.models.map((m) => {
@@ -51,10 +51,10 @@ export default function SelectBenchRun({ loaderData: d }: Route.ComponentProps) 
           return (
             <button key={m} onClick={() => set("model", m)} className={`rounded-panel p-4 text-left ring-1 transition-colors ${m === model ? "bg-accent-softer ring-accent/40" : "bg-surface ring-line hover:bg-bg-sunk/60"}`}>
               <div className="text-[13.5px] font-semibold text-ink">{m}</div>
-              <div className="num mt-1.5 text-[22px] font-semibold tracking-tight text-ink">有效输出 F1 {pct(s.f1)}</div>
-              <div className="num mt-0.5 text-[12px] text-ink-3">有效输出准确 {pct(s.accuracy)} · 覆盖 {pct(s.coverage)} · 完整准确 {pct(s.completeAccuracy)}</div>
-              <div className="num mt-0.5 text-[12px] text-ink-3">精确 {pct(s.precision)} · 召回 {pct(s.recall)} · 金标入选 {pct(s.goldSelectRate)}</div>
-              <div className="num mt-0.5 text-[12px] text-ink-4">误选 {s.fp ?? "—"} · 漏选 {s.fn ?? "—"} · {s.decisiveErrors !== undefined ? <>决定失败 {s.decisiveErrors}{s.eitherErrors ? ` · 两可失败 ${s.eitherErrors}` : ""}</> : <>失败 {s.errors ?? 0}</>}</div>
+              <div className="num mt-1.5 text-[22px] font-semibold tracking-tight text-ink">有效輸出 F1 {pct(s.f1)}</div>
+              <div className="num mt-0.5 text-[12px] text-ink-3">有效輸出準確 {pct(s.accuracy)} · 覆蓋 {pct(s.coverage)} · 完整準確 {pct(s.completeAccuracy)}</div>
+              <div className="num mt-0.5 text-[12px] text-ink-3">精確 {pct(s.precision)} · 召回 {pct(s.recall)} · 金標入選 {pct(s.goldSelectRate)}</div>
+              <div className="num mt-0.5 text-[12px] text-ink-4">誤選 {s.fp ?? "—"} · 漏選 {s.fn ?? "—"} · {s.decisiveErrors !== undefined ? <>決定失敗 {s.decisiveErrors}{s.eitherErrors ? ` · 兩可失敗 ${s.eitherErrors}` : ""}</> : <>失敗 {s.errors ?? 0}</>}</div>
             </button>
           );
         })}
@@ -64,23 +64,23 @@ export default function SelectBenchRun({ loaderData: d }: Route.ComponentProps) 
           param="outcome"
           options={[
             { value: "", label: "全部" },
-            { value: "fp", label: "误选" },
-            { value: "fn", label: "漏选" },
-            { value: "tp", label: "选对" },
-            { value: "tn", label: "正确不选" },
-            { value: "either", label: "两可" },
-            { value: "error", label: "失败" },
+            { value: "fp", label: "誤選" },
+            { value: "fn", label: "漏選" },
+            { value: "tp", label: "選對" },
+            { value: "tn", label: "正確不選" },
+            { value: "either", label: "兩可" },
+            { value: "error", label: "失敗" },
           ]}
         />
-        <Select className="!w-auto" aria-label="样本分层" value={sp.get("stratum") ?? ""} onChange={(e) => set("stratum", e.target.value || null)}>
-          <option value="">全部分层</option>
-          {d.strata.map((s) => <option key={s.stratum ?? "none"} value={s.stratum ?? ""}>{s.stratum ?? "未分层"}（{s.n}）</option>)}
+        <Select className="!w-auto" aria-label="樣本分層" value={sp.get("stratum") ?? ""} onChange={(e) => set("stratum", e.target.value || null)}>
+          <option value="">全部分層</option>
+          {d.strata.map((s) => <option key={s.stratum ?? "none"} value={s.stratum ?? ""}>{s.stratum ?? "未分層"}（{s.n}）</option>)}
         </Select>
         <label className="inline-flex items-center gap-2 text-[13px] text-ink-2">
           <input type="checkbox" className="size-4 accent-[var(--accent)]" checked={sp.get("disagree") === "1"} onChange={(e) => set("disagree", e.target.checked ? "1" : null)} />
-          只看模型之间有分歧的
+          只看模型之間有分歧的
         </label>
-        <span className="text-[12.5px] text-ink-4">{d.rows.length === 400 ? "仅显示前 400 条" : `${d.rows.length} 条`} · 筛选按 {model}</span>
+        <span className="text-[12.5px] text-ink-4">{d.rows.length === 400 ? "僅顯示前 400 條" : `${d.rows.length} 條`} · 篩選按 {model}</span>
       </div>
       <Card pad={false}>
         {d.rows.length ? (
@@ -88,8 +88,8 @@ export default function SelectBenchRun({ loaderData: d }: Route.ComponentProps) 
             <table className="w-full min-w-[760px] text-[13px]">
               <thead>
                 <tr className="border-b border-line text-left text-[12px] text-ink-3">
-                  <th className="px-3 py-2 font-medium">样本</th>
-                  <th className="px-3 py-2 font-medium">金标</th>
+                  <th className="px-3 py-2 font-medium">樣本</th>
+                  <th className="px-3 py-2 font-medium">金標</th>
                   {d.run.models.map((m) => <th key={m} className="px-3 py-2 font-medium">{m}</th>)}
                 </tr>
               </thead>
@@ -113,8 +113,8 @@ export default function SelectBenchRun({ loaderData: d }: Route.ComponentProps) 
                               return (
                                 <div key={m} className="rounded-control bg-surface p-3 ring-1 ring-line">
                                   <div className="mb-1 flex items-center justify-between text-[12px] text-ink-3"><span className="font-medium text-ink-2">{m}</span>{x?.category && <span>{CATEGORY_LABELS[x.category as keyof typeof CATEGORY_LABELS] ?? x.category}</span>}</div>
-                                  <div className="text-[12.5px] leading-relaxed text-ink-2">{x?.error ?? x?.reason ?? "（没有理由）"}</div>
-                                  <div className="mt-1 text-[11.5px] text-ink-4">相关性 {x?.relevance ?? "—"}{x?.receiptId ? ` · 回执 #${x.receiptId}` : ""}</div>
+                                  <div className="text-[12.5px] leading-relaxed text-ink-2">{x?.error ?? x?.reason ?? "（沒有理由）"}</div>
+                                  <div className="mt-1 text-[11.5px] text-ink-4">相關性 {x?.relevance ?? "—"}{x?.receiptId ? ` · 回執 #${x.receiptId}` : ""}</div>
                                 </div>
                               );
                             })}
@@ -128,7 +128,7 @@ export default function SelectBenchRun({ loaderData: d }: Route.ComponentProps) 
             </table>
           </div>
         ) : (
-          <Empty>没有符合条件的样本</Empty>
+          <Empty>沒有符合條件的樣本</Empty>
         )}
       </Card>
     </AdminPage>

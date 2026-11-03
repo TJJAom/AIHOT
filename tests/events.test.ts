@@ -18,7 +18,7 @@ import { publishArticle } from "@aihot/backend/publication/publish";
 
 const T = tag();
 const SOURCE = `test-events-${T}`;
-const FACT_TITLE = `测试事件${T}发布新模型`;
+const FACT_TITLE = `測試事件${T}釋出新模型`;
 
 // The model calls the first candidate the same occurrence (and, asked about a pair, agrees), but
 // only once the test lets it answer; the same stub serves the judge and the review model.
@@ -35,11 +35,11 @@ const provider = await stub(async (_hit, req) => {
   await hold.promise;
   const body = JSON.parse(req.body) as { messages: Array<{ content: string }> };
   const user = body.messages[1]!.content;
-  const pair = user.includes("报道 A");
-  const ids = [...user.matchAll(/【候选 (C\d+)】/g)].map((m) => m[1]!);
+  const pair = user.includes("報道 A");
+  const ids = [...user.matchAll(/【候選 (C\d+)】/g)].map((m) => m[1]!);
   const answer = pair
-    ? { a: "发布", b: "发布", relation: pairRelation ?? relation, difference: "", confidence: 0.95 }
-    : { query: "发布新模型", decisions: ids.map((id, index) => ({ id, relation: answerAll || index === 0 ? relation : "UNRELATED", confidence: 0.95, note: "" })), selection: { addsValue: true, reason: "fixture news" } };
+    ? { a: "釋出", b: "釋出", relation: pairRelation ?? relation, difference: "", confidence: 0.95 }
+    : { query: "釋出新模型", decisions: ids.map((id, index) => ({ id, relation: answerAll || index === 0 ? relation : "UNRELATED", confidence: 0.95, note: "" })), selection: { addsValue: true, reason: "fixture news" } };
   return { id: "stub", choices: [{ message: { content: JSON.stringify(answer) } }], usage: { prompt_tokens: 10, completion_tokens: 10, total_tokens: 20 } };
 });
 for (const name of ["DEEPSEEK", "XIAOMI_MIMO"]) {
@@ -73,7 +73,7 @@ async function report(suffix: string, title = FACT_TITLE, summary = "摘要", pu
     sourceId: SOURCE, url: `https://example.com/events-${T}-${suffix}`, title: `Model launch ${T} ${suffix}`, bodyText: "A new model.", bodyStatus: "ok", via: "fetch", publishedAt,
   });
   await sql`INSERT INTO analyses (article_id, input_revision, origin, relevance, category, title_zh, summary_zh, score, selected, output)
-            VALUES (${articleId}, 1, 'rule', 'pass', 'ai-models', ${title}, ${summary}, 80, false, ${sql.json({ fact: { title, subject: "测试", action: "发布", object: "模型" } })})`;
+            VALUES (${articleId}, 1, 'rule', 'pass', 'ai-models', ${title}, ${summary}, 80, false, ${sql.json({ fact: { title, subject: "測試", action: "釋出", object: "模型" } })})`;
   await publishArticle(articleId);
   return articleId;
 }
@@ -350,13 +350,13 @@ test("ROUNDUP answers describe a pair, not the single query's identity; grounded
   const text = randomText();
   await storyWithRoot(text, "roundup-pair-candidate");
   const id = await report("single-roundup-pair", text, text);
-  await setScope(id, "single", { title: text, subject: "测试", action: "发布", object: "模型", evidence: "A new model.", conditions: [{ text: "仅预览用户", quote: "Preview users only." }] });
+  await setScope(id, "single", { title: text, subject: "測試", action: "釋出", object: "模型", evidence: "A new model.", conditions: [{ text: "僅預覽使用者", quote: "Preview users only." }] });
   relation = "ROUNDUP";
   try {
     const result = await groupArticle(id);
     assert.equal(result.verdict, "new-story", "candidate roundup relation cannot reclassify the query");
     const [fact] = await sql`SELECT conditions FROM facts WHERE id = ${result.factId!}`;
-    assert.equal(fact!.conditions, "仅预览用户");
+    assert.equal(fact!.conditions, "僅預覽使用者");
     const [membership] = await sql`SELECT role, evidence FROM fact_articles WHERE article_id = ${id}`;
     assert.equal(membership!.role, "primary", "T1 comes from tier even when old source.first_party is false");
     assert.equal(membership!.evidence, "A new model.\nPreview users only.");

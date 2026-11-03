@@ -42,7 +42,7 @@ async function report(source: string, fact: number) {
     sourceId: source, url: `https://example.com/seats-${T}-${n}`, title: `Seat ${n} ${T}`, bodyText: "body", bodyHtml: "<p>body</p>", bodyStatus: "ok", via: "fetch", publishedAt: at, discoveredAt: at,
   });
   await sql`INSERT INTO analyses (article_id, input_revision, origin, relevance, category, title_zh, summary_zh, reason_zh, score, selected, tags)
-            VALUES (${articleId}, 1, 'rule', 'pass', 'industry', ${`标题${n}-${T}`}, ${`摘要${n}-${T}`}, ${`理由${n}`}, 80, true, ${[`t-${T}`]})`;
+            VALUES (${articleId}, 1, 'rule', 'pass', 'industry', ${`標題${n}-${T}`}, ${`摘要${n}-${T}`}, ${`理由${n}`}, 80, true, ${[`t-${T}`]})`;
   await sql`INSERT INTO fact_articles (fact_id, article_id, role) VALUES (${fact}, ${articleId}, 'report')`;
   await sql`UPDATE articles SET grouping_status = 'complete', grouped_at = now() WHERE id = ${articleId}`;
   await publishArticle(articleId, { releasedAt: at });
@@ -84,7 +84,7 @@ test("one fact holds one selected seat on v1, RSS and the sync ledger", async ()
   assert.equal(net.get(official), "upsert");
   assert.equal(net.get(first), "remove");
   assert.ok(!net.has(second) || net.get(second) === "remove");
-  // 全部动态 and the item page list every report; the ones that yield the seat say which report stands
+  // 全部動態 and the item page list every report; the ones that yield the seat say which report stands
   // for the fact, and the recommendation reason goes with the seat.
   const pool = (await get(`/api/site/pool?q=${T}`)).json.items as Array<{ id: string; reason: string | null; sameEvent?: { id: string } | null }>;
   assert.equal(pool.find((i) => i.id === first)?.sameEvent?.id, official);

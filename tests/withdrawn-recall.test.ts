@@ -62,8 +62,8 @@ test('a withdrawn-only earlier fact does not claim the root of an active candida
 });
 test('withdrawn similarity hits do not consume a valid top candidate slot',async()=>{
   const old=await fixture(),active=await fixture(); const a=await report(old,'expired','withdrawn'),b=await report(active,'active','public');
-  const query=randomUUID()+' 模型发布架构参数推理上下文完整技术说明';
-  for(const [row,title] of [[a,query],[b,query+' 新补充']] as const) {
+  const query=randomUUID()+' 模型釋出架構引數推理上下文完整技術說明';
+  for(const [row,title] of [[a,query],[b,query+' 新補充']] as const) {
     await sql`UPDATE publications SET title=${title} WHERE article_id=${row.id}`;
   }
   const rows=await recallFacts('query-'+old.key,query,0,1); assert.equal(rows.length,1); assert.equal(rows[0].factId,active.factId);

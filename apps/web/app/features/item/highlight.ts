@@ -26,5 +26,5 @@ export function highlightCode(source: string): { html: string; label: string } |
   const result = hljs.highlightAuto(text, Object.keys(LABELS));
   if (!result.language || result.relevance < 4) return null;
   const clear = result.relevance >= 6 && result.relevance - (result.secondBest?.relevance ?? 0) >= 2;
-  return { html: result.value, label: clear ? (LABELS[result.language] ?? "代码") : "代码" };
+  return { html: result.value, label: clear ? (LABELS[result.language] ?? "程式碼") : "程式碼" };
 }

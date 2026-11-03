@@ -11,7 +11,7 @@ const TONES: Record<Tone, string> = {
   neutral: "bg-bg-sunk text-ink-3 border border-line-soft",
 };
 
-/** Small label next to a source or title: 精选, statuses and counts. */
+/** Small label next to a source or title: 精選, statuses and counts. */
 export function Badge({ tone = "neutral", dot = false, children, className = "", title }: { tone?: Tone; dot?: boolean; children: ReactNode; className?: string; title?: string }) {
   return (
     <span title={title} className={`inline-flex h-[18px] shrink-0 items-center gap-1 rounded-full px-2 text-[11px] font-medium leading-none ${TONES[tone]} ${className}`}>
@@ -21,16 +21,16 @@ export function Badge({ tone = "neutral", dot = false, children, className = "",
   );
 }
 
-/** The "精选" mark on a report. */
+/** The "精選" mark on a report. */
 export function SelectedBadge() {
   return (
     <Badge tone="selected" dot>
-      精选
+      精選
     </Badge>
   );
 }
 
 /** A selected report whose fact is shown by another report (the one holding its selected seat). */
 export function SameEventBadge() {
-  return <Badge title="这件事已有另一篇入选精选">同事件</Badge>;
+  return <Badge title="這件事已有另一篇入選精選">同事件</Badge>;
 }

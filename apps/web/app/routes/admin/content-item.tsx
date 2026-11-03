@@ -15,7 +15,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   return adminGet<AdminContentChain>(request, `/api/admin/content/${encodeURIComponent(params.id)}`);
 }
 
-export const meta: Route.MetaFunction = ({ loaderData }) => [{ title: `${loaderData?.publication?.title ?? loaderData?.article.title ?? "内容"} · ${SITE.name} 后台` }];
+export const meta: Route.MetaFunction = ({ loaderData }) => [{ title: `${loaderData?.publication?.title ?? loaderData?.article.title ?? "內容"} · ${SITE.name} 後臺` }];
 
 function Step({ title, meta, children, tone = "accent", last }: { title: ReactNode; meta?: ReactNode; children: ReactNode; tone?: "accent" | "muted" | "bad"; last?: boolean }) {
   const dot = tone === "bad" ? "bg-hot" : tone === "muted" ? "bg-ink-4" : "bg-accent";
@@ -78,53 +78,53 @@ export default function ContentItem({ loaderData }: Route.ComponentProps) {
           {p?.visibility !== "withdrawn" && p && (
             <>
               <span>·</span>
-              <a className="text-accent" href={`/items/${a.id}`} target="_blank" rel="noreferrer">公开页</a>
+              <a className="text-accent" href={`/items/${a.id}`} target="_blank" rel="noreferrer">公開頁</a>
             </>
           )}
         </span>
       }
       actions={
         <>
-          <Button onClick={() => setDialog("visibility")}>公开范围</Button>
-          {p && <Button onClick={() => setDialog("seo")}>{p.indexable ? "取消收录" : "标记收录"}</Button>}
+          <Button onClick={() => setDialog("visibility")}>公開範圍</Button>
+          {p && <Button onClick={() => setDialog("seo")}>{p.indexable ? "取消收錄" : "標記收錄"}</Button>}
           <Button onClick={openOverride}>人工修正</Button>
-          <Button onClick={() => { setPresentation(null); setDialog("presentation"); }}>刷新正文展示</Button>
-          <Button onClick={() => setDialog("analyze")}>重新评估</Button>
+          <Button onClick={() => { setPresentation(null); setDialog("presentation"); }}>重新整理正文展示</Button>
+          <Button onClick={() => setDialog("analyze")}>重新評估</Button>
         </>
       }
     >
       <div className="mb-5 flex flex-wrap gap-1.5">
-        {p ? <Badge tone={p.visibility === "public" ? "ok" : "warn"}>{VISIBILITY_LABEL[p.visibility] ?? p.visibility}</Badge> : <Badge>未公开</Badge>}
-        {p?.selected && <Badge tone="accent">精选</Badge>}
-        {p?.eligible === false && <Badge>不进公开面</Badge>}
-        {a.backfill && <Badge tone="warn">历史回灌</Badge>}
-        <Badge>处理 {a.processing_state}</Badge>
-        {c.override && <Badge tone="info" title={c.override.reason ?? undefined}>有人工设置 v{c.override.version}</Badge>}
+        {p ? <Badge tone={p.visibility === "public" ? "ok" : "warn"}>{VISIBILITY_LABEL[p.visibility] ?? p.visibility}</Badge> : <Badge>未公開</Badge>}
+        {p?.selected && <Badge tone="accent">精選</Badge>}
+        {p?.eligible === false && <Badge>不進公開面</Badge>}
+        {a.backfill && <Badge tone="warn">歷史回灌</Badge>}
+        <Badge>處理 {a.processing_state}</Badge>
+        {c.override && <Badge tone="info" title={c.override.reason ?? undefined}>有人工設定 v{c.override.version}</Badge>}
       </div>
       {a.processing_error && <div className="mb-5 rounded-card bg-hot-soft px-4 py-3 text-[13px] text-hot ring-1 ring-hot/20">{a.processing_error}</div>}
 
       <div className="grid gap-5 xl:grid-cols-[1fr_360px]">
-        <Card title="处理链路">
+        <Card title="處理鏈路">
           <ol className="pt-1">
             <Step title="信源" meta={`${KIND_LABEL[a.source_kind] ?? a.source_kind} · ${String(a.tier).replace("_", ".")} · ${MODE_LABEL[a.participation_mode] ?? a.participation_mode}`}>
               <Link className="text-ink hover:text-accent" to={`/admin/sources/${encodeURIComponent(a.source_id)}`}>{a.source_name}</Link>
-              <span className="text-ink-4"> · 站内全文 {a.site_fulltext ? "允许" : "不允许"} · 对外全文 {a.syndicate_fulltext ? "允许" : "不允许"}</span>
+              <span className="text-ink-4"> · 站內全文 {a.site_fulltext ? "允許" : "不允許"} · 對外全文 {a.syndicate_fulltext ? "允許" : "不允許"}</span>
             </Step>
-            <Step title="发现" meta={`${c.discoveries.length} 次`}>
+            <Step title="發現" meta={`${c.discoveries.length} 次`}>
               <ul className="space-y-1">
                 {c.discoveries.map((d, i) => (
                   <li key={i} className="flex gap-2">
                     <span className="num text-ink-4">{bj(d.discovered_at, true)}</span>
                     <span>{d.via}</span>
-                    {d.source_id !== a.source_id && <span className="text-ink-3">经 {d.source_id}</span>}
+                    {d.source_id !== a.source_id && <span className="text-ink-3">經 {d.source_id}</span>}
                   </li>
                 ))}
               </ul>
               <div className="mt-1.5 text-[12px] text-ink-4">
-                原文时间 {a.published_at ? bj(a.published_at, true) : "未知"}{a.published_at_claim && !a.published_at ? `（声称 ${a.published_at_claim}，未采信）` : ""} · 时间轴 {bj(a.timeline_at, true)}
+                原文時間 {a.published_at ? bj(a.published_at, true) : "未知"}{a.published_at_claim && !a.published_at ? `（聲稱 ${a.published_at_claim}，未採信）` : ""} · 時間軸 {bj(a.timeline_at, true)}
               </div>
             </Step>
-            <Step title="正文与修订" meta={`第 ${a.revision} 版 · 正文 ${a.body_status} · ${a.body_chars ?? 0} 字符`}>
+            <Step title="正文與修訂" meta={`第 ${a.revision} 版 · 正文 ${a.body_status} · ${a.body_chars ?? 0} 字元`}>
               {c.revisions.length ? (
                 <ul className="space-y-1">
                   {c.revisions.map((r) => (
@@ -142,17 +142,17 @@ export default function ContentItem({ loaderData }: Route.ComponentProps) {
                 <Button size="sm" onClick={() => setDialog("extract")}>重新抽取正文</Button>
               </div>
             </Step>
-            <Step title="模型判断" meta={`${c.analyses.length} 次`} tone={c.analyses.length ? "accent" : "muted"}>
+            <Step title="模型判斷" meta={`${c.analyses.length} 次`} tone={c.analyses.length ? "accent" : "muted"}>
               {c.analyses.length ? (
                 <div className="space-y-3">
                   {c.analyses.map((an) => (
                     <div key={an.id} className="rounded-control bg-bg-sunk/60 p-3 ring-1 ring-line">
                       <div className="flex flex-wrap items-center gap-1.5 text-[12px]">
                         <Badge tone={an.relevance === "pass" ? "ok" : "muted"}>{an.relevance}</Badge>
-                        {an.selected && <Badge tone="accent">入选</Badge>}
-                        <Badge tone="info">分数 {an.score}</Badge>
+                        {an.selected && <Badge tone="accent">入選</Badge>}
+                        <Badge tone="info">分數 {an.score}</Badge>
                         {an.category && <Badge>{CATEGORY_LABELS[an.category as keyof typeof CATEGORY_LABELS] ?? an.category}</Badge>}
-                        <span className="text-ink-4">{an.model} · {an.prompt_version} · 输入 v{an.input_revision} · {an.origin} · {bj(an.created_at)}</span>
+                        <span className="text-ink-4">{an.model} · {an.prompt_version} · 輸入 v{an.input_revision} · {an.origin} · {bj(an.created_at)}</span>
                       </div>
                       {an.title_zh && <div className="mt-2 font-medium text-ink">{an.title_zh}</div>}
                       {an.reason_zh && <div className="mt-1 text-[12.5px] leading-relaxed text-ink-3">{an.reason_zh}</div>}
@@ -160,7 +160,7 @@ export default function ContentItem({ loaderData }: Route.ComponentProps) {
                         <div className="mt-2 flex flex-wrap gap-1.5 text-[11.5px]">
                           {an.receipts.map((r) => (
                             <span key={r.id} className="num rounded-mark bg-surface px-1.5 py-0.5 text-ink-3 ring-1 ring-line">
-                              回执 #{r.id} · {r.status} · {r.model ?? r.service}{r.cost !== null ? ` · ${money(r.cost)}` : ""}
+                              回執 #{r.id} · {r.status} · {r.model ?? r.service}{r.cost !== null ? ` · ${money(r.cost)}` : ""}
                             </span>
                           ))}
                         </div>
@@ -169,57 +169,57 @@ export default function ContentItem({ loaderData }: Route.ComponentProps) {
                   ))}
                 </div>
               ) : (
-                <span className="text-ink-4">{a.participation_mode === "editorial" ? "还没有判断（等待队列或失败）" : "氛围信源不做编辑判断"}</span>
+                <span className="text-ink-4">{a.participation_mode === "editorial" ? "還沒有判斷（等待佇列或失敗）" : "氛圍信源不做編輯判斷"}</span>
               )}
             </Step>
-            <Step title="公开" tone={p ? (p.visibility === "withdrawn" ? "bad" : "accent") : "muted"} meta={p ? `更新于 ${bj(p.updated_at, true)}` : undefined}>
+            <Step title="公開" tone={p ? (p.visibility === "withdrawn" ? "bad" : "accent") : "muted"} meta={p ? `更新於 ${bj(p.updated_at, true)}` : undefined}>
               {p ? (
                 <KV
                   items={[
-                    ["范围", VISIBILITY_LABEL[p.visibility] ?? p.visibility],
-                    ["精选", p.selected ? `是 · 可见于 ${p.visible_after ? bj(p.visible_after, true) : "立即"}` : "否"],
-                    ["栏目", p.category ? CATEGORY_LABELS[p.category as keyof typeof CATEGORY_LABELS] ?? p.category : null],
-                    ["标签", (p.tags as string[] | null)?.join("、")],
+                    ["範圍", VISIBILITY_LABEL[p.visibility] ?? p.visibility],
+                    ["精選", p.selected ? `是 · 可見於 ${p.visible_after ? bj(p.visible_after, true) : "立即"}` : "否"],
+                    ["欄目", p.category ? CATEGORY_LABELS[p.category as keyof typeof CATEGORY_LABELS] ?? p.category : null],
+                    ["標籤", (p.tags as string[] | null)?.join("、")],
                     ["摘要", p.summary],
-                    ["推荐理由", p.reason],
+                    ["推薦理由", p.reason],
                     [
                       "正文展示",
-                      `${p.body_mode}${p.syndicate ? " · 对外可带全文" : ""}${
-                        p.indexable ? (p.seo_indexed_at ? " · 可收录（手动标记）" : " · 可收录（精选自动）") : p.seo_excluded_at ? " · 不收录（手动排除）" : " · 不收录"
+                      `${p.body_mode}${p.syndicate ? " · 對外可帶全文" : ""}${
+                        p.indexable ? (p.seo_indexed_at ? " · 可收錄（手動標記）" : " · 可收錄（精選自動）") : p.seo_excluded_at ? " · 不收錄（手動排除）" : " · 不收錄"
                       }`,
                     ],
                   ]}
                 />
               ) : (
-                <span className="text-ink-4">没有公开投影（未通过相关性或仍在处理）</span>
+                <span className="text-ink-4">沒有公開投影（未透過相關性或仍在處理）</span>
               )}
               {c.override && (
                 <div className="mt-3 rounded-control bg-accent-softer p-3 ring-1 ring-accent/15">
-                  <div className="text-[12px] text-ink-3">人工设置 v{c.override.version} · {c.override.updated_by} · {bj(c.override.updated_at, true)}{c.override.reason ? ` · ${c.override.reason}` : ""}</div>
-                  <Json value={{ visibility: c.override.visibility, ...c.override.fields }} label="覆盖字段" collapsed={false} />
+                  <div className="text-[12px] text-ink-3">人工設定 v{c.override.version} · {c.override.updated_by} · {bj(c.override.updated_at, true)}{c.override.reason ? ` · ${c.override.reason}` : ""}</div>
+                  <Json value={{ visibility: c.override.visibility, ...c.override.fields }} label="覆蓋欄位" collapsed={false} />
                 </div>
               )}
             </Step>
-            <Step title="精选同步流水" meta={`${c.ledger.length} 条`} tone={c.ledger.length ? "accent" : "muted"}>
+            <Step title="精選同步流水" meta={`${c.ledger.length} 條`} tone={c.ledger.length ? "accent" : "muted"}>
               {c.ledger.length ? (
                 <ul className="space-y-1">
                   {c.ledger.map((l) => (
                     <li key={l.seq} className="flex gap-2">
                       <span className="num text-ink-4">#{l.seq}</span>
                       <Badge tone={l.op === "remove" ? "warn" : "ok"}>{l.op}</Badge>
-                      <span className="num text-ink-4">可见 {bj(l.visible_at)} · 写入 {bj(l.changed_at)}</span>
+                      <span className="num text-ink-4">可見 {bj(l.visible_at)} · 寫入 {bj(l.changed_at)}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <span className="text-ink-4">没有进入过精选同步流</span>
+                <span className="text-ink-4">沒有進入過精選同步流</span>
               )}
             </Step>
-            <Step title="事件归组" tone={story ? "accent" : "muted"} meta={a.grouped_at ? `归组于 ${bj(a.grouped_at, true)}` : "未归组"}>
+            <Step title="事件歸組" tone={story ? "accent" : "muted"} meta={a.grouped_at ? `歸組於 ${bj(a.grouped_at, true)}` : "未歸組"}>
               {c.membership.map((m) => (
                 <div key={m.fact_id} className="mb-2">
                   <div>
-                    事实 <span className="font-mono text-[12px]">#{m.fact_id}</span> {m.fact_title} <Badge>{m.role}</Badge> {m.manual && <Badge tone="info">人工</Badge>}
+                    事實 <span className="font-mono text-[12px]">#{m.fact_id}</span> {m.fact_title} <Badge>{m.role}</Badge> {m.manual && <Badge tone="info">人工</Badge>}
                   </div>
                   {m.story_public_id && (
                     <div className="mt-0.5">
@@ -234,19 +234,19 @@ export default function ContentItem({ loaderData }: Route.ComponentProps) {
                     <li key={i} className="flex flex-wrap gap-2">
                       <span className="num text-ink-4">{bj(d.created_at)}</span>
                       <Badge>{d.verdict}</Badge>
-                      {d.fact_id && <span>事实 #{d.fact_id}</span>}
-                      {d.receipt_id && <span className="text-ink-4">回执 #{d.receipt_id}</span>}
+                      {d.fact_id && <span>事實 #{d.fact_id}</span>}
+                      {d.receipt_id && <span className="text-ink-4">回執 #{d.receipt_id}</span>}
                     </li>
                   ))}
                 </ul>
               )}
               <div className="mt-2 flex flex-wrap gap-2">
-                <Button size="sm" onClick={() => setDialog("group")}>重新归组</Button>
+                <Button size="sm" onClick={() => setDialog("group")}>重新歸組</Button>
                 {c.membership.length > 0 && <Button size="sm" onClick={() => setDialog("detach")}>移出事件</Button>}
-                {story?.story_id && <Button size="sm" onClick={() => setDialog("merge")}>把这个事件并入…</Button>}
+                {story?.story_id && <Button size="sm" onClick={() => setDialog("merge")}>把這個事件併入…</Button>}
               </div>
             </Step>
-            <Step title="投递" last meta={`${c.deliveries.length} 条`} tone={c.deliveries.some((d) => d.status === "unknown") ? "bad" : c.deliveries.length ? "accent" : "muted"}>
+            <Step title="投遞" last meta={`${c.deliveries.length} 條`} tone={c.deliveries.some((d) => d.status === "unknown") ? "bad" : c.deliveries.length ? "accent" : "muted"}>
               {c.deliveries.length ? (
                 <ul className="space-y-1">
                   {c.deliveries.map((d, i) => (
@@ -258,24 +258,24 @@ export default function ContentItem({ loaderData }: Route.ComponentProps) {
                   ))}
                 </ul>
               ) : (
-                <span className="text-ink-4">没有推送记录</span>
+                <span className="text-ink-4">沒有推送記錄</span>
               )}
             </Step>
           </ol>
         </Card>
 
         <div className="space-y-5">
-          <Card title="原始信息">
+          <Card title="原始資訊">
             <KV
               items={[
-                ["原标题", a.title],
+                ["原標題", a.title],
                 ["作者", a.author],
-                ["语言", a.language],
-                ["身份键", <span className="break-all font-mono text-[11.5px]">{a.identity_key}</span>],
+                ["語言", a.language],
+                ["身份鍵", <span className="break-all font-mono text-[11.5px]">{a.identity_key}</span>],
               ]}
             />
           </Card>
-          <Card title="修改记录">
+          <Card title="修改記錄">
             {c.history.length ? (
               <ul className="space-y-3 text-[12.5px]">
                 {c.history.map((h, i) => (
@@ -286,7 +286,7 @@ export default function ContentItem({ loaderData }: Route.ComponentProps) {
                 ))}
               </ul>
             ) : (
-              <Empty>没有人工操作</Empty>
+              <Empty>沒有人工操作</Empty>
             )}
           </Card>
         </div>
@@ -294,33 +294,33 @@ export default function ContentItem({ loaderData }: Route.ComponentProps) {
 
       <ReasonDialog
         open={dialog === "seo"}
-        title={p?.indexable ? "取消搜索收录" : "标记为可收录"}
+        title={p?.indexable ? "取消搜尋收錄" : "標記為可收錄"}
         description={
           p?.indexable
-            ? "详情页改回 noindex 并移出站点地图；即使是精选，也不再自动收录，直到重新标记。"
-            : "详情页默认 noindex，精选内容自动收录。标记后（仅在公开状态下）改为 index、进入站点地图，并在下一次 IndexNow 提交。适合有独立价值、摘要与正文完整的内容。"
+            ? "詳情頁改回 noindex 並移出站點地圖；即使是精選，也不再自動收錄，直到重新標記。"
+            : "詳情頁預設 noindex，精選內容自動收錄。標記後（僅在公開狀態下）改為 index、進入站點地圖，並在下一次 IndexNow 提交。適合有獨立價值、摘要與正文完整的內容。"
         }
-        confirmLabel={p?.indexable ? "取消收录" : "标记收录"}
+        confirmLabel={p?.indexable ? "取消收錄" : "標記收錄"}
         busy={pending === "seo"}
         onClose={() => setDialog(null)}
-        onSubmit={async (reason) => (await run("POST", `${base}/seo`, { indexed: !p?.indexable, reason }, { label: "seo", success: p?.indexable ? "已取消收录" : "已标记为可收录" })) !== null}
+        onSubmit={async (reason) => (await run("POST", `${base}/seo`, { indexed: !p?.indexable, reason }, { label: "seo", success: p?.indexable ? "已取消收錄" : "已標記為可收錄" })) !== null}
       />
 
       <ReasonDialog
         open={dialog === "visibility"}
-        title="公开范围"
-        description="改动会同时作用于网页、API、RSS、MCP、同步流和搜索索引，并刷新缓存。来源方要求下架时，先核实身份与范围。"
+        title="公開範圍"
+        description="改動會同時作用於網頁、API、RSS、MCP、同步流和搜尋索引，並重新整理快取。來源方要求下架時，先核實身份與範圍。"
         danger={visibility === "withdrawn"}
-        confirmLabel="应用"
+        confirmLabel="應用"
         busy={pending === "visibility"}
         onClose={() => setDialog(null)}
-        onSubmit={async (reason) => (await run("POST", `${base}/visibility`, { visibility, reason, version }, { label: "visibility", success: "公开范围已更新" })) !== null}
+        onSubmit={async (reason) => (await run("POST", `${base}/visibility`, { visibility, reason, version }, { label: "visibility", success: "公開範圍已更新" })) !== null}
       >
         <div className="grid gap-2 sm:grid-cols-3">
           {([
-            ["public", "公开", "正常展示"],
-            ["summary-only", "仅摘要", "不展示正文，保留标题摘要"],
-            ["withdrawn", "下架", "所有出口移除，链接 404"],
+            ["public", "公開", "正常展示"],
+            ["summary-only", "僅摘要", "不展示正文，保留標題摘要"],
+            ["withdrawn", "下架", "所有出口移除，連結 404"],
           ] as const).map(([v, label, hint]) => (
             <label key={v} className={`cursor-pointer rounded-card p-3 ring-1 transition-colors ${visibility === v ? "bg-accent-soft ring-accent" : "ring-line-strong hover:bg-bg-sunk"}`}>
               <input type="radio" name="visibility" className="sr-only" checked={visibility === v} onChange={() => setVisibility(v)} />
@@ -334,8 +334,8 @@ export default function ContentItem({ loaderData }: Route.ComponentProps) {
       <ReasonDialog
         open={dialog === "override"}
         title="人工修正"
-        description="人工值优先于模型输出，之后的重处理不会覆盖；留空的字段不修正，已有的修正留空即清除。"
-        confirmLabel="保存修正"
+        description="人工值優先於模型輸出，之後的重處理不會覆蓋；留空的欄位不修正，已有的修正留空即清除。"
+        confirmLabel="儲存修正"
         busy={pending === "override"}
         onClose={() => setDialog(null)}
         onSubmit={async (reason) => {
@@ -356,40 +356,40 @@ export default function ContentItem({ loaderData }: Route.ComponentProps) {
             if (fields[k] === "true" || fields[k] === "false") next[k] = fields[k] === "true";
             else if (c.override?.fields[k] !== undefined) clear.push(k);
           }
-          return (await run("POST", `${base}/override`, { fields: next, clear, reason, version }, { label: "override", success: "修正已保存并重新发布" })) !== null;
+          return (await run("POST", `${base}/override`, { fields: next, clear, reason, version }, { label: "override", success: "修正已儲存並重新發布" })) !== null;
         }}
       >
-        <Field label="标题"><Input value={fields.title} placeholder={p?.title ?? ""} onChange={(e) => setFields({ ...fields, title: e.target.value })} /></Field>
+        <Field label="標題"><Input value={fields.title} placeholder={p?.title ?? ""} onChange={(e) => setFields({ ...fields, title: e.target.value })} /></Field>
         <Field label="摘要"><Textarea rows={3} value={fields.summary} placeholder={p?.summary ?? ""} onChange={(e) => setFields({ ...fields, summary: e.target.value })} /></Field>
-        <Field label="推荐理由"><Textarea rows={2} value={fields.reason} placeholder={p?.reason ?? ""} onChange={(e) => setFields({ ...fields, reason: e.target.value })} /></Field>
+        <Field label="推薦理由"><Textarea rows={2} value={fields.reason} placeholder={p?.reason ?? ""} onChange={(e) => setFields({ ...fields, reason: e.target.value })} /></Field>
         <div className="grid gap-3 sm:grid-cols-2">
-          <Field label="栏目">
+          <Field label="欄目">
             <Select value={fields.category} onChange={(e) => setFields({ ...fields, category: e.target.value })}>
               <option value="">不修正</option>
               {CATEGORY_KEYS.map((k) => <option key={k} value={k}>{CATEGORY_LABELS[k]}</option>)}
             </Select>
           </Field>
-          <Field label="标签（逗号分隔）"><Input value={fields.tags} onChange={(e) => setFields({ ...fields, tags: e.target.value })} /></Field>
-          <Field label="评分">
+          <Field label="標籤（逗號分隔）"><Input value={fields.tags} onChange={(e) => setFields({ ...fields, tags: e.target.value })} /></Field>
+          <Field label="評分">
             <Select value={fields.scoreMode} onChange={(e) => setFields({ ...fields, scoreMode: e.target.value })}>
               <option value="">按模型</option>
-              <option value="none">撤销评分</option>
-              <option value="value">人工评分</option>
+              <option value="none">撤銷評分</option>
+              <option value="value">人工評分</option>
             </Select>
           </Field>
-          {fields.scoreMode === "value" && <Field label="分数（0–100）"><Input type="number" min={0} max={100} step="any" required value={fields.score} onChange={(e) => setFields({ ...fields, score: e.target.value })} /></Field>}
-          <Field label="精选">
+          {fields.scoreMode === "value" && <Field label="分數（0–100）"><Input type="number" min={0} max={100} step="any" required value={fields.score} onChange={(e) => setFields({ ...fields, score: e.target.value })} /></Field>}
+          <Field label="精選">
             <Select value={fields.selected} onChange={(e) => setFields({ ...fields, selected: e.target.value })}>
               <option value="">按模型</option>
-              <option value="true">强制入选</option>
-              <option value="false">强制不选</option>
+              <option value="true">強制入選</option>
+              <option value="false">強制不選</option>
             </Select>
           </Field>
           <Field label="推送">
             <Select value={fields.silent} onChange={(e) => setFields({ ...fields, silent: e.target.value })}>
               <option value="">正常</option>
-              <option value="true">静默（入选也不推送）</option>
-              <option value="false">取消静默</option>
+              <option value="true">靜默（入選也不推送）</option>
+              <option value="false">取消靜默</option>
             </Select>
           </Field>
         </div>
@@ -397,20 +397,20 @@ export default function ContentItem({ loaderData }: Route.ComponentProps) {
 
       <ReasonDialog
         open={dialog === "analyze"}
-        title="对当前修订重新评估"
-        description="会发起一次新的模型调用（计费并记录回执）。同一次提交重复点击不会重复收费。"
+        title="對當前修訂重新評估"
+        description="會發起一次新的模型呼叫（計費並記錄回執）。同一次提交重複點選不會重複收費。"
         requireReason={false}
-        confirmLabel="重新评估"
+        confirmLabel="重新評估"
         busy={pending === "analyze"}
         onClose={() => setDialog(null)}
-        onSubmit={async () => (await run("POST", `${base}/rerun`, { step: "analyze" }, { label: "analyze", success: "已加入评估队列" })) !== null}
+        onSubmit={async () => (await run("POST", `${base}/rerun`, { step: "analyze" }, { label: "analyze", success: "已加入評估佇列" })) !== null}
       />
       <ReasonDialog
         open={dialog === "presentation"}
-        title="刷新正文展示"
-        description="先检查原网页的图片、链接和排版变化。文字内容相同时保留现有摘要、译文、精选和事件归属。"
+        title="重新整理正文展示"
+        description="先檢查原網頁的圖片、連結和排版變化。文字內容相同時保留現有摘要、譯文、精選和事件歸屬。"
         requireReason={false}
-        confirmLabel={presentation?.ready && presentation.changed ? "应用展示更新" : "预览变化"}
+        confirmLabel={presentation?.ready && presentation.changed ? "應用展示更新" : "預覽變化"}
         busy={pending === "presentation"}
         onClose={() => setDialog(null)}
         onSubmit={async () => {
@@ -424,9 +424,9 @@ export default function ContentItem({ loaderData }: Route.ComponentProps) {
         }}
       >
         {presentation && <div className="space-y-2 text-[13px] text-ink-2">
-          <p>图片 {presentation.images.before} → {presentation.images.after}，链接 {presentation.links.before} → {presentation.links.after}。</p>
-          <p>{presentation.reason ?? (presentation.changed ? "可以应用本次展示更新。" : "当前正文展示无需更新。")}</p>
-          {presentation.translation === "reused" && <p>中文译文会保留原有文字，并同步图片和链接。</p>}
+          <p>圖片 {presentation.images.before} → {presentation.images.after}，連結 {presentation.links.before} → {presentation.links.after}。</p>
+          <p>{presentation.reason ?? (presentation.changed ? "可以應用本次展示更新。" : "當前正文展示無需更新。")}</p>
+          {presentation.translation === "reused" && <p>中文譯文會保留原有文字，並同步圖片和連結。</p>}
         </div>}
       </ReasonDialog>
       <ReasonDialog
@@ -436,22 +436,22 @@ export default function ContentItem({ loaderData }: Route.ComponentProps) {
         confirmLabel="重新抽取"
         busy={pending === "extract"}
         onClose={() => setDialog(null)}
-        onSubmit={async () => (await run("POST", `${base}/rerun`, { step: "extract" }, { label: "extract", success: "已加入抽取队列" })) !== null}
+        onSubmit={async () => (await run("POST", `${base}/rerun`, { step: "extract" }, { label: "extract", success: "已加入抽取佇列" })) !== null}
       />
       <ReasonDialog
         open={dialog === "group"}
-        title="重新归组"
-        description="人工归组的成员关系不会被覆盖。"
+        title="重新歸組"
+        description="人工歸組的成員關係不會被覆蓋。"
         requireReason={false}
-        confirmLabel="重新归组"
+        confirmLabel="重新歸組"
         busy={pending === "group"}
         onClose={() => setDialog(null)}
-        onSubmit={async () => (await run("POST", `${base}/rerun`, { step: "group" }, { label: "group", success: "已加入归组队列" })) !== null}
+        onSubmit={async () => (await run("POST", `${base}/rerun`, { step: "group" }, { label: "group", success: "已加入歸組佇列" })) !== null}
       />
       <ReasonDialog
         open={dialog === "detach"}
         title="移出事件"
-        description="这条内容会作为独立内容展示，事件页随之更新。"
+        description="這條內容會作為獨立內容展示，事件頁隨之更新。"
         danger
         confirmLabel="移出"
         busy={pending === "detach"}
@@ -460,18 +460,18 @@ export default function ContentItem({ loaderData }: Route.ComponentProps) {
       />
       <ReasonDialog
         open={dialog === "merge"}
-        title="合并事件"
-        description={`把事件 #${story?.story_id}（${story?.story_title ?? ""}）并入另一个事件；旧链接会跳转到新事件。`}
+        title="合併事件"
+        description={`把事件 #${story?.story_id}（${story?.story_title ?? ""}）併入另一個事件；舊連結會跳轉到新事件。`}
         danger
-        confirmLabel="合并"
+        confirmLabel="合併"
         busy={pending === "merge"}
         onClose={() => setDialog(null)}
         onSubmit={async (reason) => {
           if (!/^\d+$/.test(mergeInto.trim())) return false;
-          return (await run("POST", "/api/admin/stories/merge", { from: story!.story_id, into: Number(mergeInto), reason }, { label: "merge", success: "事件已合并" })) !== null;
+          return (await run("POST", "/api/admin/stories/merge", { from: story!.story_id, into: Number(mergeInto), reason }, { label: "merge", success: "事件已合併" })) !== null;
         }}
       >
-        <Field label="并入的目标事件编号" hint="在目标事件任一内容的诊断页里可以看到 #编号">
+        <Field label="併入的目標事件編號" hint="在目標事件任一內容的診斷頁裡可以看到 #編號">
           <Input inputMode="numeric" value={mergeInto} onChange={(e) => setMergeInto(e.target.value)} placeholder="例如 1234" />
         </Field>
       </ReasonDialog>

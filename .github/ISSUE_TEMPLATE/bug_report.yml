@@ -1,49 +1,49 @@
-name: 问题反馈 / Bug report
-description: 报告可以复现的故障，帮助我们定位和修复。
+name: 問題回饋 / Bug report
+description: 報告可以復現的故障，幫助我們定位和修復。
 labels: [bug]
 body:
   - type: markdown
     attributes:
       value: |
-        部署与使用问题可以先到 [问答区](https://github.com/KKKKhazix/AIHOT/discussions/categories/q-a) 交流。
-        安全漏洞请通过 [私密漏洞报告](https://github.com/KKKKhazix/AIHOT/security/advisories/new) 提交。
-        请勿上传完整 .env、API Key、管理员密码、Cookie 或生产数据库。
+        部署與使用問題可以先到 [問答區](https://github.com/KKKKhazix/AIHOT/discussions/categories/q-a) 交流。
+        安全漏洞請透過 [私密漏洞報告](https://github.com/KKKKhazix/AIHOT/security/advisories/new) 提交。
+        請勿上傳完整 .env、API Key、管理員密碼、Cookie 或生產資料庫。
   - type: input
     id: revision
     attributes:
-      label: 代码版本
-      description: 在仓库目录执行 git rev-parse --short HEAD；不确定时说明下载或更新日期。用 Use this template 生成的仓库，提交号和本仓库对不上，请写生成日期或最近一次同步本仓库的日期。
-      placeholder: 提交号，或下载、生成、同步的日期
+      label: 程式碼版本
+      description: 在倉庫目錄執行 git rev-parse --short HEAD；不確定時說明下載或更新日期。用 Use this template 生成的倉庫，提交號和本倉庫對不上，請寫生成日期或最近一次同步本倉庫的日期。
+      placeholder: 提交號，或下載、生成、同步的日期
     validations:
       required: true
   - type: textarea
     id: environment
     attributes:
-      label: 运行环境
-      description: 写明系统、Docker 或本机部署、相关版本；网页问题请注明浏览器。
-      placeholder: Ubuntu / macOS；Docker Compose / Node.js；是否有反向代理；是否改过相关配置。
+      label: 執行環境
+      description: 寫明系統、Docker 或本機部署、相關版本；網頁問題請註明瀏覽器。
+      placeholder: Ubuntu / macOS；Docker Compose / Node.js；是否有反向代理；是否改過相關配置。
     validations:
       required: true
   - type: textarea
     id: reproduction
     attributes:
-      label: 复现步骤
-      description: 从哪个页面、命令或操作开始？提供能复现问题的最少步骤。
+      label: 復現步驟
+      description: 從哪個頁面、命令或操作開始？提供能復現問題的最少步驟。
       placeholder: |
-        1. 打开……
-        2. 执行……
-        3. 出现……
+        1. 開啟……
+        2. 執行……
+        3. 出現……
     validations:
       required: true
   - type: textarea
     id: expected-actual
     attributes:
-      label: 预期结果与实际结果
-      placeholder: 预期……；实际……
+      label: 預期結果與實際結果
+      placeholder: 預期……；實際……
     validations:
       required: true
   - type: textarea
     id: evidence
     attributes:
-      label: 相关日志或截图（可选）
-      description: 只贴相关片段，提交前移除密钥、密码、Cookie 和个人信息；没有日志也可以提交。
+      label: 相關日誌或截圖（可選）
+      description: 只貼相關片段，提交前移除金鑰、密碼、Cookie 和個人資訊；沒有日誌也可以提交。

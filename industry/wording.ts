@@ -1,5 +1,5 @@
-// 读者看得到的文字里本站不用的词，每项是要找的写法和改法（例如 [/重磅|炸裂/u, "不用夸张的说法，直接写发生了什么"]）。
-// 写作那一步写完中文标题、摘要和推荐理由后逐个查，用了就让模型只改这些地方一次（packages/backend/src/editorial/
-// analyze.ts 的 mendWording）。只列一眼就能判断的写法：拿不准的不列，否则会误改正常的词。空着就不查。
+// 讀者看得到的文字裡本站不用的詞，每項是要找的寫法和改法（例如 [/重磅|炸裂/u, "不用誇張的說法，直接寫發生了什麼"]）。
+// 寫作那一步寫完中文標題、摘要和推薦理由後逐個查，用了就讓模型只改這些地方一次（packages/backend/src/editorial/
+// analyze.ts 的 mendWording）。只列一眼就能判斷的寫法：拿不準的不列，否則會誤改正常的詞。空著就不查。
 
 export const READER_WORDING: ReadonlyArray<readonly [RegExp, string]> = [];

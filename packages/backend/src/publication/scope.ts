@@ -26,7 +26,7 @@ export function listedCondition(now: Date) {
 }
 
 /**
- * Browsing 全部动态 on every exit (web list, v1 / MCP / Agent, the all RSS): listed and scoring at least
+ * Browsing 全部動態 on every exit (web list, v1 / MCP / Agent, the all RSS): listed and scoring at least
  * the industry's browse floor; searches reach every listed item. An unscored item (the model declined to score it) stays, as it does in the pool.
  */
 export function browsedCondition(now: Date) {

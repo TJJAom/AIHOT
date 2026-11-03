@@ -80,7 +80,7 @@ test("a post that links an X Article waits for extraction, which brings the arti
   assert.match(a!.body_text, /^https:\/\/x\.com\/i\/article\/777\n\n# To Seek a Newer World\n\nWorld Labs is joining AMD\./);
 
   const input = (await loadAnalyzeInput(id))!;
-  assert.match(String(input.xPost!.text), /【X 长文】To Seek a Newer World\n\nWorld Labs is joining AMD\./, "every judging step reads the article");
+  assert.match(String(input.xPost!.text), /【X 長文】To Seek a Newer World\n\nWorld Labs is joining AMD\./, "every judging step reads the article");
   assert.doesNotMatch(renderContext(input), /正文未抓到/);
 
   // The same post read again (a later search, an overlap) is the version already seen.
@@ -107,7 +107,7 @@ test("an article that cannot be fetched is flagged to the model, not passed off 
   assert.equal(await extractArticleBody(id), "unconfirmed");
   const input = (await loadAnalyzeInput(id))!;
   assert.equal(input.bodyStatus, "unconfirmed");
-  assert.match(renderContext(input), /【媒体】含 X 长文链接（正文未抓到）/);
+  assert.match(renderContext(input), /【媒體】含 X 長文連結（正文未抓到）/);
 });
 
 test("a post a module reads (sources.uses) has its X Article fetched while it is news; one nobody reads whole is grouped as it is", async () => {

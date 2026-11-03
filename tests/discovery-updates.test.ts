@@ -43,9 +43,9 @@ async function material(id: string, options: { source?: string; future?: boolean
   const source = options.source ?? 'discovery-editorial';
   await sql`INSERT INTO sources (id,name,kind,tier,participation_mode) VALUES (${source},${source},'rss','T1',${source === 'discovery-signal' ? 'hot_signal' : 'editorial'}) ON CONFLICT DO NOTHING`;
   await sql`INSERT INTO articles (id,source_id,identity_key,url,title,published_at,timeline_at,discovered_at,updated_at)
-    VALUES (${id},${source},${id},${`https://example.org/${id}`},'公开报道','2026-10-01','2026-10-01','2026-10-01','2026-10-01')`;
+    VALUES (${id},${source},${id},${`https://example.org/${id}`},'公開報道','2026-10-01','2026-10-01','2026-10-01','2026-10-01')`;
   await sql`INSERT INTO publications (article_id,source_id,title,summary,url,timeline_at,discovered_at,sort_at,selected,eligible,indexable,visible_after,updated_at,channel,category)
-    VALUES (${id},${source},'公开报道','公开摘要',${`https://example.org/${id}`},'2026-10-01','2026-10-01','2026-10-01',true,true,true,
+    VALUES (${id},${source},'公開報道','公開摘要',${`https://example.org/${id}`},'2026-10-01','2026-10-01','2026-10-01',true,true,true,
       ${options.future ? '2100-01-01' : '2026-10-01'},'2026-10-01','news','ai-models')`;
 }
 
@@ -72,8 +72,8 @@ test('the sitemap lists stories of several reports; notifications keep every sto
   const add = async (ids: string[]) => {
     const publicId = randomUUID();
     const [story] = await sql<{ id: number }[]>`INSERT INTO stories (public_id,title,latest_at,digest,digest_updated_at,created_at,updated_at)
-      VALUES (${publicId},'事件','2026-10-08T00:00:00Z','不再有证据的综述','2026-10-07T00:00:00Z','2026-10-01','2026-10-05') RETURNING id`;
-    const [fact] = await sql<{ id: number }[]>`INSERT INTO facts (public_id,story_id,title) VALUES (${randomUUID()},${story!.id},'事实') RETURNING id`;
+      VALUES (${publicId},'事件','2026-10-08T00:00:00Z','不再有證據的綜述','2026-10-07T00:00:00Z','2026-10-01','2026-10-05') RETURNING id`;
+    const [fact] = await sql<{ id: number }[]>`INSERT INTO facts (public_id,story_id,title) VALUES (${randomUUID()},${story!.id},'事實') RETURNING id`;
     for (const id of ids) await sql`INSERT INTO fact_articles (fact_id,article_id,role) VALUES (${fact!.id},${id},'primary')`;
     return publicId;
   };
@@ -94,7 +94,7 @@ test('dry runs leave changes pending, corrections and disappeared URLs are submi
   await material('changed-story-item');
   const publicId = randomUUID();
   const [story] = await sql<{ id: number }[]>`INSERT INTO stories (public_id,title,created_at,updated_at) VALUES (${publicId},'事件','2026-10-01','2026-10-01') RETURNING id`;
-  const [fact] = await sql<{ id: number }[]>`INSERT INTO facts (public_id,story_id,title) VALUES (${randomUUID()},${story!.id},'事实') RETURNING id`;
+  const [fact] = await sql<{ id: number }[]>`INSERT INTO facts (public_id,story_id,title) VALUES (${randomUUID()},${story!.id},'事實') RETURNING id`;
   await sql`INSERT INTO fact_articles (fact_id,article_id,role) VALUES (${fact!.id},'changed-story-item','primary')`;
   config.indexNowSubmitEnabled = false;
   globalThis.fetch = async () => { throw new Error('dry run made a network request'); };
@@ -104,14 +104,14 @@ test('dry runs leave changes pending, corrections and disappeared URLs are submi
   assert.equal((await submitIndexNow()).status, 'sent');
   assert.ok(batches[0]!.some(url => url.endsWith(`/story/${publicId}`)));
   assert.equal((await submitIndexNow()).status, 'empty');
-  await sql`UPDATE stories SET digest='已核实的新进展',digest_updated_at=now(),updated_at=now() WHERE id=${story!.id}`;
+  await sql`UPDATE stories SET digest='已核實的新進展',digest_updated_at=now(),updated_at=now() WHERE id=${story!.id}`;
   await sql`UPDATE reports SET content='{"headline":"更正"}',revision=revision+1,updated_at=now() WHERE key='2026-10-01'`;
-  await sql`INSERT INTO translations (article_id,revision,body_text,created_at) VALUES ('changed-story-item',1,'新的译文',now())`;
+  await sql`INSERT INTO translations (article_id,revision,body_text,created_at) VALUES ('changed-story-item',1,'新的譯文',now())`;
   await submitIndexNow();
   assert.ok(batches[1]!.some(url => url.endsWith(`/story/${publicId}`)), 'an existing story is updated');
   assert.ok(batches[1]!.some(url => url.endsWith('/items/changed-story-item')), 'a translation changes the public article');
   assert.ok(batches[1]!.some(url => url.endsWith('/daily/2026-10-01')), 'a corrected report is resubmitted');
-  const [target] = await sql<{ id: number }[]>`INSERT INTO stories (public_id,title) VALUES (${randomUUID()},'存续事件') RETURNING id`;
+  const [target] = await sql<{ id: number }[]>`INSERT INTO stories (public_id,title) VALUES (${randomUUID()},'存續事件') RETURNING id`;
   await sql`UPDATE stories SET merged_into=${target!.id},updated_at=now() WHERE id=${story!.id}`;
   await sql`UPDATE publications SET visibility='withdrawn',indexable=false,updated_at=now() WHERE article_id='changed-story-item'`;
   await submitIndexNow();

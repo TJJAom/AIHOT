@@ -34,7 +34,7 @@ const provider = await stub(async (_hit, request) => {
   const content = step === "prefilter" ? { label: original ? "BLOCK" : "PASS", reason: "local fixture" }
     : step === "score" ? { attentionScore: SELECTING_SCORE }
     : step === "structure" ? { category: "ai-models", tags: [], subjects: [], fact: null }
-    : { itemType: "model_release", authorRole: "principal", tags: ["模型发布"], editorialJudgment: "模型能力提升", titleZh: `新判断 ${T}`, summaryZh: "模型发布并提供评测和价格。" };
+    : { itemType: "model_release", authorRole: "principal", tags: ["模型釋出"], editorialJudgment: "模型能力提升", titleZh: `新判斷 ${T}`, summaryZh: "模型釋出並提供評測和價格。" };
   return { choices: [{ message: { content: JSON.stringify(content) } }] };
 });
 pointModels(provider.url);
@@ -106,8 +106,8 @@ test("an authorized recovery preserves unknown billing instead of claiming no ch
   const result = await releaseReceipt(receipt!.id, { billed: null, note: "owner authorized recovery; billing remains unknown" }, "test");
   assert.equal(result?.requeued, true);
   const [record] = await sql`SELECT error FROM receipts WHERE id=${receipt!.id}`;
-  assert.match(record!.error, /计费未知/);
-  assert.doesNotMatch(record!.error, /供应商未计费/);
+  assert.match(record!.error, /計費未知/);
+  assert.doesNotMatch(record!.error, /供應商未計費/);
   const [logged] = await sql`SELECT after FROM audit_log WHERE action='receipt.release' AND subject=${`receipt:${receipt!.id}`}`;
   assert.equal(logged!.after.billed, null);
 });

@@ -21,7 +21,7 @@ export interface FeedItemProps {
   filters?: TimelineFilters;
   read?: boolean;
   onOpen?: (id: string) => void;
-  /** Show category and tags under the text (全部动态, topics, search). */
+  /** Show category and tags under the text (全部動態, topics, search). */
   showTags?: boolean;
   /** The time the item sits at in its list; phones show it in the source line (desktop: on the rail). */
   at?: string;
@@ -68,7 +68,7 @@ export const FeedItem = memo(function FeedItem({ item, group, filters, read = fa
           <IntentLink viewTransition to={`/items/${item.id}`} onClick={open} className="after:absolute after:inset-0 after:content-['']">
             {item.summary}
           </IntentLink>
-        </p> : <IntentLink viewTransition to={`/items/${item.id}`} onClick={open} aria-label={`查看 ${item.x!.authorName} 的帖子`} className="absolute inset-0" />
+        </p> : <IntentLink viewTransition to={`/items/${item.id}`} onClick={open} aria-label={`檢視 ${item.x!.authorName} 的帖子`} className="absolute inset-0" />
       ) : (
         <>
           <h3 className={`mt-1.5 line-clamp-2 text-[17px] font-[650] leading-[1.5] lg:mt-2 lg:line-clamp-none lg:leading-[1.55] ${readTone(read, "text-ink")}`}>
@@ -100,7 +100,7 @@ export const FeedItem = memo(function FeedItem({ item, group, filters, read = fa
 
       {item.sameEvent && (
         <p className="relative z-10 mt-2 line-clamp-1 text-[12.5px] text-ink-4">
-          同一件事，精选收录的是
+          同一件事，精選收錄的是
           <Link viewTransition to={`/items/${item.sameEvent.id}`} className="text-ink-3 transition-colors hover:text-accent">
             《{item.sameEvent.title}》
           </Link>

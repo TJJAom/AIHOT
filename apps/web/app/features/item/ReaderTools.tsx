@@ -1,5 +1,5 @@
 // Phones: the article's own bottom toolbar in place of the tab bar — 收藏,
-// 目录 for long reads (components/ui/OutlineSheet), 分享 and 原文 — sliding away while reading down and
+// 目錄 for long reads (components/ui/OutlineSheet), 分享 and 原文 — sliding away while reading down and
 // back on the way up or at the end; and the sheet of the article's further actions.
 import { useEffect, useState, type ReactNode } from "react";
 import { Sheet } from "../../components/ui/Sheet";
@@ -67,7 +67,7 @@ export function ReaderToolbar({ item, originalUrl, originalLabel, onOutline, onS
   const star = useStar(item);
   return (
     <nav
-      aria-label="阅读工具"
+      aria-label="閱讀工具"
       className={`fixed inset-x-0 bottom-0 z-40 bg-surface/90 pb-[env(safe-area-inset-bottom)] pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] shadow-[0_-1px_0_var(--line)] backdrop-blur-xl backdrop-saturate-150 transition-transform duration-300 ease-[var(--ease-out-quart)] lg:hidden ${hidden ? "translate-y-full" : ""}`}
     >
       <div className={`mx-auto grid h-[50px] max-w-[640px] ${onOutline ? "grid-cols-4" : "grid-cols-3"}`}>
@@ -81,7 +81,7 @@ export function ReaderToolbar({ item, originalUrl, originalLabel, onOutline, onS
             </span>
           }
         />
-        {onOutline && <Tool onClick={onOutline} label="目录" icon={<IconList size={22} />} />}
+        {onOutline && <Tool onClick={onOutline} label="目錄" icon={<IconList size={22} />} />}
         <Tool onClick={onShare} label="分享" icon={<IconShare size={22} />} />
         {originalUrl ? <Tool href={originalUrl} label={originalLabel} icon={<IconExternal size={22} />} /> : <Tool label={originalLabel} icon={<IconExternal size={22} />} />}
       </div>

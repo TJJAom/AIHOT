@@ -23,18 +23,18 @@ import { stopBoss } from "@aihot/backend/jobs/queue";
 const sourceId = `news-value-${tag()}`;
 let relation = "SAME_STORY";
 let sameOccurrenceTitle: string | null = null;
-let selection: unknown = { addsValue: true, reason: "明确的新结果" };
+let selection: unknown = { addsValue: true, reason: "明確的新結果" };
 const users: string[] = [];
 const provider = await stub((_hit, req) => {
   const body = JSON.parse(req.body);
   const user = String(body.messages.at(-1).content);
   users.push(user);
-  const ids = [...user.matchAll(/【候选 (C\d+)】/g)].map(m => m[1]);
-  const matching = new Set([...user.matchAll(/【候选 (C\d+)】（该事实已有 \d+ 篇报道；事实标题：(.*)）/g)]
+  const ids = [...user.matchAll(/【候選 (C\d+)】/g)].map(m => m[1]);
+  const matching = new Set([...user.matchAll(/【候選 (C\d+)】（該事實已有 \d+ 篇報道；事實標題：(.*)）/g)]
     .filter(m => m[2] === sameOccurrenceTitle).map(m => m[1]));
-  const answer = user.includes("报道 A")
+  const answer = user.includes("報道 A")
     ? { a: "a", b: "b", relation, confidence: 1, difference: "" }
-    : { query: "当前动作", decisions: ids.map(id => ({ id,
+    : { query: "當前動作", decisions: ids.map(id => ({ id,
       relation: sameOccurrenceTitle ? matching.has(id) ? "SAME_OCCURRENCE" : "UNRELATED" : relation, confidence: 1, note: "" })), selection };
   return { choices: [{ message: { content: JSON.stringify(answer) } }] };
 });
@@ -51,7 +51,7 @@ async function report(text: string, scope = "single", selected = true) {
   const { articleId } = await upsertMaterial({ sourceId, url: `https://example.org/value/${randomUUID()}`, title: text,
     bodyText: text, bodyStatus: "ok", via: "fetch", publishedAt: new Date() });
   await sql`INSERT INTO analyses(article_id,input_revision,origin,relevance,title_zh,summary_zh,category,score,selected,output)
-    VALUES(${articleId},1,'rule','pass',${text},${text},'ai-products',80,${selected},${sql.json({ scope, fact: scope === "composite" ? null : { title: text, subject: text, action: "发布", object: text } })})`;
+    VALUES(${articleId},1,'rule','pass',${text},${text},'ai-products',80,${selected},${sql.json({ scope, fact: scope === "composite" ? null : { title: text, subject: text, action: "釋出", object: text } })})`;
   await publishArticle(articleId);
   return articleId;
 }
@@ -75,14 +75,14 @@ test("value output is required and boolean, never a silent approval", () => {
   assert.equal(BatchSchema.safeParse(base).success, false);
   assert.equal(BatchSchema.safeParse({ ...base, selection: { addsValue: "true", reason: "" } }).success, false);
   assert.equal(BatchSchema.safeParse({ ...base, selection: { addsValue: false } }).success, false);
-  assert.equal(BatchSchema.safeParse({ ...base, selection: { addsValue: true, reason: "不同发生" } }).success, true);
+  assert.equal(BatchSchema.safeParse({ ...base, selection: { addsValue: true, reason: "不同發生" } }).success, true);
 });
 
 test("same-fact reports remain eligible to replace the representative despite no new information", async () => {
   const text = family();
   const first = await root(text);
   relation = "SAME_OCCURRENCE";
-  selection = { addsValue: false, reason: "相同发布" };
+  selection = { addsValue: false, reason: "相同釋出" };
   const id = await report(text);
   assert.equal((await groupArticle(id)).factId, first.result.factId);
   const row = await state(id);
@@ -94,14 +94,14 @@ for (const sameUrl of [false, true]) test(`a ${sameUrl ? "same-url" : "same-fact
   const text = family();
   await root(text);
   relation = "SAME_STORY";
-  selection = { addsValue: false, reason: "旧能力已被首发报道覆盖" };
-  const rejected = await report(text + "再次讲解");
+  selection = { addsValue: false, reason: "舊能力已被首發報道覆蓋" };
+  const rejected = await report(text + "再次講解");
   const previous = await groupArticle(rejected);
   assert.equal((await state(rejected)).selected, false);
-  const id = await report(text + "再次讲解");
+  const id = await report(text + "再次講解");
   if (sameUrl) await sql`UPDATE articles SET url=(SELECT url FROM articles WHERE id=${rejected}) WHERE id=${id}`;
   relation = "SAME_OCCURRENCE";
-  sameOccurrenceTitle = text + "再次讲解";
+  sameOccurrenceTitle = text + "再次講解";
   const calls = provider.hits();
   try {
     const result = await groupArticle(id);
@@ -116,7 +116,7 @@ for (const alreadySelected of [false, true]) test(`a same-url report can ${alrea
   const first = await root(text, alreadySelected);
   const id = await report(text);
   await sql`UPDATE articles SET url=(SELECT url FROM articles WHERE id=${first.id}) WHERE id=${id}`;
-  selection = { addsValue: true, reason: "此前未精选这条新闻，当前报道有阅读价值" };
+  selection = { addsValue: true, reason: "此前未精選這條新聞，當前報道有閱讀價值" };
   relation = "SAME_OCCURRENCE";
   const calls = provider.hits();
   const result = await groupArticle(id);
@@ -129,8 +129,8 @@ test("a low-increment follow-up stays a distinct fact in all content without a s
   const text = family();
   const first = await root(text);
   relation = "SAME_STORY";
-  selection = { addsValue: false, reason: "仅重复此前披露的能力" };
-  const id = await report(text + "再介绍");
+  selection = { addsValue: false, reason: "僅重複此前披露的能力" };
+  const id = await report(text + "再介紹");
   const result = await groupArticle(id);
   assert.equal(result.storyId, first.result.storyId);
   assert.notEqual(result.factId, first.result.factId);
@@ -144,19 +144,19 @@ test("a material revision rechecks value in the same batch while keeping its con
   const text = family();
   await root(text);
   relation = "SAME_STORY";
-  selection = { addsValue: false, reason: "重复介绍" };
-  const id = await report(text + "讲解");
+  selection = { addsValue: false, reason: "重複介紹" };
+  const id = await report(text + "講解");
   const original = await groupArticle(id);
   const [article] = await sql`SELECT url,published_at FROM articles WHERE id=${id}`;
   for (const [revision, addsValue] of [[2, false], [3, true]] as const) {
-    const revised = text + (addsValue ? "独立测得新的评测结果" : "调整措辞后的讲解");
+    const revised = text + (addsValue ? "獨立測得新的評測結果" : "調整措辭後的講解");
     await upsertMaterial({ sourceId, url: article!.url, title: revised, bodyText: revised,
       bodyStatus: "ok", via: "fetch", publishedAt: article!.published_at });
     await sql`INSERT INTO analyses(article_id,input_revision,origin,relevance,title_zh,summary_zh,category,score,selected,output)
       VALUES(${id},${revision},'rule','pass',${revised},${revised},'ai-products',80,true,
-        ${sql.json({ scope: "single", fact: { title: revised, subject: text, action: "介绍", object: text } })})`;
+        ${sql.json({ scope: "single", fact: { title: revised, subject: text, action: "介紹", object: text } })})`;
     assert.deepEqual([(await state(id)).grouping_status,(await state(id)).selected], ["pending",false]);
-    selection = { addsValue, reason: addsValue ? "补充了新测量结果" : "仅措辞变化" };
+    selection = { addsValue, reason: addsValue ? "補充了新測量結果" : "僅措辭變化" };
     relation = "UNRELATED"; // The new value judgement cannot move its established identity.
     const calls = provider.hits();
     const result = await groupArticle(id);
@@ -182,11 +182,11 @@ test("an independent evaluation remains selected as a new fact", async () => {
   const text = family();
   const first = await root(text);
   relation = "SAME_STORY";
-  selection = { addsValue: true, reason: "独立评测首次给出结果" };
-  const id = await report(text + "新评测");
+  selection = { addsValue: true, reason: "獨立評測首次給出結果" };
+  const id = await report(text + "新評測");
   // Failure mode: a short generated summary omits the source's independent new evidence, so the
   // existing batch can never assess it. Assert the stored input reaches that actual provider call.
-  const sourceEvidence = `${text} 的原文实测：Sticky Sessions 保留会话状态，Endpoint Candidates 分阶段验证新端点。`;
+  const sourceEvidence = `${text} 的原文實測：Sticky Sessions 保留會話狀態，Endpoint Candidates 分階段驗證新端點。`;
   await sql`UPDATE articles SET body_text=${sourceEvidence} WHERE id=${id}`;
   const result = await groupArticle(id);
   assert.notEqual(result.factId, first.result.factId);
@@ -198,8 +198,8 @@ test("a roundup can lose its selected slot while retaining only mention links", 
   const text = family();
   const first = await root(text);
   relation = "ROUNDUP";
-  selection = { addsValue: false, reason: "总览没有超出已选报道的信息" };
-  const id = await report(text + "总览", "composite");
+  selection = { addsValue: false, reason: "總覽沒有超出已選報道的資訊" };
+  const id = await report(text + "總覽", "composite");
   assert.equal((await groupArticle(id)).verdict, "roundup");
   assert.deepEqual((await sql`SELECT role FROM fact_articles WHERE article_id=${id} AND fact_id=${first.result.factId!}`).map(r => r.role), ["mention"]);
   const row = await state(id);
@@ -212,24 +212,24 @@ test("a roundup can lose its selected slot while retaining only mention links", 
 // deserves selection, and unpublished/unselected/out-of-window material is not reader coverage.
 for (const addsValue of [false, true]) test(`a selected composite supplies reading coverage for a ${addsValue ? "new result" : "retelling"} without becoming a fact`, async () => {
   const text = family();
-  const background = await report(text + "综合首发", "composite");
+  const background = await report(text + "綜合首發", "composite");
   await groupArticle(background);
   await releasedMinuteAgo(background);
   assert.deepEqual([(await state(background)).selected,(await state(background)).fact_id], [true,null]);
-  const fullSummary = text + "。" + "已公开能力说明，".repeat(80) + "末项功能支持输出透明图层";
+  const fullSummary = text + "。" + "已公開能力說明，".repeat(80) + "末項功能支援輸出透明圖層";
   await sql`UPDATE publications SET summary=${fullSummary} WHERE article_id=${background}`;
-  await sql`UPDATE articles SET body_text=${text + "首发原文。" + "原文已披露的其他能力。".repeat(200) + "原文核心功能：可调参数、自动资源和多人联机"} WHERE id=${background}`;
+  await sql`UPDATE articles SET body_text=${text + "首發原文。" + "原文已披露的其他能力。".repeat(200) + "原文核心功能：可調引數、自動資源和多人聯機"} WHERE id=${background}`;
   relation = "SAME_OCCURRENCE"; // Reading context must never be turned into an identity candidate.
-  selection = { addsValue, reason: addsValue ? "给出原首发没有的新结果" : "重述综合首发已经披露的能力" };
-  const id = await report(text + (addsValue ? "独立新评测" : "单项再次讲解"));
+  selection = { addsValue, reason: addsValue ? "給出原首發沒有的新結果" : "重述綜合首發已經披露的能力" };
+  const id = await report(text + (addsValue ? "獨立新評測" : "單項再次講解"));
   const calls = provider.hits();
   const result = await groupArticle(id);
   assert.equal((await state(id)).selected, addsValue);
   assert.equal(provider.hits(), calls + 1, "reading coverage is judged in the existing batch with zero fact candidates");
-  assert.ok(users.at(-1)!.includes(text + "综合首发"));
-  assert.ok(users.at(-1)!.includes("末项功能支持输出透明图层"), "the end of a public composite summary remains readable");
-  assert.ok(users.at(-1)!.includes("原文核心功能：可调参数、自动资源和多人联机"), "saved original evidence covers facts omitted by a terse summary");
-  assert.doesNotMatch(users.at(-1)!, /【候选 C\d+】/);
+  assert.ok(users.at(-1)!.includes(text + "綜合首發"));
+  assert.ok(users.at(-1)!.includes("末項功能支援輸出透明圖層"), "the end of a public composite summary remains readable");
+  assert.ok(users.at(-1)!.includes("原文核心功能：可調引數、自動資源和多人聯機"), "saved original evidence covers facts omitted by a terse summary");
+  assert.doesNotMatch(users.at(-1)!, /【候選 C\d+】/);
   assert.equal(result.verdict, "new-story", "the new report owns its identity independently of the reading context");
   assert.equal((await state(background)).fact_id, null);
   assert.equal((await sql`SELECT 1 FROM fact_articles WHERE article_id=${background}`).length, 0);
@@ -238,13 +238,13 @@ for (const addsValue of [false, true]) test(`a selected composite supplies readi
 test("reading-only context excludes unselected, nonpublic and old reports", async () => {
   for (const unavailable of ["unselected", "withdrawn", "old"] as const) {
     const text = family();
-    const background = await report(text + "综合首发", "composite");
+    const background = await report(text + "綜合首發", "composite");
     await groupArticle(background);
     if (unavailable === "unselected") await sql`UPDATE publications SET selected=false WHERE article_id=${background}`;
     if (unavailable === "withdrawn") await sql`UPDATE publications SET visibility='withdrawn' WHERE article_id=${background}`;
     if (unavailable === "old") await sql`UPDATE publications SET discovered_at=now()-interval '61 days' WHERE article_id=${background}`;
-    selection = { addsValue: false, reason: "不能把不可见资料算作读者已看过" };
-    const id = await report(text + "报道");
+    selection = { addsValue: false, reason: "不能把不可見資料算作讀者已看過" };
+    const id = await report(text + "報道");
     const calls = provider.hits();
     await groupArticle(id);
     assert.equal(provider.hits(), calls, unavailable);
@@ -260,42 +260,42 @@ const age = async (id: string, days: number) => {
 
 test("a launch selected before the identity window is still reader coverage for a re-introduction", async () => {
   const text = family();
-  const launch = await root(text + "首发");
+  const launch = await root(text + "首發");
   await age(launch.id, 15);
   relation = "SAME_OCCURRENCE"; // Reading context must never be turned into an identity candidate.
-  selection = { addsValue: false, reason: "再次介绍首发已经披露的能力" };
-  const id = await report(text + "再次介绍用法");
+  selection = { addsValue: false, reason: "再次介紹首發已經披露的能力" };
+  const id = await report(text + "再次介紹用法");
   const calls = provider.hits();
   const result = await groupArticle(id);
   assert.equal(provider.hits(), calls + 1, "judged in the batch call");
-  assert.ok(users.at(-1)!.includes("已公开精选阅读背景 R1") && users.at(-1)!.includes(text + "首发"));
-  assert.doesNotMatch(users.at(-1)!, /【候选 C\d+】/);
+  assert.ok(users.at(-1)!.includes("已公開精選閱讀背景 R1") && users.at(-1)!.includes(text + "首發"));
+  assert.doesNotMatch(users.at(-1)!, /【候選 C\d+】/);
   assert.equal(result.verdict, "new-story", "identity keeps its own window");
   assert.deepEqual([(await state(id)).selection_adds_value, (await state(id)).selected], [false, false]);
 });
 
 test("a selected fact still among the candidates is not repeated as reading context", async () => {
   const text = family();
-  const launch = await root(text + "首发");
+  const launch = await root(text + "首發");
   relation = "SAME_OCCURRENCE";
   selection = { addsValue: true, reason: "same fact" };
-  const later = await report(text + "首发另一来源"); // keeps the fact in the identity window
+  const later = await report(text + "首發另一來源"); // keeps the fact in the identity window
   assert.equal((await groupArticle(later)).factId, launch.result.factId);
   await age(launch.id, 20);
-  selection = { addsValue: false, reason: "已覆盖" };
-  const id = await report(text + "再次介绍");
+  selection = { addsValue: false, reason: "已覆蓋" };
+  const id = await report(text + "再次介紹");
   await groupArticle(id);
-  const batch = users.findLast(u => u.startsWith(`【新报道】\n标题：${text}再次介绍`))!;
-  assert.match(batch, /【候选 C1】/);
-  assert.doesNotMatch(batch, /阅读背景/);
+  const batch = users.findLast(u => u.startsWith(`【新報道】\n標題：${text}再次介紹`))!;
+  assert.match(batch, /【候選 C1】/);
+  assert.doesNotMatch(batch, /閱讀背景/);
 });
 
 test("unselected candidates are not prior selected coverage", async () => {
   const text = family();
   await root(text, false);
   relation = "SAME_STORY";
-  selection = { addsValue: false, reason: "模型误以为候选已精选" };
-  const id = await report(text + "新消息");
+  selection = { addsValue: false, reason: "模型誤以為候選已精選" };
+  const id = await report(text + "新訊息");
   await groupArticle(id);
   assert.equal((await state(id)).selection_adds_value, true);
   assert.equal((await state(id)).selected, true);
@@ -304,7 +304,7 @@ test("unselected candidates are not prior selected coverage", async () => {
 test("value context uses the actually selected report without replacing the identity representative", async () => {
   const text = family();
   const first = await root(text, false);
-  const id = await report(text + "公开精选内容");
+  const id = await report(text + "公開精選內容");
   relation = "SAME_OCCURRENCE";
   selection = { addsValue: true, reason: "same fact" };
   await groupArticle(id);
@@ -312,7 +312,7 @@ test("value context uses the actually selected report without replacing the iden
   const [candidate] = await candidateViews([{ factId: first.result.factId!, storyId: first.result.storyId!, factTitle: text, score: 1 }]);
   assert.equal(candidate!.report.title, text);
   assert.equal(candidate!.selected, true);
-  assert.equal(candidate!.selectedReport?.title, text + "公开精选内容");
+  assert.equal(candidate!.selectedReport?.title, text + "公開精選內容");
 });
 
 test("a missing value answer remains failed and cannot settle a fact", async () => {

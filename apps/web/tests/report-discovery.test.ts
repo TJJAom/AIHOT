@@ -11,6 +11,19 @@ const api = fakeApi((url) => (url.pathname === '/api/health' ? { ok: true } : un
 before(async () => { web = await startWebServer(api); });
 after(() => web.stop());
 
+test('the public agent page uses the Taiwan locale and approved site identity', async () => {
+  const response = await fetch(`${web.origin}/agent`);
+  assert.equal(response.status, 200, web.logs());
+  const $ = cheerio.load(await response.text());
+  assert.equal($('html').attr('lang'), 'zh-TW');
+  assert.match($('title').text(), /日耕 AI 熱點/);
+  assert.ok($('a[href="https://github.com/TJJAom/AIHOT"]').length > 0);
+  assert.match($('body').text(), /全部 AI 動態/);
+  const terms = await fetch(`${web.origin}/terms`);
+  assert.equal(terms.status, 200, web.logs());
+  assert.match(cheerio.load(await terms.text())('body').text(), /尚未生效/);
+});
+
 for (const [tab, names] of [
   ['rss', ['/feed/daily.xml', '/feed/weekly.xml', '/feed/monthly.xml']],
   ['api', ['/api/v1/dailies/latest', '/api/v1/weeklies/latest', '/api/v1/monthlies/latest']],

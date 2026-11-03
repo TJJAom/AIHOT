@@ -3,12 +3,12 @@ import type { StoryFollowup, StoryFollowupsResponse, StoryRef } from "@aihot/con
 import { MoreLink } from "../../components/ui/Page";
 import { relativeTime } from "../../lib/format";
 
-/** "事件后续": the other developments of the event this report belongs to, newest first, with a link to the whole event. */
+/** "事件後續": the other developments of the event this report belongs to, newest first, with a link to the whole event. */
 export function StoryFollowups({ followups, story, currentId }: { followups: StoryFollowupsResponse | null; story: StoryRef; currentId: string }) {
   const items = followups?.items.filter((d) => d.representative.id !== currentId) ?? [];
   return items.length > 0
     ? <Followups items={items} more={followups!.more} story={story} />
-    : <noscript><a href={`/story/${story.publicId}`}>查看事件全部后续</a></noscript>;
+    : <noscript><a href={`/story/${story.publicId}`}>檢視事件全部後續</a></noscript>;
 }
 
 function Followups({items, more, story}: {items: StoryFollowup[]; more: boolean; story: StoryRef}) {
@@ -16,9 +16,9 @@ function Followups({items, more, story}: {items: StoryFollowup[]; more: boolean;
     <section className="mt-10 border-t border-line pt-5">
       <div className="mb-2 flex items-center justify-between">
         <h2 className="text-[14px] font-semibold text-ink">
-          事件后续 <span className="num font-normal text-ink-4">· {items.length}{more ? "+" : ""}</span>
+          事件後續 <span className="num font-normal text-ink-4">· {items.length}{more ? "+" : ""}</span>
         </h2>
-        <MoreLink to={`/story/${story.publicId}`}>查看事件全部</MoreLink>
+        <MoreLink to={`/story/${story.publicId}`}>檢視事件全部</MoreLink>
       </div>
       <ul className="divide-y divide-line-soft">
         {items.map((d) => (

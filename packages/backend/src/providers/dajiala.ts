@@ -1,4 +1,4 @@
-// Dajiala (极致了) WeChat official-account data. Paid per request (post_history ¥0.14, article_detail
+// Dajiala (極致了) WeChat official-account data. Paid per request (post_history ¥0.14, article_detail
 // ¥0.03); every call goes through receipts and the budget, and the provider's own cost_money is kept
 // as the actual cost. Docs: https://s.apifox.cn/410674f9-f451-4b4f-957a-5f54f243bc83
 import { credential } from "../config.ts";

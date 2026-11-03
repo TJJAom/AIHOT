@@ -4,7 +4,7 @@ import { randomBytes } from "node:crypto";
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 
 if (existsSync(".env")) {
-  console.error(".env 已经存在，没有覆盖。要重新生成，先把它改名或删掉。");
+  console.error(".env 已經存在，沒有覆蓋。要重新生成，先把它改名或刪掉。");
   process.exit(1);
 }
 const password = randomBytes(12).toString("base64url");
@@ -18,5 +18,5 @@ const text = readFileSync(".env.example", "utf8")
   .replace(/^LLM_API_KEY=$/m, `LLM_API_KEY=${llmKey}`);
 writeFileSync(".env", text, { mode: 0o600 });
 console.log("已生成 .env。");
-console.log(`管理员密码：${password}（也写在 .env 的 ADMIN_PASSWORD 里）`);
-if (!llmKey) console.log("还差一步：在 .env 里填上 LLM_API_KEY（以及 LLM_BASE_URL、LLM_MODEL，默认是 DeepSeek）。");
+console.log(`管理員密碼：${password}（也寫在 .env 的 ADMIN_PASSWORD 裡）`);
+if (!llmKey) console.log("還差一步：在 .env 裡填上 LLM_API_KEY（以及 LLM_BASE_URL、LLM_MODEL，預設是 DeepSeek）。");

@@ -97,8 +97,8 @@ export function toDigestInput(row: DigestEvalCase) {
 }
 
 export function inputForm(row: DigestEvalCase): string {
-  if (row.inputMode === "corrected") return "更正后重写（不带上一版综述）";
-  return row.story.previousDigest ? "增量更新（带上一版综述）" : "首次撰写";
+  if (row.inputMode === "corrected") return "更正後重寫（不帶上一版綜述）";
+  return row.story.previousDigest ? "增量更新（帶上一版綜述）" : "首次撰寫";
 }
 
 export interface DigestCall {
@@ -136,39 +136,39 @@ export interface DigestEvalReport {
   }>;
 }
 
-const PROMPTS = [["live", "线上提示词"], ["candidate", "候选提示词"]] as const;
+const PROMPTS = [["live", "線上提示詞"], ["candidate", "候選提示詞"]] as const;
 
 const usage = (call: { receiptId: number | null; reused: boolean; tokensIn: number; tokensOut: number }) =>
-  `${call.receiptId === null ? "无回执" : `回执 #${call.receiptId}`} · 输入 ${call.tokensIn} tokens · 输出 ${call.tokensOut} tokens${call.reused ? " · 复用已收到的结果" : ""}`;
+  `${call.receiptId === null ? "無回執" : `回執 #${call.receiptId}`} · 輸入 ${call.tokensIn} tokens · 輸出 ${call.tokensOut} tokens${call.reused ? " · 複用已收到的結果" : ""}`;
 
 /** The report for reading: every case's answers one after another, line breaks kept. */
 export function digestComparisonMarkdown(report: DigestEvalReport): string {
   const { meta } = report;
   const lines = [
-    "# 事件综述提示词对比",
+    "# 事件綜述提示詞對比",
     "",
-    `- 生成时间：${meta.createdAt}`,
+    `- 生成時間：${meta.createdAt}`,
     `- 案例：${meta.cases}`,
-    `- 线上提示词：${meta.prompts.live.version}`,
-    ...(meta.prompts.candidate ? [`- 候选提示词：${meta.prompts.candidate.file}（${meta.prompts.candidate.version}）`] : []),
-    `- 模型调用：${meta.calls} 次`,
+    `- 線上提示詞：${meta.prompts.live.version}`,
+    ...(meta.prompts.candidate ? [`- 候選提示詞：${meta.prompts.candidate.file}（${meta.prompts.candidate.version}）`] : []),
+    `- 模型呼叫：${meta.calls} 次`,
   ];
   for (const [model, run] of Object.entries(report.models)) {
     for (const [key, label] of PROMPTS) {
       const summary = run.summary[key];
-      if (summary) lines.push(`- ${model} · ${label}：成功 ${summary.succeeded}/${summary.calls}，输入 ${summary.tokensIn} tokens，输出 ${summary.tokensOut} tokens，${summary.reused} 次复用已收到的结果`);
+      if (summary) lines.push(`- ${model} · ${label}：成功 ${summary.succeeded}/${summary.calls}，輸入 ${summary.tokensIn} tokens，輸出 ${summary.tokensOut} tokens，${summary.reused} 次複用已收到的結果`);
     }
   }
   const runs = Object.entries(report.models);
   for (const [index, item] of (runs[0]?.[1].cases ?? []).entries()) {
-    lines.push("", `## ${index + 1}. ${item.storyTitle}`, "", `案例 \`${item.caseId}\` · 报道 ${item.reports} 篇 · ${item.input}`);
+    lines.push("", `## ${index + 1}. ${item.storyTitle}`, "", `案例 \`${item.caseId}\` · 報道 ${item.reports} 篇 · ${item.input}`);
     for (const [model, run] of runs) {
       for (const [key, label] of PROMPTS) {
         const call = run.cases[index]![key];
         if (!call) continue;
         lines.push("", `### ${label} · ${model}`, "");
-        if (call.error !== null || call.digest === null) lines.push(`生成失败：${call.error}`);
-        else lines.push(`**${call.title || "（沿用事件标题）"}**`, "", ...call.digest.split("\n").map((line) => (line ? `> ${line}  ` : ">")));
+        if (call.error !== null || call.digest === null) lines.push(`生成失敗：${call.error}`);
+        else lines.push(`**${call.title || "（沿用事件標題）"}**`, "", ...call.digest.split("\n").map((line) => (line ? `> ${line}  ` : ">")));
         lines.push("", usage(call));
       }
     }

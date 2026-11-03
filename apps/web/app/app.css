@@ -23,7 +23,7 @@
 @custom-variant short (@media (max-height: 700px));
 
 @theme {
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Hiragino Sans GB", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", "Heiti TC", "PingFang SC", "Hiragino Sans GB", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 
   /* Semantic colours. */
@@ -329,7 +329,7 @@
   border-radius: var(--radius-card);
   box-shadow: var(--shadow-card);
 }
-/* The well: a quiet sunk panel for what navigates or annotates rather than reads (the report's 报眼,
+/* The well: a quiet sunk panel for what navigates or annotates rather than reads (the report's 報眼,
    the hot lead's heat panel, notes on about and feedback). Radius is set where it is used. */
 @utility well {
   background-color: var(--well);

@@ -70,44 +70,44 @@ export function needsShortTweetTranslation(text: string): boolean {
 const unfetchedXArticle = (a: AnalyzeInputArticle) => !!a.xPost && a.bodyStatus !== "ok" && onlyXArticleLink(String(a.xPost.text ?? ""));
 
 function materialQuality(a: AnalyzeInputArticle): string {
-  if (a.xPost) return "完整正文（来自 RSS / API 自带的 content 字段）";
-  if (a.bodyText) return a.source.fetchesBody ? "完整正文（抓自原始网页）" : "完整正文（来自 RSS / API 自带的 content 字段）";
-  if (a.excerpt) return "仅摘要（feed 未提供完整正文）";
-  if (a.bodyStatus === "unconfirmed") return "抓取失败，仅标题可用";
-  return "无有效文本";
+  if (a.xPost) return "完整正文（來自 RSS / API 自帶的 content 欄位）";
+  if (a.bodyText) return a.source.fetchesBody ? "完整正文（抓自原始網頁）" : "完整正文（來自 RSS / API 自帶的 content 欄位）";
+  if (a.excerpt) return "僅摘要（feed 未提供完整正文）";
+  if (a.bodyStatus === "unconfirmed") return "抓取失敗，僅標題可用";
+  return "無有效文字";
 }
 
 /** The material as the prefilter and the content understanding read it. */
 export function renderContext(a: AnalyzeInputArticle, opts: { annotateQuoted?: boolean } = {}): string {
   const lines: string[] = [];
-  lines.push(`【来源】${a.source.name}（${a.source.kind}，tier=${a.source.tier || "未分级"}）`);
-  if (a.source.tags?.length) lines.push(`【来源标签】${a.source.tags.join(", ")}`);
+  lines.push(`【來源】${a.source.name}（${a.source.kind}，tier=${a.source.tier || "未分級"}）`);
+  if (a.source.tags?.length) lines.push(`【來源標籤】${a.source.tags.join(", ")}`);
   const name = a.xPost?.authorName || a.author;
   const handle = a.xPost?.handle;
   if (name || handle) lines.push(`【作者】${[name, handle ? `@${handle}` : null].filter(Boolean).join(" · ")}`);
-  if (a.publishedAt) lines.push(`【发布时间】${describePublicationTime(a.publishedAt, a.publicationTime)}`);
+  if (a.publishedAt) lines.push(`【釋出時間】${describePublicationTime(a.publishedAt, a.publicationTime)}`);
   const media = (a.xPost?.media ?? a.media ?? []) as Array<{ kind?: string }>;
   const images = media.filter((m) => m.kind === "image").length;
   const videos = media.filter((m) => m.kind === "video").length;
-  const mediaParts = [images ? `${images} 张图` : null, videos ? `${videos} 个视频` : null, unfetchedXArticle(a) ? "含 X 长文链接（正文未抓到）" : null].filter(Boolean);
-  if (mediaParts.length) lines.push(`【媒体】${mediaParts.join(" · ")}`);
-  lines.push(`【原文链接】${a.url}`);
-  lines.push(`【标题】${a.title}`);
+  const mediaParts = [images ? `${images} 張圖` : null, videos ? `${videos} 個影片` : null, unfetchedXArticle(a) ? "含 X 長文連結（正文未抓到）" : null].filter(Boolean);
+  if (mediaParts.length) lines.push(`【媒體】${mediaParts.join(" · ")}`);
+  lines.push(`【原文連結】${a.url}`);
+  lines.push(`【標題】${a.title}`);
   const quoted = a.xPost?.quoted?.text ? a.xPost.quoted : null;
   if (quoted) {
     const label = quoted.handle ? `@${quoted.handle}` : "原推";
     if (opts.annotateQuoted) {
-      lines.push(`【引用 ${label}】（以下是作者转发/引用的**他人**内容，不是作者本人的产出）`);
+      lines.push(`【引用 ${label}】（以下是作者轉發/引用的**他人**內容，不是作者本人的產出）`);
       lines.push(String(quoted.text));
     } else {
       lines.push(`【引用 ${label}】${quoted.text}`);
     }
   }
   lines.push("");
-  lines.push(opts.annotateQuoted && quoted ? "【正文（作者自己的内容）】" : "【正文】");
-  lines.push(capBody(a.xPost ? String(a.xPost.text ?? a.title) : (a.bodyText ?? a.excerpt ?? "(无正文)")));
+  lines.push(opts.annotateQuoted && quoted ? "【正文（作者自己的內容）】" : "【正文】");
+  lines.push(capBody(a.xPost ? String(a.xPost.text ?? a.title) : (a.bodyText ?? a.excerpt ?? "(無正文)")));
   lines.push("");
-  lines.push(`【材料质量】${materialQuality(a)}`);
+  lines.push(`【材料質量】${materialQuality(a)}`);
   return lines.join("\n");
 }
 
@@ -120,7 +120,7 @@ export function missingEvidence(a: AnalyzeInputArticle): boolean {
 }
 
 export const understandUser = (a: AnalyzeInputArticle) =>
-  ["请按系统规则理解以下单篇材料，一次返回全部六个字段。", renderContext(a, { annotateQuoted: true })].join("\n\n");
+  ["請按系統規則理解以下單篇材料，一次返回全部六個欄位。", renderContext(a, { annotateQuoted: true })].join("\n\n");
 
 // Identity context and guard
 
@@ -196,9 +196,9 @@ function identityContext(input: TranslateInput) {
 function identityPrompt(input: TranslateInput): string {
   const ctx = identityContext(input);
   const facts: string[] = [];
-  if (ctx.publisher) facts.push(`文档发布域主体=${lexiconName(ctx.publisher) ?? ctx.publisher}`);
-  if (ctx.owner) facts.push(`来源账号主体=${lexiconName(ctx.owner) ?? ctx.owner}`);
-  return promptText("identity-context", { facts: facts.length > 0 ? facts.join("；") : "未识别到明确发布主体" });
+  if (ctx.publisher) facts.push(`文件釋出域主體=${lexiconName(ctx.publisher) ?? ctx.publisher}`);
+  if (ctx.owner) facts.push(`來源賬號主體=${lexiconName(ctx.owner) ?? ctx.owner}`);
+  return promptText("identity-context", { facts: facts.length > 0 ? facts.join("；") : "未識別到明確釋出主體" });
 }
 
 export interface IdentityGuard {
@@ -269,10 +269,10 @@ export function finalizeCopy(input: TranslateInput, copy: { titleZh: string; sum
 
 // Title/summary prompts for items the content understanding does not write
 
-const sourceName = (name?: string) => name?.trim() || "（未注明）";
+const sourceName = (name?: string) => name?.trim() || "（未註明）";
 
 function anchorDate(d: Date | undefined): string {
-  if (!d || Number.isNaN(d.getTime())) return "未注明";
+  if (!d || Number.isNaN(d.getTime())) return "未註明";
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(d);
 }
 
@@ -303,8 +303,8 @@ export function buildLongTweetPrompt(input: TranslateInput): string {
   return promptText("summarize-long-post", { sourceName: sourceName(input.sourceName), identity: identityPrompt(input), post }) + quotedBlock(input, "summarize-long-post-quoted");
 }
 
-/** Prompt lines a model sometimes repeats after its answer (来源：…, 【已核验身份上下文】…, 原始标题：…). */
-const ECHO_LINE = /^(来源[:：]|【已核验身份上下文】|这些事实只用于防止|原始标题[:：]|【时间锚点】)/;
+/** Prompt lines a model sometimes repeats after its answer (來源：…, 【已核驗身份上下文】…, 原始標題：…). */
+const ECHO_LINE = /^(?:來源[:：]|来源[:：]|【已核驗身份上下文】|【已核验身份上下文】|這些事實只用於防止|这些事实只用于防止|原始標題[:：]|原始标题[:：]|【時間錨點】|【时间锚点】)/;
 
 /** The answer without prompt lines repeated at its end. */
 export function stripEcho(text: string): string {

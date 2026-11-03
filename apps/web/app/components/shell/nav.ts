@@ -19,13 +19,13 @@ export interface NavItem {
 
 const SECTIONS: Array<{ title: string; items: NavItem[] }> = [
   {
-    title: "内容",
+    title: "內容",
     items: [
-      { to: "/", label: "精选", icon: IconBolt, end: true },
-      { to: "/all", label: subjectAfter("全部", "动态"), icon: IconList },
-      { to: "/hot", label: "热点榜", icon: IconFlame },
-      { to: "/daily", label: withSubject("日报"), icon: IconDoc },
-      { to: "/topics", label: "主题", icon: IconGrid },
+      { to: "/", label: "精選", icon: IconBolt, end: true },
+      { to: "/all", label: subjectAfter("全部", "動態"), icon: IconList },
+      { to: "/hot", label: "熱點榜", icon: IconFlame },
+      { to: "/daily", label: withSubject("日報"), icon: IconDoc },
+      { to: "/topics", label: "主題", icon: IconGrid },
       { to: "/starred", label: "收藏", icon: IconBookmark },
     ],
   },
@@ -33,9 +33,9 @@ const SECTIONS: Array<{ title: string; items: NavItem[] }> = [
     title: "更多",
     items: [
       { to: "/agent", label: "Agent 接入", icon: IconPlug },
-      { to: "/about", label: "关于", icon: IconHeart },
-      { to: "/changelog", label: "更新日志", icon: IconHistory, changelog: true },
-      { to: "/feedback", label: "反馈", icon: IconMessage },
+      { to: "/about", label: "關於", icon: IconHeart },
+      { to: "/changelog", label: "更新日誌", icon: IconHistory, changelog: true },
+      { to: "/feedback", label: "回饋", icon: IconMessage },
     ],
   },
 ];
@@ -44,22 +44,22 @@ const SECTIONS: Array<{ title: string; items: NavItem[] }> = [
 export const inNav = (to: string) => !(NAV.hidden as readonly string[]).includes(to);
 
 const UP = {
-  "/hot": { name: "热点榜", back: "热点", tab: "hot" },
-  "/topics": { name: "主题", back: "全部主题", tab: "me" },
+  "/hot": { name: "熱點榜", back: "熱點", tab: "hot" },
+  "/topics": { name: "主題", back: "全部主題", tab: "me" },
 } as const;
 
 /**
- * Where pages under a navigation entry lead back up to: the entry, or 精选 in its place while the site hides
- * it. `name` is for breadcrumbs and desktop back links (热点榜), `back` for the phone bar (热点), `tab` the
+ * Where pages under a navigation entry lead back up to: the entry, or 精選 in its place while the site hides
+ * it. `name` is for breadcrumbs and desktop back links (熱點榜), `back` for the phone bar (熱點), `tab` the
  * phone tab it sits under, `crumbs` its breadcrumb after the site's home.
  */
 export function navUp(entry: keyof typeof UP): { to: string; name: string; back: string; tab: TabKey; crumbs: Array<{ name: string; path: string }> } {
-  if (!inNav(entry)) return { to: "/", name: "精选", back: "精选", tab: "featured", crumbs: [] };
+  if (!inNav(entry)) return { to: "/", name: "精選", back: "精選", tab: "featured", crumbs: [] };
   return { to: entry, ...UP[entry], crumbs: [{ name: UP[entry].name, path: entry }] };
 }
 
 /**
- * The sidebar: the engine's sections with the modules' between 内容 and 更多; a module naming a section
+ * The sidebar: the engine's sections with the modules' between 內容 and 更多; a module naming a section
  * that is already there adds to it.
  */
 export function sidebar(): Array<{ title: string; items: NavItem[] }> {
@@ -75,7 +75,7 @@ export function sidebar(): Array<{ title: string; items: NavItem[] }> {
   return [...sections, more];
 }
 
-/** A sidebar entry is lit on its pages; 日报 also covers weekly and monthly reports. */
+/** A sidebar entry is lit on its pages; 日報 also covers weekly and monthly reports. */
 export function sidebarIsActive(item: Pick<NavItem, "to" | "end">, pathname: string): boolean {
   if (item.end) return pathname === item.to;
   if (item.to === "/daily") return /^\/(daily|weekly|monthly)(\/|$)/.test(pathname);
@@ -83,8 +83,8 @@ export function sidebarIsActive(item: Pick<NavItem, "to" | "end">, pathname: str
 }
 
 /**
- * The phone tab bar: 全部 lives beside 精选 as a switch, 热点 and 日报 are tabs, and "我的" at /more holds
- * 收藏, 外观, the tools and the site's own pages. Which tab a page sits under is declared by the page
+ * The phone tab bar: 全部 lives beside 精選 as a switch, 熱點 and 日報 are tabs, and "我的" at /more holds
+ * 收藏, 外觀, the tools and the site's own pages. Which tab a page sits under is declared by the page
  * itself (components/shell/screens.ts).
  */
 export type TabKey =
@@ -104,9 +104,9 @@ export interface Tab {
 }
 
 const ENGINE_TABS: Tab[] = [
-  { key: "featured", to: "/", label: "精选", icon: IconBolt },
-  { key: "hot", to: "/hot", label: "热点", icon: IconFlame },
-  { key: "daily", to: "/daily", label: "日报", icon: IconDoc },
+  { key: "featured", to: "/", label: "精選", icon: IconBolt },
+  { key: "hot", to: "/hot", label: "熱點", icon: IconFlame },
+  { key: "daily", to: "/daily", label: "日報", icon: IconDoc },
   { key: "me", to: "/more", label: "我的", icon: IconUser, changelog: true },
 ];
 
@@ -117,7 +117,7 @@ export function tabs(): Tab[] {
 
 /**
  * The rail that stands in for the sidebar on narrow desktops (unfolded foldables, tablets upright): the
- * tabs, with 全部 after 精选 since desktop pages have no 精选 | 全部 switch.
+ * tabs, with 全部 after 精選 since desktop pages have no 精選 | 全部 switch.
  */
 export function rail(): Tab[] {
   const all = tabs();

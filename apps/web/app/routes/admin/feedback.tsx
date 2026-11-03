@@ -15,7 +15,7 @@ export async function loader({ request }: Route.LoaderArgs) {
   return adminGet<AdminFeedback>(request, `/api/admin/feedback${new URL(request.url).search}`);
 }
 
-export const meta: Route.MetaFunction = () => [{ title: `反馈 · ${SITE.name} 后台` }];
+export const meta: Route.MetaFunction = () => [{ title: `回饋 · ${SITE.name} 後臺` }];
 
 const TONE: Record<string, "accent" | "warn" | "ok" | "muted"> = { new: "accent", triaged: "warn", replied: "ok", resolved: "ok", spam: "muted" };
 /** The pool's names, offered while naming a suggestion so the same idea keeps one name. */
@@ -35,64 +35,64 @@ function FeedbackCard({ f }: { f: AdminFeedbackRow }) {
         <span className="num font-medium text-ink-2">#{f.id}</span>
         <Badge tone={TONE[f.status] ?? "muted"}>{FEEDBACK_STATUS[f.status] ?? f.status}</Badge>
         {f.kind && <Badge tone="info">{FEEDBACK_KIND[f.kind] ?? f.kind}</Badge>}
-        {f.idea && <Badge tone="muted" title="归入建议池的这一条">{f.idea}</Badge>}
+        {f.idea && <Badge tone="muted" title="歸入建議池的這一條">{f.idea}</Badge>}
         <Time at={f.created_at} />
         {f.email && <a className="text-accent" href={`mailto:${f.email}`}>{f.email}</a>}
         {f.page_url && <a className="max-w-[320px] truncate hover:text-accent" href={f.page_url} target="_blank" rel="noreferrer">{f.page_url}</a>}
-        {f.from_source > 1 && <Badge tone="info" title="同一来源（IP 与浏览器家族的不可逆标识）">同来源 {f.from_source} 条</Badge>}
-        {f.banned && <Badge tone="bad">来源已封禁</Badge>}
-        {f.email_banned && <Badge tone="bad">邮箱已临时封禁</Badge>}
+        {f.from_source > 1 && <Badge tone="info" title="同一來源（IP 與瀏覽器家族的不可逆標識）">同來源 {f.from_source} 條</Badge>}
+        {f.banned && <Badge tone="bad">來源已封禁</Badge>}
+        {f.email_banned && <Badge tone="bad">電子郵件已臨時封禁</Badge>}
         {!f.forwarded_at && f.status === "new" && (
-          <Badge tone="warn" title={f.forward_error && f.forward_error !== "pending" ? `还没有转发到内部飞书群：${f.forward_error}` : "还没有转发到内部飞书群"}>未转发</Badge>
+          <Badge tone="warn" title={f.forward_error && f.forward_error !== "pending" ? `還沒有轉發到內部飛書群：${f.forward_error}` : "還沒有轉發到內部飛書群"}>未轉發</Badge>
         )}
       </div>
       <p className="mt-2.5 whitespace-pre-wrap text-[14px] leading-relaxed text-ink">{f.content}</p>
       {f.screenshot === "local" && (
         <a href={`${base}/screenshot`} target="_blank" rel="noreferrer" className="mt-2 inline-block">
-          <img src={`${base}/screenshot`} alt="反馈截图" loading="lazy" className="max-h-48 rounded-control ring-1 ring-line" />
+          <img src={`${base}/screenshot`} alt="回饋截圖" loading="lazy" className="max-h-48 rounded-control ring-1 ring-line" />
         </a>
       )}
-      {f.screenshot === "feishu" && <p className="mt-2 text-[12.5px] text-ink-4">截图已随反馈转到内部飞书群。</p>}
-      {f.screenshot === "gone" && <p className="mt-2 text-[12.5px] text-ink-4">截图未能转到飞书，已删除。</p>}
+      {f.screenshot === "feishu" && <p className="mt-2 text-[12.5px] text-ink-4">截圖已隨回饋轉到內部飛書群。</p>}
+      {f.screenshot === "gone" && <p className="mt-2 text-[12.5px] text-ink-4">截圖未能轉到飛書，已刪除。</p>}
       <div className="mt-3 grid gap-2 sm:grid-cols-[180px_1fr_auto] sm:items-start">
         <div className="grid gap-2">
           <Select
-            aria-label="处理状态"
+            aria-label="處理狀態"
             value={f.status}
             disabled={!!pending}
-            onChange={(e) => run("PATCH", base, { status: e.target.value, version }, { label: "status", success: "状态已更新" })}
+            onChange={(e) => run("PATCH", base, { status: e.target.value, version }, { label: "status", success: "狀態已更新" })}
           >
             {Object.entries(FEEDBACK_STATUS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </Select>
           <Select
-            aria-label="类型"
+            aria-label="型別"
             value={f.kind ?? ""}
             disabled={!!pending}
-            onChange={(e) => run("PATCH", base, { kind: e.target.value || null, version }, { label: "kind", success: "类型已更新" })}
+            onChange={(e) => run("PATCH", base, { kind: e.target.value || null, version }, { label: "kind", success: "型別已更新" })}
           >
-            <option value="">未分类</option>
+            <option value="">未分類</option>
             {Object.entries(FEEDBACK_KIND).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
           </Select>
         </div>
         <div className="grid gap-2">
-          <Textarea rows={1} className="!min-h-[38px]" placeholder="处理备注（仅内部可见）" value={note} onChange={(e) => setNote(e.target.value)} />
+          <Textarea rows={1} className="!min-h-[38px]" placeholder="處理備註（僅內部可見）" value={note} onChange={(e) => setNote(e.target.value)} />
           {f.kind === "suggestion" && (
-            <Input list={IDEAS_LIST} aria-label="归入的建议" placeholder="归入的建议（同一需求用同一个名字）" value={idea} onChange={(e) => setIdea(e.target.value)} />
+            <Input list={IDEAS_LIST} aria-label="歸入的建議" placeholder="歸入的建議（同一需求用同一個名字）" value={idea} onChange={(e) => setIdea(e.target.value)} />
           )}
         </div>
         <div className="flex flex-wrap gap-1.5">
-          <Button size="md" disabled={!edited} busy={pending === "note"} onClick={() => run("PATCH", base, { note: note || null, ...(f.kind === "suggestion" ? { idea: idea || null } : {}), version }, { label: "note", success: "已保存" })}>
-            保存
+          <Button size="md" disabled={!edited} busy={pending === "note"} onClick={() => run("PATCH", base, { note: note || null, ...(f.kind === "suggestion" ? { idea: idea || null } : {}), version }, { label: "note", success: "已儲存" })}>
+            儲存
           </Button>
-          <Button tone="ghost" onClick={() => setDialog(f.banned ? null : "ban")} disabled={f.banned} title="拒绝这个来源的后续反馈">封禁来源</Button>
-          {f.email && <Button tone="ghost" onClick={() => setDialog("email-ban")} disabled={f.email_banned} title="拒绝填写这个邮箱的反馈，48 小时后自动解除">临时封禁邮箱</Button>}
-          <Button tone="ghost" onClick={() => setDialog("erase")} title="按隐私说明删除提交者的资料">删除资料</Button>
+          <Button tone="ghost" onClick={() => setDialog(f.banned ? null : "ban")} disabled={f.banned} title="拒絕這個來源的後續回饋">封禁來源</Button>
+          {f.email && <Button tone="ghost" onClick={() => setDialog("email-ban")} disabled={f.email_banned} title="拒絕填寫這個電子郵件的回饋，48 小時後自動解除">臨時封禁電子郵件</Button>}
+          <Button tone="ghost" onClick={() => setDialog("erase")} title="按隱私說明刪除提交者的資料">刪除資料</Button>
         </div>
       </div>
       <ReasonDialog
         open={dialog === "ban"}
-        title="封禁这个反馈来源"
-        description={`同一来源之后提交反馈会被拒绝。来源标识不可还原成 IP。${ADMIN?.banNote ?? ""}`}
+        title="封禁這個回饋來源"
+        description={`同一來源之後提交回饋會被拒絕。來源標識不可還原成 IP。${ADMIN?.banNote ?? ""}`}
         danger
         confirmLabel="封禁"
         onClose={() => setDialog(null)}
@@ -100,21 +100,21 @@ function FeedbackCard({ f }: { f: AdminFeedbackRow }) {
       />
       <ReasonDialog
         open={dialog === "email-ban"}
-        title="临时封禁这个反馈邮箱"
-        description="填写这个邮箱的反馈将暂停 48 小时，换网络或浏览器也生效。邮箱未经验证，请只在确认持续滥用后使用；不会连带封禁其他邮箱或访问网页。"
+        title="臨時封禁這個回饋電子郵件"
+        description="填寫這個電子郵件的回饋將暫停 48 小時，換網路或瀏覽器也生效。電子郵件未經驗證，請只在確認持續濫用後使用；不會連帶封禁其他電子郵件或訪問網頁。"
         danger
-        confirmLabel="封禁 48 小时"
+        confirmLabel="封禁 48 小時"
         onClose={() => setDialog(null)}
-        onSubmit={async (reason) => (await run("POST", "/api/admin/feedback-bans", { feedbackId: f.id, reason }, { label: "email-ban", success: "邮箱已临时封禁 48 小时" })) !== null}
+        onSubmit={async (reason) => (await run("POST", "/api/admin/feedback-bans", { feedbackId: f.id, reason }, { label: "email-ban", success: "電子郵件已臨時封禁 48 小時" })) !== null}
       />
       <ReasonDialog
         open={dialog === "erase"}
-        title="删除提交者资料"
-        description="删除正文、邮箱、页面地址和截图，只保留处理记录。不可恢复。"
+        title="刪除提交者資料"
+        description="刪除正文、電子郵件、頁面地址和截圖，只保留處理記錄。不可恢復。"
         danger
-        confirmLabel="删除"
+        confirmLabel="刪除"
         onClose={() => setDialog(null)}
-        onSubmit={async (reason) => (await run("POST", `${base}/erase`, { reason }, { label: "erase", success: "资料已删除" })) !== null}
+        onSubmit={async (reason) => (await run("POST", `${base}/erase`, { reason }, { label: "erase", success: "資料已刪除" })) !== null}
       />
     </article>
   );
@@ -126,7 +126,7 @@ export default function FeedbackAdmin({ loaderData }: Route.ComponentProps) {
   const { run } = useAdminAction();
   const total = Object.values(counts).reduce((a, b) => a + b, 0);
   return (
-    <AdminPage title="反馈" subtitle={ADMIN?.feedbackNote}>
+    <AdminPage title="回饋" subtitle={ADMIN?.feedbackNote}>
       <div className="mb-4 flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
         <div className="flex flex-col gap-2">
           <FilterChips
@@ -136,32 +136,32 @@ export default function FeedbackAdmin({ loaderData }: Route.ComponentProps) {
           <FilterChips
             param="kind"
             resets={["idea"]}
-            options={[{ value: "", label: "全部类型" }, ...Object.entries(FEEDBACK_KIND).map(([k, v]) => ({ value: k, label: v, count: kinds[k] ?? 0 }))]}
+            options={[{ value: "", label: "全部型別" }, ...Object.entries(FEEDBACK_KIND).map(([k, v]) => ({ value: k, label: v, count: kinds[k] ?? 0 }))]}
           />
         </div>
         <Form method="get" className="w-full max-w-xs">
           {["status", "kind", "idea"].map((k) => sp.get(k) && <input key={k} type="hidden" name={k} value={sp.get(k)!} />)}
-          <Input name="q" defaultValue={sp.get("q") ?? ""} placeholder="搜索内容、邮箱、页面" aria-label="搜索反馈" />
+          <Input name="q" defaultValue={sp.get("q") ?? ""} placeholder="搜尋內容、電子郵件、頁面" aria-label="搜尋回饋" />
         </Form>
       </div>
       {sp.get("kind") === "suggestion" && ideas.length > 0 && (
-        <Card className="mb-4" title="建议池" right="按提出人数排序">
-          <FilterChips param="idea" options={[{ value: "", label: "全部建议" }, ...ideas.map((i) => ({ value: i.idea, label: i.idea, count: i.people }))]} />
+        <Card className="mb-4" title="建議池" right="按提出人數排序">
+          <FilterChips param="idea" options={[{ value: "", label: "全部建議" }, ...ideas.map((i) => ({ value: i.idea, label: i.idea, count: i.people }))]} />
         </Card>
       )}
       <datalist id={IDEAS_LIST}>{ideas.map((i) => <option key={i.idea} value={i.idea} />)}</datalist>
       <div className="space-y-3">
-        {rows.length ? rows.map((f) => <FeedbackCard key={`${f.id}-${f.updated_at}`} f={f} />) : <Card><Empty>没有符合条件的反馈</Empty></Card>}
+        {rows.length ? rows.map((f) => <FeedbackCard key={`${f.id}-${f.updated_at}`} f={f} />) : <Card><Empty>沒有符合條件的回饋</Empty></Card>}
       </div>
       <Pager page={page} hasMore={rows.length === 50} />
       {bans.length > 0 && (
-        <Card className="mt-8" title="反馈封禁">
+        <Card className="mt-8" title="回饋封禁">
           <ul className="space-y-2 text-[13px]">
             {bans.map((b) => (
               <li key={b.source_hash} className="flex flex-wrap items-center justify-between gap-2">
                 <span>
-                  {b.source_hash.startsWith("email:") ? "邮箱" : "来源"} · <span className="break-all font-mono text-[12px] text-ink-3">{b.source_hash}</span> · {b.reason} · {b.created_by} · {bj(b.created_at, true)}
-                  {b.expires_at && <span> · {bj(b.expires_at, true)} 自动解除</span>}
+                  {b.source_hash.startsWith("email:") ? "電子郵件" : "來源"} · <span className="break-all font-mono text-[12px] text-ink-3">{b.source_hash}</span> · {b.reason} · {b.created_by} · {bj(b.created_at, true)}
+                  {b.expires_at && <span> · {bj(b.expires_at, true)} 自動解除</span>}
                 </span>
                 <Button size="sm" tone="ghost" onClick={() => run("DELETE", `/api/admin/feedback-bans/${encodeURIComponent(b.source_hash)}`, undefined, { label: `unban-${b.source_hash}`, success: "已解除封禁" })}>
                   解除

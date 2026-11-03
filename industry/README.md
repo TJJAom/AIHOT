@@ -1,14 +1,14 @@
-# 行业包
+# 行業包
 
-这个行业的知识都在这里：分类、主题、信源、精选标准和门槛。换一个行业，主要就是改这个文件夹和 [`site/`](../site/)（站名、文案、品牌和页面），步骤见 [把它改成你的行业](../docs/customize.md)。
+這個行業的知識都在這裡：分類、主題、信源、精選標準和門檻。換一個行業，主要就是改這個資料夾和 [`site/`](../site/)（站名、文案、品牌和頁面），步驟見 [把它改成你的行業](../docs/customize.md)。
 
-| 文件 | 内容 |
+| 檔案 | 內容 |
 |---|---|
-| `taxonomy.ts` | 分类、标签、公司与机构、防止模型写错公司的词表，这个行业最受关注的那类发布（`RELEASE`） |
-| `topics.json` | 主题目录（`/topics`），站点启动时读取 |
-| `sources.json` | 首次启动时导入的示范信源 |
-| `prompts/` | 每一步的提示词：预筛、评分、写作、结构化、归组、事件综述、周报月报、翻译 |
-| `selection.ts` | 入选门槛 |
-| `gold.example.jsonl` | 精选评测样本的格式示例 |
-| `relation-gold.example.jsonl` | 事件关系评测样本的格式示例 |
-| `story-digest-eval.example.jsonl` | 事件综述评测案例的格式示例 |
+| `taxonomy.ts` | 分類、標籤、公司與機構、防止模型寫錯公司的詞表，這個行業最受關注的那類釋出（`RELEASE`） |
+| `topics.json` | 主題目錄（`/topics`），站點啟動時讀取 |
+| `sources.json` | 首次啟動時匯入的示範信源 |
+| `prompts/` | 每一步的提示詞：預篩、評分、寫作、結構化、歸組、事件綜述、週報月報、翻譯 |
+| `selection.ts` | 入選門檻 |
+| `gold.example.jsonl` | 精選評測樣本的格式示例 |
+| `relation-gold.example.jsonl` | 事件關係評測樣本的格式示例 |
+| `story-digest-eval.example.jsonl` | 事件綜述評測案例的格式示例 |

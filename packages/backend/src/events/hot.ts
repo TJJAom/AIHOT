@@ -27,11 +27,11 @@ export interface HotEntry {
   representativeItemId: string | null;
   representativeUrl: string | null;
   representativeSource: string | null;
-  /** 精选组 first by tier, then 氛围组; tier is absent on rankings stored by older versions. */
+  /** 精選組 first by tier, then 氛圍組; tier is absent on rankings stored by older versions. */
   participants: Array<{ name: string; kind: "editorial" | "signal"; tier?: string }>;
 }
 
-/** Participants in the 精选组 order: T1 before T1.5 before T2, then everything else. */
+/** Participants in the 精選組 order: T1 before T1.5 before T2, then everything else. */
 const TIER_ORDER = ["T1", "T1_5", "T2"];
 export function tierRank(tier: string | undefined): number {
   const i = TIER_ORDER.indexOf(tier ?? "");
@@ -248,7 +248,7 @@ export async function computeHotRanking(at = new Date()): Promise<{ id: number; 
       representativeItemId: rep.id,
       representativeUrl: rep.url,
       representativeSource: rep.source_name,
-      // Faces go to the 精选组 by tier, the most recently active first within a tier (ordered before the cap).
+      // Faces go to the 精選組 by tier, the most recently active first within a tier (ordered before the cap).
       participants: participants
         .sort((x, y) => Number(y.kind === "editorial") - Number(x.kind === "editorial") || tierRank(x.tier) - tierRank(y.tier) || y.at.getTime() - x.at.getTime())
         .slice(0, 40).map(({ name, kind, tier }) => ({ name, kind, tier })),

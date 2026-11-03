@@ -12,7 +12,7 @@ after(closeDb);
 test('hot cards send a Unicode-safe excerpt while the event keeps its complete public text',async()=>{
   const at=new Date(Date.now()-60_000);
   const intro='摘要'.repeat(238)+'🤖'.repeat(4);
-  const full=intro+'仅在详情显示'.repeat(300);
+  const full=intro+'僅在詳情顯示'.repeat(300);
   await sql`INSERT INTO sources (id,name,kind,tier,participation_mode,next_fetch_at)
     VALUES ('hot-card','Hot card','rss','T1','editorial','2100-01-01')`;
   const [story]=await sql<{id:number;public_id:string}[]>`INSERT INTO stories(public_id,title,summary)

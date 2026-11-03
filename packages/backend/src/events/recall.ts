@@ -3,7 +3,7 @@
 // sides (without an embedding key, by their shared character bigrams), plus the same URL and the X
 // post it replies to or quotes. A membership counts as evidence only when its report is not a
 // composite or explicitly withdrawn (groupingEvidenceCondition). Selected reports are reading context
-// for READING_DAYS: a reader who saw a launch in 精选 still knows it when its maker introduces it again.
+// for READING_DAYS: a reader who saw a launch in 精選 still knows it when its maker introduces it again.
 // A discussion post is also compared with the posts already attached to a fact that still count for
 // its heat (recallFactsByPosts): posts about one happening paraphrase each other more closely than
 // they paraphrase its reports.
@@ -289,7 +289,7 @@ export async function candidateViews(recalled: Recalled[]): Promise<CandidateVie
     const row = byFact.get(r.factId);
     if (!row) return [];
     // Identity uses the eligible reports above. For reading value show exactly the representative
-    // already visible in 精选; a merely scored or still-pending report is not prior reader coverage.
+    // already visible in 精選; a merely scored or still-pending report is not prior reader coverage.
     const selectedMembers = selectedRows.filter((p) => Number(p.fact_id) === r.factId);
     const selected = selectedMembers.length ? pickRepresentative(selectedMembers) : null;
     return [{

@@ -1,11 +1,13 @@
-这两个 ttf 是 Noto Sans CJK SC（Noto Sans SC）的子集化产物，仅用于 AIHOT 的 OG
-分享图渲染（GB2312 + 拉丁 + 标点子集，见 scripts/og/build-og-font.mjs）。
+這兩個 ttf 是 Noto Sans CJK SC（Noto Sans SC）的子集化產物，僅用於 AIHOT 的 OG
+分享圖渲染（GB2312 + 拉丁 + 標點子集，見 scripts/og/build-og-font.mjs）。
 
-原字体：Noto Sans CJK / Noto Sans SC
-版权：Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name
-      'Source'. （Google Noto 项目分发）
-许可：SIL Open Font License, Version 1.1 (OFL-1.1)
+原字型：Noto Sans CJK / Noto Sans SC
+版權：Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name
+      'Source'. （Google Noto 專案分發）
+許可：SIL Open Font License, Version 1.1 (OFL-1.1)
       https://scripts.sil.org/OFL  ·  https://github.com/notofonts/noto-cjk
 
-OFL 允许嵌入、子集化与再分发，要求保留版权与许可声明（本文件即为此）。子集化字体
-不得单独售卖，可随软件/产品自由分发。完整 OFL 全文见上方链接。
+OFL 允許嵌入、子集化與再分發，要求保留版權與許可宣告（本檔案即為此）。子集化字型
+不得單獨售賣，可隨軟體/產品自由分發。完整 OFL 全文見上方連結。
+
+本機繁體版另附 Noto Sans TC 的 400/700 靜態字型，來源為 notofonts/noto-cjk 的 NotoSansTC-VF.ttf。完整授權見 OFL-NotoSansTC.txt。

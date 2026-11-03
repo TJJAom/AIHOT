@@ -32,7 +32,7 @@ const provider = await stub(async (_hit, req) => {
     hold.entered.open();
     await hold.release.promise;
   }
-  return { id: "local", choices: [{ message: { content: JSON.stringify({ title: "OpenAI 发布 Dots", digest: "Dots 的对话可用，但自主执行任务仍然消耗额度。", latest: "模型生成的无关最新进展不得使用" }) } }], usage: { prompt_tokens: 10, completion_tokens: 10, total_tokens: 20 } };
+  return { id: "local", choices: [{ message: { content: JSON.stringify({ title: "OpenAI 釋出 Dots", digest: "Dots 的對話可用，但自主執行任務仍然消耗額度。", latest: "模型生成的無關最新進展不得使用" }) } }], usage: { prompt_tokens: 10, completion_tokens: 10, total_tokens: 20 } };
 });
 process.env.DEEPSEEK_BASE_URL = `${provider.url}/v1`;
 process.env.DEEPSEEK_API_KEY = "test-key";
@@ -44,10 +44,10 @@ async function source(suffix: string, tier: string, owner: string | null = null,
     VALUES (${id},${suffix},'rss',${tier},'editorial',${owner},${sql.json(role ? { publisherRole: role } : {})},${tier !== 'T1'},'2100-01-01')`;
   return id;
 }
-async function story(title = "OpenAI 发布 Dots") {
-  const [s] = await sql`INSERT INTO stories (public_id,title,first_report_at,latest_at,latest) VALUES (${randomUUID()},${title},${at(100)},${at(0)},'错误的生成进展') RETURNING id, public_id`;
+async function story(title = "OpenAI 釋出 Dots") {
+  const [s] = await sql`INSERT INTO stories (public_id,title,first_report_at,latest_at,latest) VALUES (${randomUUID()},${title},${at(100)},${at(0)},'錯誤的生成進展') RETURNING id, public_id`;
   const [f] = await sql`INSERT INTO facts (public_id,story_id,title,subject,action,object,conditions)
-    VALUES (${`f-${randomUUID()}`},${s!.id},${title},'OpenAI','发布','Dots','自主执行任务消耗额度') RETURNING id, public_id`;
+    VALUES (${`f-${randomUUID()}`},${s!.id},${title},'OpenAI','釋出','Dots','自主執行任務消耗額度') RETURNING id, public_id`;
   return { storyId: Number(s!.id), storyPublicId: s!.public_id as string, factId: Number(f!.id), factPublicId: f!.public_id as string };
 }
 async function report(sourceId: string, group: Awaited<ReturnType<typeof story>>, opts: { title: string; hours: number; selected?: boolean; score?: number; role?: string }) {
@@ -57,7 +57,7 @@ async function report(sourceId: string, group: Awaited<ReturnType<typeof story>>
     VALUES (${id},${sourceId},${id},${`https://example.org/${id}`},${opts.title},${date},${date},${date})`;
   const [a] = await sql`INSERT INTO analyses (article_id,input_revision,origin,relevance,title_zh,summary_zh,score,selected,output)
     VALUES (${id},1,'rule','pass',${opts.title},${opts.title},${opts.score ?? 70},${opts.selected ?? true},
-      ${sql.json({ fact: { evidence: "Tasks consume usage.", conditions: [{ text: "自主任务消耗额度", quote: "Tasks consume usage." }] } })}) RETURNING id`;
+      ${sql.json({ fact: { evidence: "Tasks consume usage.", conditions: [{ text: "自主任務消耗額度", quote: "Tasks consume usage." }] } })}) RETURNING id`;
   await sql`INSERT INTO publications (article_id,analysis_id,source_id,title,summary,url,channel,first_party,timeline_at,discovered_at,published_at,sort_at,
     story_id,fact_id,selected,eligible,visible_after,tags,body_mode,score)
     VALUES (${id},${a!.id},${sourceId},${opts.title},${opts.title},${`https://example.org/${id}`},'news',true,${date},${date},${date},${date},
@@ -95,11 +95,11 @@ test("mentions cannot choose a timeline origin, anchor, representative, or a lat
   const media = await source("media", "T2");
   const t1 = await source("t1", "T1");
   const g = await story();
-  const official = await report(organization, g, { title: "Dots 正式发布", hours: 3, score: 65 });
-  const latest = await report(media, g, { title: "Dots 后续更新", hours: 2, score: 90 });
+  const official = await report(organization, g, { title: "Dots 正式釋出", hours: 3, score: 65 });
+  const latest = await report(media, g, { title: "Dots 後續更新", hours: 2, score: 90 });
   const earlyMention = await report(t1, g, { title: "EARLY ROUNDUP", hours: 90, role: "mention" });
   const lateMention = await report(t1, g, { title: "LATEST ROUNDUP", hours: 1, role: "mention" });
-  await report(t1, g, { title: "未入选官网稿", hours: 4, selected: false, score: 30 });
+  await report(t1, g, { title: "未入選官網稿", hours: 4, selected: false, score: 30 });
   const q = { channel: "all" as const, category: null, tag: key, now };
   const timeline = await loadTimeline(q);
   const card = timeline.cards.find(c => c.key === `f${g.factId}`)!;
@@ -113,7 +113,7 @@ test("mentions cannot choose a timeline origin, anchor, representative, or a lat
   assert.equal(detail.developments[0]!.representative.id, official, "unselected T1 cannot enter the selected representative pool");
   assert.equal(detail.firstReportAt, at(4).toISOString());
   assert.deepEqual(detail.latestReport, { id: latest });
-  assert.equal(detail.latest, "Dots 后续更新");
+  assert.equal(detail.latest, "Dots 後續更新");
   assert.equal(detail.officialReports.length, 1, "only tier T1 has the first-party label");
   assert.equal(detail.developments[0]!.representative.source.firstParty, false);
   const edition = await candidates(at(100), now);
@@ -123,7 +123,7 @@ test("mentions cannot choose a timeline origin, anchor, representative, or a lat
   await sql`UPDATE publications SET visibility='withdrawn' WHERE article_id=${latest}`;
   const after = (await loadStoryDetail(g.storyId, now))!;
   assert.equal(after.latestReport!.id, official);
-  assert.equal(after.latest, "Dots 正式发布");
+  assert.equal(after.latest, "Dots 正式釋出");
   assert.equal((await v1Story(g.storyId))!.story.latest, after.latest);
   const firstParty = await loadTimeline({ ...q, channel: "firstParty" });
   assert.ok(!firstParty.cards.some(c => c.item.id === official), "a stale true projection flag cannot put T1_5 into first-party channel");
@@ -135,10 +135,10 @@ test("item detail counts the same fact evidence as its expanded group", async ()
   const s = await source("detail-count", "T1");
   const other = await source("detail-count-other", "T2");
   const g = await story();
-  const main = await report(s, g, { title: "事件原始报道", hours: 3 });
-  await report(other, g, { title: "事件补充报道", hours: 2 });
-  await report(other, g, { title: "只提及该事件", hours: 1, role: "mention" });
-  const composite = await report(other, g, { title: "多个事件的综合稿", hours: 1 });
+  const main = await report(s, g, { title: "事件原始報道", hours: 3 });
+  await report(other, g, { title: "事件補充報道", hours: 2 });
+  await report(other, g, { title: "只提及該事件", hours: 1, role: "mention" });
+  const composite = await report(other, g, { title: "多個事件的綜合稿", hours: 1 });
   await sql`UPDATE analyses SET output = output || '{"scope":"composite"}'::jsonb WHERE article_id = ${composite}`;
   const detail = await loadItemDetail(main, "zh", now);
   assert.equal(detail.kind, "found");
@@ -155,10 +155,10 @@ test("item detail counts the same fact evidence as its expanded group", async ()
 test("website and machine stories choose the same latest development and archive fallback", async () => {
   const s = await source("latest-scope", "T1");
   const g = await story();
-  const news = await report(s, g, { title: "仍然公开的最近进展", hours: 3, selected: false });
-  const archive = await report(s, g, { title: "未进入公开列表的近期归档稿", hours: 1, selected: false });
+  const news = await report(s, g, { title: "仍然公開的最近進展", hours: 3, selected: false });
+  const archive = await report(s, g, { title: "未進入公開列表的近期歸檔稿", hours: 1, selected: false });
   await sql`UPDATE publications SET eligible = false WHERE article_id = ${archive}`;
-  for (const [expectedId, expectedTitle, expectedHours] of [[news, "仍然公开的最近进展", 3], [archive, "未进入公开列表的近期归档稿", 1]] as const) {
+  for (const [expectedId, expectedTitle, expectedHours] of [[news, "仍然公開的最近進展", 3], [archive, "未進入公開列表的近期歸檔稿", 1]] as const) {
     const site = (await loadStoryDetail(g.storyId, now))!;
     const api = (await v1Story(g.storyId))!.story;
     assert.equal(site.latest, expectedTitle);
@@ -175,26 +175,26 @@ test("website and machine stories choose the same latest development and archive
 test("digest input excludes mentions, preserves scoped conditions, and ignores generated latest", async () => {
   const s = await source("digest", "T1");
   const g = await story();
-  const main = await report(s, g, { title: "Dots 任务仍计费用量", hours: 5 });
+  const main = await report(s, g, { title: "Dots 任務仍計費用量", hours: 5 });
   const mention = await report(s, g, { title: "MENTION MUST NOT ENTER DIGEST", hours: 1, role: "mention" });
   const composite = await report(s, g, { title: "COMPOSITE WAITING FOR GROUP CLEANUP", hours: 1 });
   await sql`UPDATE analyses SET output=output || '{"scope":"composite"}'::jsonb WHERE article_id=${composite}`;
   assert.equal((await candidates(at(100), now)).find((c) => c.itemId === composite)?.factId, null, "known composites cannot occupy a report's fact before projection repair");
   assert.equal((await composeStoryDigest(g.storyId)).updated, true);
-  assert.ok(digestPrompt.includes("Tasks consume usage.") && digestPrompt.includes("自主执行任务消耗额度"));
+  assert.ok(digestPrompt.includes("Tasks consume usage.") && digestPrompt.includes("自主執行任務消耗額度"));
   assert.ok(!digestPrompt.includes(mention) && !digestPrompt.includes("MENTION MUST NOT ENTER DIGEST"));
   assert.ok(!digestPrompt.includes(composite), "known composite input is excluded before its stale hard membership is cleaned");
   const [stored] = await sql`SELECT latest FROM stories WHERE id=${g.storyId}`;
-  assert.equal(stored!.latest, "Dots 任务仍计费用量");
+  assert.equal(stored!.latest, "Dots 任務仍計費用量");
   const calls = provider.hits();
   assert.equal((await composeStoryDigest(g.storyId)).updated, false);
   assert.equal(provider.hits(), calls);
-  await sql`UPDATE facts SET conditions='仅自主任务消耗额度，对话不消耗' WHERE id=${g.factId}`;
+  await sql`UPDATE facts SET conditions='僅自主任務消耗額度，對話不消耗' WHERE id=${g.factId}`;
   assert.equal((await composeStoryDigest(g.storyId)).updated, true, "changed conditions invalidate the saved inputs hash");
-  assert.ok(digestPrompt.includes("仅自主任务消耗额度，对话不消耗"));
+  assert.ok(digestPrompt.includes("僅自主任務消耗額度，對話不消耗"));
   const [version] = await sql`SELECT article_ids FROM story_digests WHERE story_id=${g.storyId} ORDER BY version DESC LIMIT 1`;
   assert.deepEqual(version!.article_ids, [main]);
-  const remaining = await report(s, g, { title: "保留的后续报道", hours: 2 });
+  const remaining = await report(s, g, { title: "保留的後續報道", hours: 2 });
   await sql`UPDATE publications SET visibility='withdrawn' WHERE article_id=${main}`;
   const publicStory = (await loadStoryDetail(g.storyId, now))!;
   assert.equal(publicStory.digest, null, "a saved digest loses its withdrawn evidence before any model refresh");
@@ -213,7 +213,7 @@ test("digest input excludes mentions, preserves scoped conditions, and ignores g
 test("rewriting a story digest uses the current reports and prompt and is audited", async () => {
   const s = await source("digest-rewrite", "T1");
   const g = await story();
-  await report(s, g, { title: "Dots 对话不计费", hours: 3 });
+  await report(s, g, { title: "Dots 對話不計費", hours: 3 });
   assert.equal((await composeStoryDigest(g.storyId)).updated, true);
   const calls = provider.hits();
   assert.equal((await composeStoryDigest(g.storyId)).updated, false, "unchanged reports keep the digest");
@@ -222,7 +222,7 @@ test("rewriting a story digest uses the current reports and prompt and is audite
   const result = await rewriteStoryDigest(g.storyId, "digest prompt changed", "ops-script");
   assert.equal(result.updated, true);
   assert.equal(provider.hits(), calls + 1);
-  assert.ok(!digestPrompt.includes("上一版综述"), "a rewrite does not start from the previous digest");
+  assert.ok(!digestPrompt.includes("上一版綜述"), "a rewrite does not start from the previous digest");
   const [after] = await sql`SELECT version FROM stories WHERE id=${g.storyId}`;
   assert.equal(after!.version, before!.version + 1);
   const [entry] = await sql`SELECT actor, reason, after FROM audit_log WHERE action='story.rewrite-digest' AND subject=${`story:${g.storyId}`}`;
@@ -235,7 +235,7 @@ test("rewriting a story digest uses the current reports and prompt and is audite
 test("a cleared digest recovers from matching saved evidence without another model call", async () => {
   const s = await source("digest-restoration", "T1");
   const g = await story();
-  const id = await report(s, g, { title: "可恢复的真实报道", hours: 2, selected: false });
+  const id = await report(s, g, { title: "可恢復的真實報道", hours: 2, selected: false });
   assert.equal((await composeStoryDigest(g.storyId)).updated, true);
   const original = (await v1Story(g.storyId))!.story.digest;
   const calls = provider.hits();
@@ -250,10 +250,10 @@ test("a cleared digest recovers from matching saved evidence without another mod
 
   await sql`UPDATE publications SET visibility = 'withdrawn' WHERE article_id = ${id}`;
   await composeStoryDigest(g.storyId);
-  await sql`UPDATE publications SET visibility = 'public', summary = '已经更正的资料' WHERE article_id = ${id}`;
+  await sql`UPDATE publications SET visibility = 'public', summary = '已經更正的資料' WHERE article_id = ${id}`;
   assert.equal((await composeStoryDigest(g.storyId)).updated, true);
   assert.equal(provider.hits(), calls + 1, "changed evidence must generate a corrected digest");
-  assert.ok(digestPrompt.includes("已经更正的资料"));
+  assert.ok(digestPrompt.includes("已經更正的資料"));
 });
 
 // A digest can outlive its evidence without losing an article id: titles, summaries, source identity,
@@ -263,19 +263,19 @@ for (const correction of ["title", "summary", "source", "time", "conditions", "e
   test(`all story exits hide a digest whose ${correction} input changed`, async () => {
     const s = await source(`read-correction-${correction}`, "T1");
     const g = await story();
-    const id = await report(s, g, { title: "旧综述所用报道", hours: 2, selected: false });
+    const id = await report(s, g, { title: "舊綜述所用報道", hours: 2, selected: false });
     await composeStoryDigest(g.storyId);
     const original = (await v1Story(g.storyId))!.story.digest;
     assert.ok(original);
-    await report(s, g, { title: "新抵达而未改变旧证据的报道", hours: 1, selected: false });
+    await report(s, g, { title: "新抵達而未改變舊證據的報道", hours: 1, selected: false });
     assert.equal((await storyTexts([g.storyId], now)).get(g.storyId)!.digest, original);
     assert.equal((await v1Story(g.storyId))!.story.digest, original);
     if (correction === "title" || correction === "summary") {
-      await overrideFields(id, { fields: { [correction]: "已经核实的更正内容" }, reason: "correct evidence", version: 0 }, "test");
+      await overrideFields(id, { fields: { [correction]: "已經核實的更正內容" }, reason: "correct evidence", version: 0 }, "test");
     }
-    if (correction === "source") await sql`UPDATE sources SET name = '更正后的原发作者' WHERE id = ${s}`;
+    if (correction === "source") await sql`UPDATE sources SET name = '更正後的原發作者' WHERE id = ${s}`;
     if (correction === "time") await sql`UPDATE publications SET published_at = ${at(3)} WHERE article_id = ${id}`;
-    if (correction === "conditions") await sql`UPDATE facts SET conditions = '更正后的适用条件' WHERE id = ${g.factId}`;
+    if (correction === "conditions") await sql`UPDATE facts SET conditions = '更正後的適用條件' WHERE id = ${g.factId}`;
     if (correction === "evidence") await sql`UPDATE fact_articles SET evidence = 'Corrected source quote.' WHERE article_id = ${id}`;
     if (correction === "unlisted") await sql`UPDATE publications SET eligible = false WHERE article_id = ${id}`;
     const calls = provider.hits();
@@ -296,18 +296,18 @@ for (const proof of ["no-hash", "no-ids", "no-version", "different-text"] as con
   test(`story text without ${proof} never republishes unverifiable historical claims`, async () => {
     const s = await source(`missing-proof-${proof}`, "T1");
     const g = await story();
-    const id = await report(s, g, { title: "保留的当前报道", hours: 2, selected: false });
+    const id = await report(s, g, { title: "保留的當前報道", hours: 2, selected: false });
     await composeStoryDigest(g.storyId);
-    await sql`UPDATE stories SET summary = '无证据的历史事件说明' WHERE id = ${g.storyId}`;
+    await sql`UPDATE stories SET summary = '無證據的歷史事件說明' WHERE id = ${g.storyId}`;
     if (proof === "no-hash") await sql`UPDATE story_digests SET inputs_hash = NULL WHERE story_id = ${g.storyId}`;
     if (proof === "no-ids") await sql`UPDATE story_digests SET article_ids = '{}' WHERE story_id = ${g.storyId}`;
     if (proof === "no-version") await sql`DELETE FROM story_digests WHERE story_id = ${g.storyId}`;
-    if (proof === "different-text") await sql`UPDATE stories SET digest = '与有证据版本不一致的旧综述' WHERE id = ${g.storyId}`;
+    if (proof === "different-text") await sql`UPDATE stories SET digest = '與有證據版本不一致的舊綜述' WHERE id = ${g.storyId}`;
     const calls = provider.hits();
     for (const change of ["unchanged", "corrected", "withdrawn"] as const) {
-      if (change === "corrected") await overrideFields(id, { fields: { summary: "更正后的当前摘要" }, reason: "correct historical evidence", version: 0 }, "test");
+      if (change === "corrected") await overrideFields(id, { fields: { summary: "更正後的當前摘要" }, reason: "correct historical evidence", version: 0 }, "test");
       if (change === "withdrawn") {
-        await report(s, g, { title: "撤稿后仍公开的报道", hours: 1, selected: false });
+        await report(s, g, { title: "撤稿後仍公開的報道", hours: 1, selected: false });
         await setVisibility(id, { visibility: "withdrawn", reason: "withdraw historical evidence", version: 1 }, "test");
       }
       const site = (await loadStoryDetail(g.storyId, now))!;
@@ -328,12 +328,12 @@ for (const proof of ["no-hash", "no-ids", "no-version", "different-text"] as con
 test("a story summary is visible only while a current public report supports those exact words", async () => {
   const s = await source("summary-evidence", "T1");
   const g = await story();
-  const id = await report(s, g, { title: "当前可核实的事实摘要", hours: 2, selected: false });
-  await sql`UPDATE stories SET summary = '当前可核实的事实摘要' WHERE id = ${g.storyId}`;
-  assert.equal((await storyTexts([g.storyId], now)).get(g.storyId)!.summary, "当前可核实的事实摘要");
-  await overrideFields(id, { fields: { summary: "已更正事实摘要" }, reason: "correct supporting report", version: 0 }, "test");
+  const id = await report(s, g, { title: "當前可核實的事實摘要", hours: 2, selected: false });
+  await sql`UPDATE stories SET summary = '當前可核實的事實摘要' WHERE id = ${g.storyId}`;
+  assert.equal((await storyTexts([g.storyId], now)).get(g.storyId)!.summary, "當前可核實的事實摘要");
+  await overrideFields(id, { fields: { summary: "已更正事實摘要" }, reason: "correct supporting report", version: 0 }, "test");
   assert.equal((await storyTexts([g.storyId], now)).get(g.storyId)!.summary, null);
-  await sql`UPDATE stories SET summary = '已更正事实摘要' WHERE id = ${g.storyId}`;
+  await sql`UPDATE stories SET summary = '已更正事實摘要' WHERE id = ${g.storyId}`;
   await setVisibility(id, { visibility: "withdrawn", reason: "withdraw supporting report", version: 1 }, "test");
   assert.equal((await storyTexts([g.storyId], now)).get(g.storyId)!.summary, null);
 });
@@ -342,23 +342,23 @@ test("the hot board shows an event under its own title, linked to the fact most 
   const s = await source("hot", "T2");
   const official = await source("hot-official", "T1");
   const other = await source("hot-other", "T2");
-  const g = await story("OpenAI 发布 Dots");
+  const g = await story("OpenAI 釋出 Dots");
   const fact = async (title: string) => Number((await sql`INSERT INTO facts (public_id,story_id,title,subject) VALUES (${`f-${randomUUID()}`},${g.storyId},${title},'OpenAI') RETURNING id`)[0]!.id);
   // A leak opens the story and a single follow-up scores highest; the launch is what two sources report.
-  const leak = await report(s, { ...g, factId: await fact("OpenAI 常驻助手曝光") }, { title: "发布前的爆料", hours: 30, score: 99 });
-  const media = await report(s, g, { title: "Dots 媒体报道", hours: 4, score: 90 });
-  const blog = await report(official, g, { title: "Dots 官网发布", hours: 3, score: 60 });
-  const followUp = await report(other, { ...g, factId: await fact("ChatGPT Space 新进展") }, { title: "Space 高分报道", hours: 2, score: 99 });
+  const leak = await report(s, { ...g, factId: await fact("OpenAI 常駐助手曝光") }, { title: "釋出前的爆料", hours: 30, score: 99 });
+  const media = await report(s, g, { title: "Dots 媒體報道", hours: 4, score: 90 });
+  const blog = await report(official, g, { title: "Dots 官網釋出", hours: 3, score: 60 });
+  const followUp = await report(other, { ...g, factId: await fact("ChatGPT Space 新進展") }, { title: "Space 高分報道", hours: 2, score: 99 });
   for (const [i, id] of [leak, media, blog, followUp].entries()) await sql`INSERT INTO story_signals (story_id,article_id,source_id,participant_key,kind,observed_at)
     VALUES (${g.storyId},${id},(SELECT source_id FROM articles WHERE id=${id}),${`${key}-participant-${i}`},'editorial',${at(1)})`;
   await computeHotRanking(now);
   const entry = (await latestHotRanking())!.entries.find(e => e.storyId === g.storyId)!;
   assert.ok(entry);
-  assert.equal(entry.title, "OpenAI 发布 Dots");
+  assert.equal(entry.title, "OpenAI 釋出 Dots");
   assert.equal(entry.representativeItemId, blog, "the launch's first-party report, not the earlier leak or a later high score");
   assert.equal(entry.participantCount, 3, "heat still counts each source once");
-  await sql`UPDATE stories SET title='OpenAI 发布常驻智能体 Dots' WHERE id=${g.storyId}`;
-  assert.equal((await latestHotRanking())!.entries.find(e => e.storyId === g.storyId)!.title, "OpenAI 发布常驻智能体 Dots", "a retitled event shows at once");
+  await sql`UPDATE stories SET title='OpenAI 釋出常駐智慧體 Dots' WHERE id=${g.storyId}`;
+  assert.equal((await latestHotRanking())!.entries.find(e => e.storyId === g.storyId)!.title, "OpenAI 釋出常駐智慧體 Dots", "a retitled event shows at once");
   await sql`UPDATE fact_articles SET role='mention' WHERE article_id=${blog}`;
   assert.ok(!(await latestHotRanking())!.entries.some(e => e.storyId === g.storyId), "regrouped or mention-only representatives leave cached rankings immediately");
 });
@@ -366,11 +366,11 @@ test("the hot board shows an event under its own title, linked to the fact most 
 // A saved ranking's event clock can still point at a withdrawn report. Public hot metadata must use
 // the same current evidence as the event page, without waiting for another heat computation.
 test("hot exits date latest progress by current event evidence after a withdrawal", async () => {
-  const g = await story("同一事件的当前时间");
+  const g = await story("同一事件的當前時間");
   const ids: string[] = [];
   for (const [i, hours] of [6, 4, 2].entries()) {
     const s = await source(`hot-clock-${i}`, i === 0 ? "T1" : "T2");
-    const id = await report(s, g, { title: `当前进展 ${hours}`, hours });
+    const id = await report(s, g, { title: `當前進展 ${hours}`, hours });
     ids.push(id);
     await sql`INSERT INTO story_signals (story_id,article_id,source_id,participant_key,kind,observed_at)
       VALUES (${g.storyId},${id},${s},${`source:${s}`},'editorial',${at(hours)})`;
@@ -389,15 +389,15 @@ test("hot exits date latest progress by current event evidence after a withdrawa
 
 test("an editor moves a report into the fact it repeats: no false development remains and the membership is the editor's", async () => {
   const s = await source("move", "T1");
-  const g = await story("OpenAI 发布 GPT-6.1 Sol");
-  const launch = await report(s, g, { title: "Sol 官网发布", hours: 6 });
-  const [dup] = await sql`INSERT INTO facts (public_id,story_id,title,subject) VALUES (${`f-${randomUUID()}`},${g.storyId},'OpenAI发布GPT-6.1 Sol模型','OpenAI') RETURNING id`;
-  const repost = await report(s, { ...g, factId: Number(dup!.id) }, { title: "官方线程里的重复发布", hours: 1 });
+  const g = await story("OpenAI 釋出 GPT-6.1 Sol");
+  const launch = await report(s, g, { title: "Sol 官網釋出", hours: 6 });
+  const [dup] = await sql`INSERT INTO facts (public_id,story_id,title,subject) VALUES (${`f-${randomUUID()}`},${g.storyId},'OpenAI釋出GPT-6.1 Sol模型','OpenAI') RETURNING id`;
+  const repost = await report(s, { ...g, factId: Number(dup!.id) }, { title: "官方執行緒裡的重複釋出", hours: 1 });
   await sql`INSERT INTO story_signals (story_id,article_id,source_id,participant_key,kind,observed_at) VALUES (${g.storyId},${repost},${s},${`source:${s}`},'editorial',${at(1)})`;
   // Moving re-derives the publication from its analysis, which carries no test tag: read the unfiltered timeline.
   const cards = async () => (await loadTimeline({ channel: "all", category: null, tag: null, limit: 40, now: new Date() })).cards.filter(c => [launch, repost].includes(c.item.id));
   assert.equal((await cards()).length, 2);
-  assert.deepEqual(await moveToFact(repost, g.factPublicId, "同一次发布的官方重复帖", "test"), { fact: g.factId, story: g.storyId, left: 1 });
+  assert.deepEqual(await moveToFact(repost, g.factPublicId, "同一次釋出的官方重複帖", "test"), { fact: g.factId, story: g.storyId, left: 1 });
   const after = await cards();
   assert.equal(after.length, 1);
   assert.equal(after[0]!.item.id, launch);
@@ -405,26 +405,26 @@ test("an editor moves a report into the fact it repeats: no false development re
   assert.deepEqual([...await sql`SELECT fact_id, role, manual, evidence FROM fact_articles WHERE article_id=${repost}`].map(r => ({ ...r, fact_id: Number(r.fact_id) })),
     [{ fact_id: g.factId, role: "report", manual: true, evidence: "Tasks consume usage." }]);
   assert.equal((await sql`SELECT 1 FROM story_signals WHERE article_id=${repost} AND story_id=${g.storyId}`).length, 1, "its heat evidence stays with the story");
-  await assert.rejects(moveToFact(repost, "f-missing", "x", "test"), /目标事实不存在/);
+  await assert.rejects(moveToFact(repost, "f-missing", "x", "test"), /目標事實不存在/);
 });
 
 test("an in-flight digest cannot overwrite an editor revision or a merge, and its paid response remains reusable", async () => {
   const s = await source('digest-concurrency', 'T1');
   for (const merge of [false, true]) {
     const g = await story();
-    await report(s, g, {title:'Dots 的同一条真实报道',hours:1});
-    const target = merge ? await story('人工合并目标') : null;
+    await report(s, g, {title:'Dots 的同一條真實報道',hours:1});
+    const target = merge ? await story('人工合併目標') : null;
     const entered = gate(), release = gate();
     digestHold = {entered,release};
     const pending = composeStoryDigest(g.storyId);
     await entered.promise;
     const user = digestPrompt;
     try {
-      await sql`UPDATE stories SET version=version+2,origin='manual',title='人工修正后的事件',digest='人工修正后的综述内容',latest='人工确认进展',merged_into=${target?.storyId ?? null} WHERE id=${g.storyId}`;
+      await sql`UPDATE stories SET version=version+2,origin='manual',title='人工修正後的事件',digest='人工修正後的綜述內容',latest='人工確認進展',merged_into=${target?.storyId ?? null} WHERE id=${g.storyId}`;
     } finally { release.open(); }
     assert.deepEqual(await pending,{updated:false});
     const [stored] = await sql`SELECT version,title,digest,latest,merged_into FROM stories WHERE id=${g.storyId}`;
-    assert.deepEqual({...stored},{version:3,title:'人工修正后的事件',digest:'人工修正后的综述内容',latest:'人工确认进展',merged_into:target?.storyId ?? null});
+    assert.deepEqual({...stored},{version:3,title:'人工修正後的事件',digest:'人工修正後的綜述內容',latest:'人工確認進展',merged_into:target?.storyId ?? null});
     assert.equal((await sql`SELECT 1 FROM story_digests WHERE story_id=${g.storyId}`).length,0,'obsolete input cannot create digest history');
     const calls = provider.hits();
     const reused = await chatJson({model:'deepseek-flash',purpose:'story_digest',subject:`story:${g.storyId}@1`,promptVersion:DIGEST_PROMPT_VERSION,
@@ -441,22 +441,22 @@ for (const change of ["correction", "withdrawal", "detach", "addition"] as const
   test(`an in-flight digest rejects changed report inputs after ${change}`, async () => {
     const s = await source(`digest-input-${change}`, "T1");
     const g = await story();
-    const id = await report(s, g, { title: "生成期间可能更正的报道", hours: 2, selected: false });
+    const id = await report(s, g, { title: "生成期間可能更正的報道", hours: 2, selected: false });
     const entered = gate(), release = gate();
     digestHold = { entered, release };
     const pending = composeStoryDigest(g.storyId);
     await entered.promise;
     try {
-      if (change === "correction") await overrideFields(id, { fields: { summary: "已经核实的更正摘要" }, reason: "correct input", version: 0 }, "test");
+      if (change === "correction") await overrideFields(id, { fields: { summary: "已經核實的更正摘要" }, reason: "correct input", version: 0 }, "test");
       if (change === "withdrawal") await setVisibility(id, { visibility: "withdrawn", reason: "withdraw input", version: 0 }, "test");
       if (change === "detach") await detachFromFact(id, "wrong fact", "test");
-      if (change === "addition") await report(s, g, { title: "模型请求后抵达的新进展", hours: 1, selected: false });
+      if (change === "addition") await report(s, g, { title: "模型請求後抵達的新進展", hours: 1, selected: false });
     } finally { release.open(); }
     assert.deepEqual(await pending, { updated: false });
     assert.equal((await sql`SELECT 1 FROM story_digests WHERE story_id = ${g.storyId}`).length, 0);
     if (change === "correction" || change === "addition") {
       assert.equal((await composeStoryDigest(g.storyId)).updated, true, "a subsequent job accepts the current evidence");
-      assert.ok(digestPrompt.includes(change === "correction" ? "已经核实的更正摘要" : "模型请求后抵达的新进展"));
+      assert.ok(digestPrompt.includes(change === "correction" ? "已經核實的更正摘要" : "模型請求後抵達的新進展"));
     }
   });
 }

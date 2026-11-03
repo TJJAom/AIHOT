@@ -38,8 +38,8 @@ async function fixture(independent=false){
   const {articleId:id}=await upsertMaterial({sourceId:source,url:`https://example.test/${tag()}`,title:'保留原文',bodyText:'A verified body',bodyStatus:'ok',via:'import',publishedAt:new Date(old),discoveredAt:new Date(old)});
   await sql`UPDATE articles SET backfill=false,backfill_reason=NULL,processing_state='analyzed',grouping_status='complete',grouped_at=now(),
     timeline_at=${new Date(independent?'2020-11-01T00:00:00.000Z':old)} WHERE id=${id}`;
-  await sql`INSERT INTO analyses(article_id,input_revision,origin,relevance,title_zh,summary_zh,selected) VALUES(${id},1,'rule','pass','保留标题','保留既有判断',true)`;
-  await sql`INSERT INTO editorial_overrides(article_id,fields,version,reason) VALUES(${id},'{"title":"人工标题","selected":true}'::jsonb,3,'Keep editorial judgement')`;
+  await sql`INSERT INTO analyses(article_id,input_revision,origin,relevance,title_zh,summary_zh,selected) VALUES(${id},1,'rule','pass','保留標題','保留既有判斷',true)`;
+  await sql`INSERT INTO editorial_overrides(article_id,fields,version,reason) VALUES(${id},'{"title":"人工標題","selected":true}'::jsonb,3,'Keep editorial judgement')`;
   await sql`INSERT INTO grouping_overrides(article_id,reason,actor) VALUES(${id},'Keep manual grouping','test')`;
   await sql`INSERT INTO receipts(logical_key,service,purpose,subject,status,response) VALUES(${`date-${id}`},'test','score_article',${`article:${id}`},'completed','{"recorded":true}')`;
   await publishArticle(id);
@@ -87,14 +87,14 @@ test('the request is idempotent and a reused request identity cannot approve a d
   const input={version:plan.version,hash:plan.hash,publishedAt:corrected,requestId:`date-${id}`,reason:'Verified original date'};
   const first=await correctPublicationDate(id,input,'test');
   assert.deepEqual(await correctPublicationDate(id,input,'test'),first);
-  await assert.rejects(correctPublicationDate(id,{...input,publishedAt:'2020-11-02T00:00:00.000Z'},'test'),/request|请求|日期/);
+  await assert.rejects(correctPublicationDate(id,{...input,publishedAt:'2020-11-02T00:00:00.000Z'},'test'),/request|請求|日期/);
   assert.equal((await sql`SELECT 1 FROM audit_log WHERE subject=${`content:${id}`} AND action='content.correct-publication-date'`).length,1);
 });
 
 test('malformed, recent or future dates and stale material metadata are refused',async()=>{
   const id=await fixture();
   for(const value of ['2020-10-29','2020-02-30T00:00:00.000Z',new Date(Date.now()-86400000).toISOString(),new Date(Date.now()+86400000).toISOString()])
-    await assert.rejects(previewPublicationDateCorrection(id,value),/ISO|日期|历史|future|recent|historical/);
+    await assert.rejects(previewPublicationDateCorrection(id,value),/ISO|日期|歷史|future|recent|historical/);
   const plan=(await previewPublicationDateCorrection(id,corrected))!;
   const input={version:plan.version,hash:plan.hash,publishedAt:corrected,requestId:`stale-${id}`,reason:'Verified original date'};
   await assert.rejects(correctPublicationDate(id,{...input,version:plan.version+1},'test'),/修改|版本|changed/);
@@ -111,7 +111,7 @@ test('a changed publication decision refuses the whole correction',async()=>{
   const snapshot=async()=>({a:await sql`SELECT * FROM articles WHERE id=${id}`,p:await sql`SELECT * FROM publications WHERE article_id=${id}`,ledger:await sql`SELECT * FROM selected_ledger WHERE article_id=${id}`});
   const before=await snapshot();
   await sql`UPDATE editorial_overrides SET fields='{"selected":false}'::jsonb WHERE article_id=${id}`;
-  await assert.rejects(correctPublicationDate(id,{version:plan.version,hash:plan.hash,publishedAt:corrected,requestId:`decision-${id}`,reason:'Verified byline'},'test'),/公开|选稿|decision/);
+  await assert.rejects(correctPublicationDate(id,{version:plan.version,hash:plan.hash,publishedAt:corrected,requestId:`decision-${id}`,reason:'Verified byline'},'test'),/公開|選稿|decision/);
   assert.deepEqual(await snapshot(),before);
 });
 
@@ -168,7 +168,7 @@ for(const [change,publishedAt] of [['archiving',corrected],['retracting',null]] 
   await assert.rejects(correctPublicationDate(id,input,'test'),/人工/);
   await sql`DELETE FROM grouping_overrides WHERE article_id=${id}`;
   await sql`UPDATE articles SET grouping_status='pending' WHERE id=${id}`;
-  await assert.rejects(correctPublicationDate(id,input,'test'),/处理/);
+  await assert.rejects(correctPublicationDate(id,input,'test'),/處理/);
   assert.equal((await sql`SELECT backfill FROM articles WHERE id=${id}`)[0]!.backfill,false);
 });
 
@@ -207,7 +207,7 @@ test('recent date correction refuses a later timestamp beyond the discovery tole
   const id=await misdatedFixture();
   const discoveredAt=new Date(Date.now()-6*3600_000);
   await sql`UPDATE articles SET discovered_at=${discoveredAt},published_at=${discoveredAt},published_at_claim=${discoveredAt},timeline_at=${discoveredAt} WHERE id=${id}`;
-  await assert.rejects(previewPublicationDateCorrection(id,new Date(Date.now()-3600_000).toISOString()),/一小时|收录/);
+  await assert.rejects(previewPublicationDateCorrection(id,new Date(Date.now()-3600_000).toISOString()),/一小時|收錄/);
   const [a]=await sql`SELECT published_at FROM articles WHERE id=${id}`;
   assert.equal(a!.published_at.toISOString(),discoveredAt.toISOString());
 });
@@ -245,7 +245,7 @@ test('retracting a proven repost date removes live evidence while retaining mate
 test('retraction preserves imported history',async()=>{
   const history=await fixture();
   await sql`UPDATE articles SET backfill=true,backfill_reason='first-import',discovered_at=published_at+interval '30 days' WHERE id=${history}`;
-  await assert.rejects(previewPublicationDateCorrection(history,null),/历史/);
+  await assert.rejects(previewPublicationDateCorrection(history,null),/歷史/);
 });
 
 // A judgement that finished without grouping (blocked, or relevance unknown) is not active processing.

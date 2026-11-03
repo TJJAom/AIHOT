@@ -51,7 +51,7 @@ export interface CandidateView {
   /** Recall similarity with the query (cosine of the two embeddings, or the lexical fallback's overlap). */
   score: number;
   report: ReportView;
-  /** Only a report already visible in 精选 counts as coverage the reader has seen. */
+  /** Only a report already visible in 精選 counts as coverage the reader has seen. */
   selected?: boolean;
   selectedReport?: ReportView | null;
 }
@@ -97,14 +97,14 @@ export function describeReport(r: ReportView, label: string, extra = "", summary
   const f = r.frame;
   return [
     `【${label}】${extra}`,
-    `标题：${r.title}`,
-    `来源：${r.source}${r.firstParty ? "（当事方/官方）" : ""}｜发布时间：${describePublicationTime(r.at, r.publicationTime)}`,
-    `摘要：${(r.summary ?? "").slice(0, summaryLimit) || "（无）"}`,
-    r.scope && r.scope !== "unknown" ? `资料范围：${r.scope === "composite" ? "多个独立发生的综合稿" : "单一具体发生或议题"}` : null,
+    `標題：${r.title}`,
+    `來源：${r.source}${r.firstParty ? "（當事方/官方）" : ""}｜釋出時間：${describePublicationTime(r.at, r.publicationTime)}`,
+    `摘要：${(r.summary ?? "").slice(0, summaryLimit) || "（無）"}`,
+    r.scope && r.scope !== "unknown" ? `資料範圍：${r.scope === "composite" ? "多個獨立發生的綜合稿" : "單一具體發生或議題"}` : null,
     f && (f.subject || f.action || f.object)
-      ? `事实要素：主体=${f.subject || "?"}；动作=${f.action || "?"}；对象=${f.object || "?"}；日期=${f.occurredAt || "未知"}`
+      ? `事實要素：主體=${f.subject || "?"}；動作=${f.action || "?"}；物件=${f.object || "?"}；日期=${f.occurredAt || "未知"}`
       : null,
-    r.sourceText ? `【原文证据】\n${r.sourceText.slice(0, GROUP_BODY_CHARS)}\n【原文证据结束】` : null,
+    r.sourceText ? `【原文證據】\n${r.sourceText.slice(0, GROUP_BODY_CHARS)}\n【原文證據結束】` : null,
   ]
     .filter(Boolean)
     .join("\n");
@@ -112,24 +112,24 @@ export function describeReport(r: ReportView, label: string, extra = "", summary
 
 export const candidateKey = (index: number) => `C${index + 1}`;
 
-export function batchUser(query: ReportView, cands: CandidateView[], queryLabel = "新报道", reading: ReadingContext[] = []): string {
+export function batchUser(query: ReportView, cands: CandidateView[], queryLabel = "新報道", reading: ReadingContext[] = []): string {
   const list = cands
     .map((c, i) => [
-      describeReport(c.report, `候选 ${candidateKey(i)}`, `（该事实已有 ${c.members} 篇报道；事实标题：${c.factTitle}）`),
-      queryLabel === "新报道" ? c.selected && c.selectedReport
-        ? describeReport(c.selectedReport, "已公开精选", "（增量只与这篇已展示的内容比较）")
-        : "【尚无公开精选】该候选只用于身份判断。" : null,
+      describeReport(c.report, `候選 ${candidateKey(i)}`, `（該事實已有 ${c.members} 篇報道；事實標題：${c.factTitle}）`),
+      queryLabel === "新報道" ? c.selected && c.selectedReport
+        ? describeReport(c.selectedReport, "已公開精選", "（增量只與這篇已展示的內容比較）")
+        : "【尚無公開精選】該候選只用於身份判斷。" : null,
     ].filter(Boolean).join("\n"))
     .join("\n\n");
   const background = reading.map(({ report, sourceText }, i) => [
-    describeReport(report, `已公开精选阅读背景 R${i + 1}`, "（只比较信息覆盖，不是事实候选）", 2000),
-    sourceText ? `【该已选报道的原文证据】\n${sourceText.slice(0, GROUP_BODY_CHARS)}\n【原文证据结束】` : null,
+    describeReport(report, `已公開精選閱讀背景 R${i + 1}`, "（只比較資訊覆蓋，不是事實候選）", 2000),
+    sourceText ? `【該已選報道的原文證據】\n${sourceText.slice(0, GROUP_BODY_CHARS)}\n【原文證據結束】` : null,
   ].filter(Boolean).join("\n")).join("\n\n");
-  return `${describeReport(query, queryLabel)}\n\n${list}${background ? `\n\n${background}` : ""}\n\n${queryLabel}与每个候选的关系是什么？${background ? "同时比较所有已公开精选内容，判断新增价值；无事实候选时 decisions=[]。" : ""}`;
+  return `${describeReport(query, queryLabel)}\n\n${list}${background ? `\n\n${background}` : ""}\n\n${queryLabel}與每個候選的關係是什麼？${background ? "同時比較所有已公開精選內容，判斷新增價值；無事實候選時 decisions=[]。" : ""}`;
 }
 
 export function pairUser(a: ReportView, b: ReportView): string {
-  return `${describeReport(a, "报道 A")}\n\n${describeReport(b, "报道 B")}\n\n这两篇报道是什么关系？`;
+  return `${describeReport(a, "報道 A")}\n\n${describeReport(b, "報道 B")}\n\n這兩篇報道是什麼關係？`;
 }
 
 /** An identity answer must address every supplied candidate exactly once. */

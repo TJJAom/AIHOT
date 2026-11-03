@@ -1,6 +1,6 @@
 // What a page tells the phone shell about itself, as its route `handle` (a Screen): the tab it sits under, the short
 // name a back button shows when it leads there, and whether it brings its own bottom toolbar. Also the
-// names of the pages in this tab's history, so a back button can say where it goes ("‹ 精选").
+// names of the pages in this tab's history, so a back button can say where it goes ("‹ 精選").
 import { useMatches } from "react-router";
 import { readJson, writeRaw } from "../../lib/local-state";
 import type { TabKey } from "./nav";
@@ -10,7 +10,7 @@ export interface Screen {
    *  reader came from; `home` stands in when such a page is opened directly. */
   tab?: TabKey;
   home?: TabKey;
-  /** Short name for back buttons that lead to this page (精选, 热点, 收藏 …). Pages named by their
+  /** Short name for back buttons that lead to this page (精選, 熱點, 收藏 …). Pages named by their
    *  content leave it out; a back button to them reads "返回". */
   name?: string;
   /** The page draws its own bottom toolbar instead of the tab bar (articles). */

@@ -27,7 +27,7 @@ const fakePng = (size: number) => Buffer.concat([Buffer.from([0x89, 0x50, 0x4e, 
 
 async function upload(file: Buffer, ip: string, type = "image/png") {
   const form = new FormData();
-  form.set("content", "手机截图反馈，文字保持不变");
+  form.set("content", "手機截圖回饋，文字保持不變");
   form.set("email", "reader@example.com");
   form.set("pageUrl", "/daily");
   form.set("screenshot", new File([new Uint8Array(file)], "screenshot.png", { type }));
@@ -43,7 +43,7 @@ test("a 5 MiB multipart screenshot waits intact for forwarding", async () => {
   assert.equal(result.statusCode, 201, result.body);
   assert.equal(result.headers["cache-control"], "no-store");
   const [row] = await sql`SELECT content,email,page_url,screenshot_key,forward_error FROM feedback WHERE id = ${result.json().id}`;
-  assert.equal(row!.content, "手机截图反馈，文字保持不变");
+  assert.equal(row!.content, "手機截圖回饋，文字保持不變");
   assert.equal(row!.email, "reader@example.com");
   assert.equal(row!.page_url, "/daily");
   assert.equal(row!.forward_error, "pending");
@@ -65,7 +65,7 @@ test("malformed multipart and screenshots above the existing backend limit are r
   const before = await files();
   const noise = await upload(fakePng(6 * 1024 * 1024), "203.0.113.216");
   assert.equal(noise.statusCode, 400);
-  assert.match(noise.json().detail, /无法识别/);
+  assert.match(noise.json().detail, /無法識別/);
   assert.equal(await files(), before, "nothing is stored");
 });
 
@@ -93,7 +93,7 @@ test("erasing one feedback preserves an identical screenshot on another feedback
 test("multipart retries reuse one screenshot and ID across both Host headers", async () => {
   const file = await png(1024);
   const form = new FormData();
-  form.set("content", "漏洞报告：<script>alert(1)</script>");
+  form.set("content", "漏洞報告：<script>alert(1)</script>");
   form.set("screenshot", new File([new Uint8Array(file)], "report.png", { type: "image/png" }));
   const request = new Request("http://local/api/site/feedback", { method: "POST", body: form });
   const payload = Buffer.from(await request.arrayBuffer());

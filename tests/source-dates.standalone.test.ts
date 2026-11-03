@@ -147,15 +147,15 @@ test('all date-only formats retain the source calendar day and use its offset', 
 
 test('real midnight keeps its precision; date-only and missing source precision never invent it', () => {
   assert.deepEqual(readPublicationDate('2026-10-13T00:00:00-07:00'), { publishedAt: new Date('2026-10-13T07:00:00Z'), publicationTime: '2026-10-13T07:00:00.000Z' });
-  assert.equal(describePublicationTime(new Date('2026-10-13T07:00:00Z'), '2026-10-13'), '2026-10-13（原文仅有日期，时刻未知）');
-  assert.equal(describePublicationTime(new Date('2026-10-13T07:00:00Z'), null), '2026-10-13 15:00（历史记录，原始精度未知）');
+  assert.equal(describePublicationTime(new Date('2026-10-13T07:00:00Z'), '2026-10-13'), '2026-10-13（原文僅有日期，時刻未知）');
+  assert.equal(describePublicationTime(new Date('2026-10-13T07:00:00Z'), null), '2026-10-13 15:00（歷史記錄，原始精度未知）');
   assert.equal(describePublicationTime(null, null), '未知');
 });
 
 test('grouping distinguishes a publication day from an exact instant', () => {
   const report = { title: 'Release', source: 'Official', firstParty: true, at: new Date('2026-10-13T07:00:00Z'), publicationTime: '2026-10-13', summary: null };
   const text = describeReport(report, '报道');
-  assert.match(text, /发布时间：2026-10-13（原文仅有日期，时刻未知）/);
+  assert.match(text, /釋出時間：2026-10-13（原文僅有日期，時刻未知）/);
   assert.doesNotMatch(text, /15:00/);
 });
 
@@ -177,6 +177,8 @@ test("legacy JSON and RSS formats keep their source date and zone", () => {
 test("a date rule's element that prints an age counts back from the moment it is read", () => {
   const now = new Date("2026-10-24T01:30:00.000Z"); // 09:30 in +08:00
   assert.deepEqual(readRelativeDate("20小时前", now), { publishedAt: new Date("2026-10-23T05:30:00.000Z"), publicationTime: "2026-10-23T05:30:00.000Z" });
+  assert.deepEqual(readRelativeDate("20小時前", now), { publishedAt: new Date("2026-10-23T05:30:00.000Z"), publicationTime: "2026-10-23T05:30:00.000Z" });
+  assert.deepEqual(readRelativeDate("15分鐘前", now), { publishedAt: new Date("2026-10-24T01:15:00.000Z"), publicationTime: "2026-10-24T01:15:00.000Z" });
   assert.deepEqual(readRelativeDate(" 15 分钟前 ", now), { publishedAt: new Date("2026-10-24T01:15:00.000Z"), publicationTime: "2026-10-24T01:15:00.000Z" });
   assert.deepEqual(readRelativeDate("3 hours ago", now, "+00:00"), { publishedAt: new Date("2026-10-23T22:30:00.000Z"), publicationTime: "2026-10-23T22:30:00.000Z" });
   // More than a day of hours is still hours: its time is kept, not cut to a calendar day.

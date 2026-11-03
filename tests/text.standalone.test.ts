@@ -55,11 +55,11 @@ test("writing and public reading agree about Chinese, including Japanese with ka
     assert.equal(looksZh(body_text), false);
     for (const language of [null, "ja", "ko"]) {
       assert.equal(isChineseBody({ language, body_text }), false);
-      assert.equal(exportTranslation({ language, body_text, tr_html: "<p>发布了新模型。</p>", tr_complete: true }), "<p>发布了新模型。</p>");
+      assert.equal(exportTranslation({ language, body_text, tr_html: "<p>釋出了新模型。</p>", tr_complete: true }), "<p>釋出了新模型。</p>");
     }
   }
   assert.equal(isChineseBody({ language: "ja", body_text: "人工知能研究開発" }), false);
-  assert.equal(isChineseBody({ language: null, body_text: "新的人工智能模型发布了。" }), true);
+  assert.equal(isChineseBody({ language: null, body_text: "新的人工智慧模型釋出了。" }), true);
   assert.equal(isChineseBody({ language: "zh-Hans", body_text: "API" }), true);
-  assert.equal(isChineseBody({ language: "en", body_text: "An English article quoting 人工智能." }), false);
+  assert.equal(isChineseBody({ language: "en", body_text: "An English article quoting 人工智慧." }), false);
 });

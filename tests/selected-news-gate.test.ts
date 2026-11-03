@@ -28,7 +28,7 @@ async function candidate(name: string) {
   const { articleId } = await upsertMaterial({ sourceId: SOURCE, url: `https://example.org/${T}/${name}`,
     title: `${T} ${name}`, bodyText: 'A new public result with evidence.', bodyStatus: 'ok', via: 'fetch', publishedAt: new Date() });
   await sql`INSERT INTO analyses(article_id,input_revision,origin,relevance,category,title_zh,summary_zh,reason_zh,score,selected)
-    VALUES (${articleId},1,'rule','pass','ai-models',${`新闻 ${T} ${name}`},'有证据的新结果','推荐理由',90,true)`;
+    VALUES (${articleId},1,'rule','pass','ai-models',${`新聞 ${T} ${name}`},'有證據的新結果','推薦理由',90,true)`;
   return articleId;
 }
 const read = async (path: string) => (await app.inject({ method: 'GET', url: path })).body;
@@ -61,7 +61,7 @@ test('an unresolved selection never leaks after the old deadline and completion 
 test('a confirmed but redundant explanation stays in all, and an editor can explicitly select it', async () => {
   const id = await candidate('overlap');
   await sql`UPDATE articles SET grouping_status='complete',grouped_at=now(),selection_adds_value=false,
-    selection_value_reason='已选发布稿已经包含全部要点' WHERE id=${id}`;
+    selection_value_reason='已選釋出稿已經包含全部要點' WHERE id=${id}`;
   await publishArticle(id);
   mock.timers.tick(5_100); // read past the previous test's snapshot, or this check passes on stale rows
   assert.ok(!(await read('/api/site/timeline?limit=40')).includes(id));

@@ -11,9 +11,9 @@ after(closeDb);
 
 test("normal corrections and security reports retain code, changed contacts, pages and images", async () => {
   const { default: sharp } = await import("sharp");
-  const base = { ip: "203.0.113.181", userAgent: "Firefox", content: "漏洞报告\n<script>alert(1)</script>\nSELECT * FROM users;\nhttp://127.0.0.1/\n  缩进必须保留" };
+  const base = { ip: "203.0.113.181", userAgent: "Firefox", content: "漏洞報告\n<script>alert(1)</script>\nSELECT * FROM users;\nhttp://127.0.0.1/\n  縮排必須保留" };
   const screenshot = { mime: "image/png", data: await sharp({ create: { width: 2, height: 2, channels: 3, background: "red" } }).png().toBuffer() };
-  for (const [i, change] of [{ content: base.content + "\n补充复现条件" }, { email: "reporter@example.com" }, { pageUrl: "/feedback" }, { screenshot }].entries()) {
+  for (const [i, change] of [{ content: base.content + "\n補充復現條件" }, { email: "reporter@example.com" }, { pageUrl: "/feedback" }, { screenshot }].entries()) {
     const input = { ...base, ip: `203.0.113.${140 + i}` };
     const original = await submitFeedback(input);
     const changed = await submitFeedback({ ...input, ...change });
@@ -30,7 +30,7 @@ test("the page a report came from is kept only as a web address or a site path; 
     ["//evil.example/x", null], ["mailto:someone@example.com", null], ["not a page", null],
   ];
   for (const [i, [pageUrl, kept]] of pages.entries()) {
-    const { id } = await submitFeedback({ ip: `203.0.113.${150 + i}`, userAgent: "Firefox", content: `页面字段 ${i}`, pageUrl });
+    const { id } = await submitFeedback({ ip: `203.0.113.${150 + i}`, userAgent: "Firefox", content: `頁面欄位 ${i}`, pageUrl });
     const [row] = await sql`SELECT page_url FROM feedback WHERE id=${id}`;
     assert.equal(row!.page_url, kept, pageUrl);
   }
@@ -40,7 +40,7 @@ test("persistent repeat abuse is paused once, survives a new process, and never 
   const { feedbackSourceHash, FeedbackRejected } = await import("@aihot/backend/operations/feedback");
   const { execFile } = await import("node:child_process");
   const { promisify } = await import("node:util");
-  const input = { ip: "203.0.113.182", userAgent: "Firefox", content: "重复提交回归用例" };
+  const input = { ip: "203.0.113.182", userAgent: "Firefox", content: "重複提交回歸用例" };
   const first = await submitFeedback(input);
   for (let i = 1; i < 20; i++) assert.equal((await submitFeedback(input)).id, first.id);
   const code = `const {submitFeedback}=await import('@aihot/backend/operations/feedback');const {closeDb}=await import('@aihot/backend/db');try{await submitFeedback(${JSON.stringify(input)});console.log('unexpected accepted')}catch(e){console.log(JSON.stringify({status:e.status,retryAfter:e.retryAfter}))}finally{await closeDb()}`;
@@ -62,15 +62,15 @@ test("slow changing feedback is paused for an hour; expiry restores it and other
   const input = { ip: "203.0.113.183", userAgent: "Firefox", content: "" };
   const ids = [];
   for (let i = 0; i < 3; i++) {
-    ids.push((await submitFeedback({ ...input, content: `持续提交 ${i}` })).id);
+    ids.push((await submitFeedback({ ...input, content: `持續提交 ${i}` })).id);
     t.mock.timers.tick(4 * 60_000);
   }
-  assert.equal((await submitFeedback({ ...input, content: "持续提交 0" })).id, ids[0]);
-  await assert.rejects(submitFeedback({ ...input, content: "持续提交 4" }), e => e instanceof FeedbackRejected && e.status === 429 && e.retryAfter === 3600);
+  assert.equal((await submitFeedback({ ...input, content: "持續提交 0" })).id, ids[0]);
+  await assert.rejects(submitFeedback({ ...input, content: "持續提交 4" }), e => e instanceof FeedbackRejected && e.status === 429 && e.retryAfter === 3600);
   // Do not ban a whole shared network when one browser source abuses the feedback form.
-  await submitFeedback({ ...input, userAgent: "Chrome", content: "同一共享网络的正常反馈" });
+  await submitFeedback({ ...input, userAgent: "Chrome", content: "同一共享網路的正常回饋" });
   t.mock.timers.tick(3600_000 + 1);
-  const restored = await submitFeedback({ ...input, content: "到期后正常报告" });
+  const restored = await submitFeedback({ ...input, content: "到期後正常報告" });
   assert.ok(restored.id);
   const source = feedbackSourceHash(input.ip, input.userAgent);
   assert.equal((await sql`SELECT 1 FROM feedback_bans WHERE source_hash=${source}`).length, 0);
@@ -81,19 +81,19 @@ test("a rapid fourth report is not saved, repeated requests do not extend the pa
   const { feedbackSourceHash, FeedbackRejected } = await import("@aihot/backend/operations/feedback");
   const { unbanSource, listFeedback, banSource } = await import("@aihot/backend/admin/feedback");
   const input = { ip: "203.0.113.184", userAgent: "Firefox", content: "" };
-  for (let i = 0; i < 3; i++) await submitFeedback({ ...input, content: `不同报告 ${i}` });
-  await assert.rejects(submitFeedback({ ...input, content: "第四条报告" }), e => e instanceof FeedbackRejected && e.status === 429 && e.retryAfter === 3600);
+  for (let i = 0; i < 3; i++) await submitFeedback({ ...input, content: `不同報告 ${i}` });
+  await assert.rejects(submitFeedback({ ...input, content: "第四條報告" }), e => e instanceof FeedbackRejected && e.status === 429 && e.retryAfter === 3600);
   const source = feedbackSourceHash(input.ip, input.userAgent);
   assert.equal((await sql`SELECT count(*)::int AS n FROM feedback WHERE source_hash=${source}`)[0]!.n, 3);
   const [before] = await sql`SELECT expires_at FROM feedback_bans WHERE source_hash=${source}`;
-  await assert.rejects(submitFeedback({ ...input, content: "持续快速提交" }), e => e instanceof FeedbackRejected && e.status === 429);
+  await assert.rejects(submitFeedback({ ...input, content: "持續快速提交" }), e => e instanceof FeedbackRejected && e.status === 429);
   const [after] = await sql`SELECT expires_at FROM feedback_bans WHERE source_hash=${source}`;
   assert.equal(after!.expires_at.toISOString(), before!.expires_at.toISOString());
   const admin = await listFeedback({});
   assert.ok(admin.bans.find(b => b.source_hash === source)?.expires_at);
   assert.ok(admin.rows.filter(r => r.source_hash === source).every(r => r.banned));
   await unbanSource(source, "test");
-  await submitFeedback({ ...input, content: "解除后可立即提交" });
+  await submitFeedback({ ...input, content: "解除後可立即提交" });
   await banSource(source, "manual", "test");
   await assert.rejects(submitFeedback({ ...input, content: "人工封禁仍生效" }), e => e instanceof FeedbackRejected && e.status === 403);
 });
@@ -115,20 +115,20 @@ test("rotating UA families cannot multiply one network's hourly feedback allowan
   t.mock.timers.enable({apis:['Date'],now:Date.now()});
   const families=['Chrome','Safari','Firefox','Edg','MicroMessenger','Mobile','Android','iPhone','iPad','Windows'];
   const ip='203.0.113.190';
-  const results=await Promise.allSettled(Array.from({length:47},(_,i)=>submitFeedback({ip,userAgent:`${families[i%10]} ${families[Math.floor(i/10)]}`,content:`轮换来源测试 ${i}`})));
+  const results=await Promise.allSettled(Array.from({length:47},(_,i)=>submitFeedback({ip,userAgent:`${families[i%10]} ${families[Math.floor(i/10)]}`,content:`輪換來源測試 ${i}`})));
   assert.equal(results.filter(r=>r.status==='fulfilled').length,20,'the proposed shared-network budget caps attempts independently of UA');
   for(const r of results)if(r.status==='rejected')assert.ok(r.reason instanceof FeedbackRejected && r.reason.status===429);
-  assert.ok((await submitFeedback({ip:'203.0.113.191',userAgent:'Firefox',content:'其他网络仍可正常反馈'})).id);
+  assert.ok((await submitFeedback({ip:'203.0.113.191',userAgent:'Firefox',content:'其他網路仍可正常回饋'})).id);
   t.mock.timers.tick(3600_001);
-  assert.ok((await submitFeedback({ip,userAgent:'Chrome',content:'滚动窗口到期后恢复'})).id);
+  assert.ok((await submitFeedback({ip,userAgent:'Chrome',content:'滾動視窗到期後恢復'})).id);
 });
 
 test("retries consume the shared network budget without saving duplicate feedback", async () => {
   const {FeedbackRejected}=await import('@aihot/backend/operations/feedback');
   const ip='203.0.113.192';
-  const input={ip,userAgent:'Firefox',content:'相同请求重试不应重复保存'};
+  const input={ip,userAgent:'Firefox',content:'相同請求重試不應重複儲存'};
   const first=await submitFeedback(input);
   for(let i=1;i<20;i++) assert.equal((await submitFeedback(input)).id,first.id);
-  await assert.rejects(submitFeedback({...input,userAgent:'Chrome',content:'换浏览器仍共享已用完的额度'}),e => e instanceof FeedbackRejected && e.status===429 && e.retryAfter!>0 && e.retryAfter!<=3600);
+  await assert.rejects(submitFeedback({...input,userAgent:'Chrome',content:'換瀏覽器仍共享已用完的額度'}),e => e instanceof FeedbackRejected && e.status===429 && e.retryAfter!>0 && e.retryAfter!<=3600);
   assert.equal(Number((await sql`SELECT count(*) AS n FROM feedback WHERE content=${input.content}`)[0]!.n),1);
 });

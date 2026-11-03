@@ -28,7 +28,7 @@ test("the worker warms the API's current public PNG without an HTTP server", asy
   const { articleId } = await upsertMaterial({ sourceId: source, url: `https://example.org/${source}`, title: "Share fixture",
     bodyText: "A public article with a prepared share card.", bodyHtml: "<p>A public article.</p>", bodyStatus: "ok", via: "fetch", publishedAt: new Date() });
   await sql`INSERT INTO analyses (article_id, input_revision, origin, relevance, category, title_zh, summary_zh, reason_zh, score, selected)
-    VALUES (${articleId}, 1, 'rule', 'pass', ${CATEGORY_KEYS[0]!}, '分享图预热验证', 'API 与 worker 复用同一份图片', 'fixture', 90, true)`;
+    VALUES (${articleId}, 1, 'rule', 'pass', ${CATEGORY_KEYS[0]!}, '分享圖預熱驗證', 'API 與 worker 複用同一份圖片', 'fixture', 90, true)`;
   await publishArticle(articleId, { releasedAt: new Date(Date.now() - 60_000) });
   // There is no serving process here: an implementation that asks one for the card returns false.
   assert.equal(await warmShareImage(articleId), true, "a prepared public card must not depend on a serving process");
@@ -44,7 +44,7 @@ test("the worker warms the API's current public PNG without an HTTP server", asy
   assert.equal(response.statusCode, 200);
   assert.deepEqual(response.rawPayload, png);
 
-  await sql`UPDATE publications SET title = '修正后的分享图标题' WHERE article_id = ${articleId}`;
+  await sql`UPDATE publications SET title = '修正後的分享圖示題' WHERE article_id = ${articleId}`;
   assert.equal(await warmShareImage(articleId), true);
   const corrected = await app.inject(`/og/items/${articleId}.png`);
   assert.equal(corrected.statusCode, 200);

@@ -19,7 +19,7 @@
 </p>
 
 <p align="center">
-  <a href="README.md">简体中文</a> · <b>English</b>
+  <a href="README.md">簡體中文</a> · <b>English</b>
 </p>
 
 <p align="center">
@@ -150,7 +150,7 @@ Nearly everything to change is in the [`site/`](site/) and [`industry/`](industr
 | `industry/selection.ts` | Selection thresholds |
 | `site/models.ts` | Which model each step uses by default (optional: otherwise every step uses the one in `.env`) |
 | `site/brand/`, `site/pages/`, `site/public/`, `site/changelog.json` | Icons and logo, terms of use and privacy notice, files served from the site root such as `robots.txt`, the changelog |
-| `modules/` | Features the framework doesn't have and only your site needs, as modules; see “模块” in [Architecture](docs/architecture.md#模块) |
+| `modules/` | Features the framework doesn't have and only your site needs, as modules; see “模組” in [Architecture](docs/architecture.md#模組) |
 
 What is most worth your time is the scoring rubric (`industry/prompts/selection-score.md`) and the thresholds: take one or two hundred items you labelled yourself, run them through `scripts/eval-selection.ts`, see how accurately it selects, and go back and adjust. How to do it is in [Selection and calibration](docs/selection.md).
 
@@ -184,7 +184,7 @@ I don't know what it will be turned into, or how far it will go. But that may be
 
 The rest of the road is yours.
 
-<p align="right">— 数字生命卡兹克 (Khazix)</p>
+<p align="right">— 數字生命卡茲克 (Khazix)</p>
 
 ## License
 

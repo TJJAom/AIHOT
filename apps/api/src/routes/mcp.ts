@@ -63,11 +63,11 @@ function safe<A>(tool: string, run: (args: A) => Promise<ReturnType<typeof ok> |
     try {
       return await run(args);
     } catch (error) {
-      if (error instanceof SearchBusyError) return fail("busy", "搜索繁忙，请稍后再试。");
+      if (error instanceof SearchBusyError) return fail("busy", "搜尋繁忙，請稍後再試。");
       const log = requestLog.getStore();
       if (log) log.error({ err: error, tool }, "mcp tool failed");
       else console.error(JSON.stringify({ level: "error", msg: "mcp tool failed", tool, err: logError(error) }));
-      return fail("internal_error", `${SITE.name} 暂时无法完成这个请求，请稍后再试。`);
+      return fail("internal_error", `${SITE.name} 暫時無法完成這個請求，請稍後再試。`);
     }
   };
 }
@@ -151,8 +151,8 @@ function registerTools(server: McpServer) {
     },
     safe(T.search, async (args) => {
       const q = args.q.trim();
-      if (q.includes("\0")) return fail("invalid_request", "搜索词不能包含 NUL 字符。");
-      if ([...q].length < 2) return fail("invalid_request", "搜索词需要 2 到 200 个字符。");
+      if (q.includes("\0")) return fail("invalid_request", "搜尋詞不能包含 NUL 字元。");
+      if ([...q].length < 2) return fail("invalid_request", "搜尋詞需要 2 到 200 個字元。");
       const found = await searchItems(q, args.window, args.category ?? null, args.limit, (query) => recent(`items:${JSON.stringify(query)}`, () => v1Items(query)));
       return ok(searchAnswer(found, { q, window: args.window, category: args.category ?? null }), { schemaVersion: 1, query: found.res.query, items: found.res.items });
     }),
@@ -183,7 +183,7 @@ function registerTools(server: McpServer) {
       let found = await resolveStory(args.public_id.trim());
       if (found.kind === "merged") found = await resolveStory(found.target);
       const body = found.kind === "found" ? await v1Story(found.storyId) : null;
-      if (!body) return fail("not_found", `没有这个公开事件；只使用 ${T.hot} 返回的 public_id。`);
+      if (!body) return fail("not_found", `沒有這個公開事件；只使用 ${T.hot} 返回的 public_id。`);
       const story = { ...body.story, reports: body.story.reports.slice(0, args.report_limit) };
       return ok(storyAnswer(body.story, args.report_limit, "mcp"), { schemaVersion: 1, story });
     }),
@@ -199,15 +199,15 @@ function registerTools(server: McpServer) {
     safe(T.daily, async (args) => {
       if (args.date && !isValidDate(args.date)) return fail("invalid_request", `${args.date} 不是有效日期。`);
       const res = await recent(`daily:${args.date ?? "latest"}`, () => dailyWithNotes(args.date ?? "latest"));
-      if (!res) return fail("not_found", args.date ? `没有 ${args.date} 的公开日报。` : "还没有公开日报。");
+      if (!res) return fail("not_found", args.date ? `沒有 ${args.date} 的公開日報。` : "還沒有公開日報。");
       return ok(dailyAnswer(res.body.report, "mcp", res.notes), res.body);
     }),
   );
 
   for (const p of [
-    { kind: "weekly", tool: T.weekly, input: WEEKLY_INPUT, key: (a: { week?: string }) => a.week, name: "周报", form: "真实的 ISO 周（例如 2026-W39）",
+    { kind: "weekly", tool: T.weekly, input: WEEKLY_INPUT, key: (a: { week?: string }) => a.week, name: "週報", form: "真實的 ISO 周（例如 2026-W39）",
       description: `Get ${SITE.name}'s edited weekly report: the week's most important events chosen from its dailies, grouped by section, with an overview. Use this for what happened this week or in a given ISO week; omit week for the latest.` },
-    { kind: "monthly", tool: T.monthly, input: MONTHLY_INPUT, key: (a: { month?: string }) => a.month, name: "月报", form: "真实的月份（例如 2026-09）",
+    { kind: "monthly", tool: T.monthly, input: MONTHLY_INPUT, key: (a: { month?: string }) => a.month, name: "月報", form: "真實的月份（例如 2026-09）",
       description: `Get ${SITE.name}'s edited monthly report: the month's most important events chosen from its dailies, grouped by section, with an overview. Use this for what happened this month or in a given month; omit month for the latest.` },
   ] as const) {
     server.registerTool(
@@ -217,7 +217,7 @@ function registerTools(server: McpServer) {
         const key = p.key(args);
         if (key && !isPeriodKey(p.kind, key)) return fail("invalid_request", `${key} 不是${p.form}。`);
         const body = await recent(`${p.kind}:${key ?? "latest"}`, () => v1Period(p.kind, key ?? "latest"));
-        if (!body) return fail("not_found", key ? `没有 ${key} 的${p.name}；不要换一期冒充。` : `还没有发布过${p.name}。`);
+        if (!body) return fail("not_found", key ? `沒有 ${key} 的${p.name}；不要換一期冒充。` : `還沒有釋出過${p.name}。`);
         return ok(periodAnswer(body.report, p.kind, "mcp"), body);
       }),
     );

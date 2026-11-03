@@ -1,4 +1,4 @@
-// 重定向测试只使用虚构凭据和回环服务；HTTPS 分支使用禁止联网的传输替身。
+// 重定向測試只使用虛構憑據和迴環服務；HTTPS 分支使用禁止聯網的傳輸替身。
 import { tag } from "./setup.ts";
 import assert from "node:assert/strict";
 import http from "node:http";
@@ -43,7 +43,7 @@ for (const headers of [{ Authorization: `Bearer ${key}` }, { aUtHoRiZaTiOn: key 
     redirect("/header", b.url + "/capture", 307);
     const count = b.hits.length;
     await assert.rejects(guardedFetch(a.url + "/header", { headers }), /redirect/i);
-    assert.equal(b.hits.length, count, "目标服务不得收到请求");
+    assert.equal(b.hits.length, count, "目標服務不得收到請求");
   });
 }
 for (const body of [JSON.stringify({ key }), ""]) {
@@ -91,7 +91,7 @@ for (const status of [301, 302, 303, 307, 308]) {
       assert.equal(hit.body, converted ? "" : body ?? "");
       assert.equal(hit.headers.authorization, key);
       if (converted) for (const name of ["content-type", "content-language", "content-location", "content-encoding", "content-length"]) assert.equal(hit.headers[name], undefined, name);
-      assert.deepEqual(headers, before, "不得修改调用方头对象");
+      assert.deepEqual(headers, before, "不得修改呼叫方頭物件");
     });
   }
 }
@@ -144,7 +144,7 @@ test("normal private-network guards still refuse direct and redirect destination
     await assert.rejects(guardedFetch(b.url + "/secret"), /Blocked/);
     config.allowPrivateNetworkFetch = true;
     a.routes.set("/guarded-hop", (_hit, res) => {
-      // 初始回环请求到达后恢复正常校验，验证下一跳确实再次经过目的地检查。
+      // 初始迴環請求到達後恢復正常校驗，驗證下一跳確實再次經過目的地檢查。
       config.allowPrivateNetworkFetch = false;
       res.writeHead(302, { location: b.url + "/secret" }); res.end();
     });

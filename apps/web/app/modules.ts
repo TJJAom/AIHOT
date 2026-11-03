@@ -77,7 +77,7 @@ export interface AgentPart {
   resources?: Array<[label: string, href: string, note: string]>;
   /** The MCP panel's tool table: its tools. */
   tools?: Array<{ name: string; does: string; ask: string }>;
-  /** The MCP panel's 连不上怎么办: entries after the engine's first. */
+  /** The MCP panel's 連不上怎麼辦: entries after the engine's first. */
   mcpTroubles?: ReactNode[];
   /** What the RSS panel's opening sentence goes on to say, a clause each after "；". */
   rssLead?: string[];
@@ -85,13 +85,13 @@ export interface AgentPart {
   api?: { group: string; rows: Array<[path: string, does: string, often: string]> };
   /** The API panel's usage tabs: one each, after the engine's. */
   recipes?: Array<{ key: string; label: string; Body: ComponentType<{ base: string; curl: string }> }>;
-  /** The API panel's 出错了怎么办: [status, what to do], after the engine's. */
+  /** The API panel's 出錯了怎麼辦: [status, what to do], after the engine's. */
   apiErrors?: Array<[status: string, what: ReactNode]>;
 }
 
 /** A module's part of a topic page (routes/topic.tsx), from what its server module's topics.page returned for it. */
 export interface TopicPagePart {
-  /** What it is called: after "最新动态与" in the page's title, and in the name of its structured-data list. */
+  /** What it is called: after "最新動態與" in the page's title, and in the name of its structured-data list. */
   name: string;
   /** Whether it has anything on this page; without, the page leaves it out of its body and its head. */
   shows: (data: unknown, topic: TopicSummary) => boolean;
@@ -106,7 +106,7 @@ export interface TopicPagePart {
 export interface WebModule {
   /** Its folder under modules/. */
   name: string;
-  /** Desktop sidebar: entries in a section between the engine's 内容 and 更多; modules naming the same section share it. */
+  /** Desktop sidebar: entries in a section between the engine's 內容 and 更多; modules naming the same section share it. */
   sidebar?: { section: string; items: NavItem[] };
   /** Phone tab bar: tabs before 我的. */
   tabs?: Tab[];
@@ -127,7 +127,7 @@ export interface WebModule {
   topicPage?: Part<TopicPagePart>;
   /** Paths of the marks it serves that are drawn in white, for a dark tile (components/BrandMark.tsx). */
   darkMarks?: string[];
-  /** The starred page (routes/starred.tsx): buttons ahead of 导入文件 that bring stars in from elsewhere, each resolving to the line it reports. */
+  /** The starred page (routes/starred.tsx): buttons ahead of 匯入檔案 that bring stars in from elsewhere, each resolving to the line it reports. */
   starredImports?: Array<{ label: string; run: () => Promise<{ ok: boolean; text: string }> }>;
   /**
    * The feedback page (routes/feedback.tsx): a draft kept elsewhere in this browser, read when the page

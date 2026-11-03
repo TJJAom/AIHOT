@@ -37,7 +37,7 @@ const agentWays = () => [...webModules().flatMap((m) => m.agentWays ?? []), "MCP
 /** The modules' tools first, then the engine's. */
 const tools = (): Row[] => [
   ...webModules().flatMap((m) => m.tools ?? []),
-  ...(inNav("/topics") ? [{ to: "/topics", label: "主题", icon: <IconGrid size={20} /> }] : []),
+  ...(inNav("/topics") ? [{ to: "/topics", label: "主題", icon: <IconGrid size={20} /> }] : []),
   { to: "/agent", label: "Agent 接入", icon: <IconPlug size={20} />, detail: agentWays().slice(0, 3).join(" · ") },
 ];
 
@@ -85,34 +85,34 @@ export default function MorePage() {
             <span className="text-ink-3">
               <IconMoon size={20} />
             </span>
-            <span className="flex-1">外观</span>
+            <span className="flex-1">外觀</span>
             <ThemeSwitch className="w-[126px]" />
           </li>
           <li className="flex min-h-[56px] items-center gap-3 px-4 text-[16px] font-medium text-ink">
             <span className="w-5 text-center text-ink-3" aria-hidden="true">Aa</span>
-            <span className="flex-1">字体</span>
-            <Select aria-label="字体" value={font ?? "system"} onChange={(e) => setFontPreference(e.target.value === "browser" ? "browser" : null)}>
-              <option value="system">默认字体</option>
-              <option value="browser">浏览器默认字体</option>
+            <span className="flex-1">字型</span>
+            <Select aria-label="字型" value={font ?? "system"} onChange={(e) => setFontPreference(e.target.value === "browser" ? "browser" : null)}>
+              <option value="system">預設字型</option>
+              <option value="browser">瀏覽器預設字型</option>
             </Select>
           </li>
         </Group>
-        <Group title="工具与入口">
+        <Group title="工具與入口">
           {tools().map((r) => (
             <RowLink key={r.to} row={r} />
           ))}
         </Group>
-        <Group title="关于">
-          <RowLink row={{ to: "/about", label: `关于 ${SITE.name}`, icon: <IconHeart size={20} /> }} />
-          <RowLink row={{ to: "/changelog", label: "更新日志", icon: <IconSparkles size={20} /> }} dot={changelogDot} />
-          <RowLink row={{ to: "/feedback", label: "意见反馈", icon: <IconMessage size={20} /> }} />
+        <Group title="關於">
+          <RowLink row={{ to: "/about", label: `關於 ${SITE.name}`, icon: <IconHeart size={20} /> }} />
+          <RowLink row={{ to: "/changelog", label: "更新日誌", icon: <IconSparkles size={20} /> }} dot={changelogDot} />
+          <RowLink row={{ to: "/feedback", label: "意見回饋", icon: <IconMessage size={20} /> }} />
         </Group>
       </div>
       <div className="mt-6 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[12px] leading-[2] text-ink-4">
         <Link viewTransition to="/terms" className="hover:text-ink-2">{POLICY.terms.name}</Link>
-        <Link viewTransition to="/privacy" className="hover:text-ink-2">隐私说明</Link>
+        <Link viewTransition to="/privacy" className="hover:text-ink-2">隱私說明</Link>
         <a href="/feed.xml" className="hover:text-ink-2">RSS</a>
-        {SITE.github && <a href={SITE.github} target="_blank" rel="noopener noreferrer" className="hover:text-ink-2">GitHub 开源</a>}
+        {SITE.github && <a href={SITE.github} target="_blank" rel="noopener noreferrer" className="hover:text-ink-2">GitHub 開源</a>}
         <Filings className="hover:text-ink-2" badgeSize={13} />
       </div>
     </div>

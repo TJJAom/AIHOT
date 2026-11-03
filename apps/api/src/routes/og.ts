@@ -16,7 +16,7 @@ import { config } from "@aihot/backend/config";
 /** The pages' share cards: the site's texts, and the topic count of the topic list. */
 const PAGES: Record<string, OgCard> = {
   ...CARDS,
-  topics: { kicker: "主题", title: `${TOPICS.length} ${subjectAfter("个长期追踪的", "方向")}`, subtitle: `${TOPIC_GROUPS.map((g) => g.name).join("、")}。` },
+  topics: { kicker: "主題", title: `${TOPICS.length} ${subjectAfter("個長期追蹤的", "方向")}`, subtitle: `${TOPIC_GROUPS.map((g) => g.name).join("、")}。` },
 };
 
 /**
@@ -36,7 +36,7 @@ function notFound(reply: FastifyReply) {
   return reply.code(404).header("Cache-Control", "public, max-age=300").type("text/plain; charset=utf-8").send("Not found");
 }
 
-const REPORT_NAMES: Record<ReportKind, string> = { daily: withSubject("日报"), weekly: withSubject("周报"), monthly: withSubject("月报") };
+const REPORT_NAMES: Record<ReportKind, string> = { daily: withSubject("日報"), weekly: withSubject("週報"), monthly: withSubject("月報") };
 
 export function registerOg(app: FastifyInstance) {
   app.get("/og/site.png", (req, reply) => send(req, reply, PAGES.site!, 86400));
@@ -64,7 +64,7 @@ export function registerOg(app: FastifyInstance) {
     if (!d) return notFound(reply);
     const poster: Poster = {
       url: `${config.siteUrl}/items/${d.id}`,
-      kicker: d.category ? CATEGORY_LABELS[d.category] : withSubject("动态"),
+      kicker: d.category ? CATEGORY_LABELS[d.category] : withSubject("動態"),
       title: d.title,
       summary: d.summary,
       source: d.source.name,
@@ -88,7 +88,7 @@ export function registerOg(app: FastifyInstance) {
       title: r.lead?.title ?? r.title,
       subtitle: r.lead?.leadParagraph ?? r.overview,
       // A quiet day's issue (REPORTS.quiet) has nothing to count.
-      meta: count > 0 ? `${count} ${REPORTS.shareUnit} · 约 ${r.readingMinutes} 分钟读完` : null,
+      meta: count > 0 ? `${count} ${REPORTS.shareUnit} · 約 ${r.readingMinutes} 分鐘讀完` : null,
     }, 3600, CONTENT_IMAGE_CACHE);
   });
 
@@ -96,7 +96,7 @@ export function registerOg(app: FastifyInstance) {
     const file = (req.params as { file: string }).file;
     const t = file.endsWith(".png") ? findTopic(file.slice(0, -4)) : null;
     if (!t) return notFound(reply);
-    return send(req, reply, { kicker: `主题 · ${TOPIC_GROUPS.find((g) => g.key === t.group)?.name ?? ""}`, title: `${t.name} 最新动态`, subtitle: t.definition }, 86400);
+    return send(req, reply, { kicker: `主題 · ${TOPIC_GROUPS.find((g) => g.key === t.group)?.name ?? ""}`, title: `${t.name} 最新動態`, subtitle: t.definition }, 86400);
   });
 
   app.get("/og/stories/:file", async (req, reply) => {
@@ -107,10 +107,10 @@ export function registerOg(app: FastifyInstance) {
     const s = await loadStoryDetail(found.storyId);
     if (!s) return notFound(reply);
     return send(req, reply, {
-      kicker: s.whyHot.rank ? `热点第 ${s.whyHot.rank} · 事件` : "事件",
+      kicker: s.whyHot.rank ? `熱點第 ${s.whyHot.rank} · 事件` : "事件",
       title: s.title,
       subtitle: s.latest ?? s.digest,
-      meta: `${s.sourceCount} 个来源 · ${s.reportCount} 篇报道`,
+      meta: `${s.sourceCount} 個來源 · ${s.reportCount} 篇報道`,
       accent: s.whyHot.rank ? "hot" : "teal",
     }, 3600, CONTENT_IMAGE_CACHE);
   });

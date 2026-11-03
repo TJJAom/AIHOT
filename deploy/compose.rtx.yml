@@ -1,0 +1,37 @@
+# RTX 本機模型；與根目錄 docker-compose.yml 合併使用。
+# 不發布模型主機埠，也不使用 Windows 既有 embedding Ollama 的模型目錄。
+services:
+  worker:
+    profiles: [local-ai]
+
+  ollama:
+    profiles: [local-ai]
+    image: ollama/ollama:0.34.2@sha256:c715bebf769913db6c82d96f8a8dfee989c4bdfe19fa7d700e3d41ee0ceb5461
+    restart: unless-stopped
+    environment:
+      OLLAMA_HOST: 0.0.0.0:11434
+      OLLAMA_NO_CLOUD: "1"
+      OLLAMA_NUM_PARALLEL: "1"
+      OLLAMA_MAX_LOADED_MODELS: "1"
+      OLLAMA_CONTEXT_LENGTH: "16384"
+      OLLAMA_FLASH_ATTENTION: "1"
+      OLLAMA_KV_CACHE_TYPE: q8_0
+      OLLAMA_KEEP_ALIVE: 1m
+    volumes:
+      - ollama_models:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              device_ids: ["0"]
+              capabilities: [gpu]
+    healthcheck:
+      test: ["CMD", "ollama", "list"]
+      interval: 15s
+      timeout: 10s
+      retries: 6
+      start_period: 30s
+
+volumes:
+  ollama_models: {}

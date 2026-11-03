@@ -3506,7 +3506,7 @@
               "string",
               "null"
             ],
-            "description": "Reader-facing recommendation reason, the same text shown as 推荐理由 on the website. Always present on /api/v1/items; null when the item is not selected or has no reader-facing reason. Selected snapshot and changes do not include this field yet."
+            "description": "Reader-facing recommendation reason, the same text shown as 推薦理由 on the website. Always present on /api/v1/items; null when the item is not selected or has no reader-facing reason. Selected snapshot and changes do not include this field yet."
           },
           "attribution": {
             "$ref": "#/components/schemas/Attribution"

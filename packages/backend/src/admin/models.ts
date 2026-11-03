@@ -1,4 +1,4 @@
-// Admin "模型与评测": the model each capability uses and where that choice comes from,
+// Admin "模型與評測": the model each capability uses and where that choice comes from,
 // the prompt versions in use, quality / latency / cost of the last days per model, the switch history
 // and the SelectBench runs that compare models on the same batch. A switch is audited and applies to
 // new work only.

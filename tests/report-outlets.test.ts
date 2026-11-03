@@ -69,8 +69,8 @@ test('withdrawing a named lead preserves the replacement headline and its own fr
 
 test('a historical written daily lead follows withdrawal of the citation it describes', async (t) => {
   t.mock.timers.enable({ apis: ['Date'], now: Date.now() + 1_200_002 });
-  const removed = await citation('历史模型发布与能力升级');
-  const replacement = await citation('新的安全工具发布');
+  const removed = await citation('歷史模型釋出與能力升級');
+  const replacement = await citation('新的安全工具釋出');
   const key = '2096-01-02';
   await issue('daily', key, { lead: { title: removed.title, leadParagraph: removed.summary }, highlights: [replacement.itemId], sections: [{ label: 'News', items: [removed, replacement] }] });
   const before = await v1Daily(key);
@@ -122,7 +122,7 @@ test('a daily citation without a frozen summary, and a flash with an earlier fro
 test('discovery counts exactly the publicly indexed topics it lists', () => {
   const text = llmsTxt({ hasDailies: false, hasWeekly: false, hasMonthly: false, topics: [{ slug: 'sample', name: 'Example', definition: 'Example topic' }], tools: [],
     modules: { api: [], pace: [], pages: [], topics: [], access: [], usage: [], guideClients: [], ways: [] } });
-  assert.match(text, /（1 个主题，下一节逐个列出）/);
+  assert.match(text, /（1 個主題，下一節逐個列出）/);
 });
 
 // A saved overview/section introduction can still repeat the withdrawn citation after the list and
@@ -178,9 +178,9 @@ for (const [kind, key] of [['daily', '2096-01-06'], ['weekly', '2096-W30'], ['mo
 
 for (const [kind, key] of [['weekly', '2096-W40'], ['monthly', '2096-11']] as const) {
   test(`a historical written ${kind} headline follows withdrawal of its matched citation`, async () => {
-    const removed = await citation(`旧版${kind}模型正式发布`);
-    const replacement = await citation(`替补${kind}安全系统更新`);
-    await issue(kind, key, { ...(kind === 'monthly' ? { title: removed.title } : { headline: removed.title }), overview: `总述：${removed.title}`, highlights: [replacement.itemId],
+    const removed = await citation(`舊版${kind}模型正式釋出`);
+    const replacement = await citation(`替補${kind}安全系統更新`);
+    await issue(kind, key, { ...(kind === 'monthly' ? { title: removed.title } : { headline: removed.title }), overview: `總述：${removed.title}`, highlights: [replacement.itemId],
       themes: [{ heading: 'News', storyRefs: [removed, replacement] }] });
     assert.equal((await v1Period(kind, key))!.report.headline, removed.title);
     await sql`UPDATE publications SET visibility = 'withdrawn' WHERE article_id = ${removed.itemId}`;
@@ -198,9 +198,9 @@ for (const [kind, key] of [['weekly', '2096-W40'], ['monthly', '2096-11']] as co
 
 for (const [kind, key] of [['weekly', '2096-W41'], ['monthly', '2096-12']] as const) {
   test(`an unmatched written ${kind} headline cannot restore an unavailable overview`, async () => {
-    const removed = await citation('应当撤回的单条证据');
-    const title = '本期技术行业综述';
-    await issue(kind, key, { headline: title, overview: `不该复述：${removed.title}`,
+    const removed = await citation('應當撤回的單條證據');
+    const title = '本期技術行業綜述';
+    await issue(kind, key, { headline: title, overview: `不該複述：${removed.title}`,
       themes: [{ heading: 'News', storyRefs: [removed] }] });
     await sql`UPDATE publications SET visibility='withdrawn' WHERE article_id=${removed.itemId}`;
     const site = (await loadReport(kind,key))!;
@@ -214,8 +214,8 @@ for (const [kind, key] of [['weekly', '2096-W41'], ['monthly', '2096-12']] as co
 
 test('an expired report index waits for the current withdrawal result',async(t)=>{
   t.mock.timers.enable({apis:['Date'],now:Date.now()+86_400_000});
-  const removed=await citation('索引旧头条');
-  const replacement=await citation('索引新头条');
+  const removed=await citation('索引舊頭條');
+  const replacement=await citation('索引新頭條');
   const key='2099-01-01';
   await issue('daily',key,{leadItemId:removed.itemId,lead:{title:removed.title,leadParagraph:removed.summary},highlights:[replacement.itemId],sections:[{label:'News',items:[removed,replacement]}]});
   assert.equal((await v1Dailies(50)).items.find(r=>r.date===key)!.leadTitle,removed.title);

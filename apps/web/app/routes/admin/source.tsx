@@ -18,7 +18,7 @@ export async function loader({ request, params }: Route.LoaderArgs) {
   return adminGet<AdminSourceDetail>(request, `/api/admin/sources/${encodeURIComponent(params.id)}`);
 }
 
-export const meta: Route.MetaFunction = ({ loaderData }) => [{ title: `${loaderData?.source.name ?? "信源"} · ${SITE.name} 后台` }];
+export const meta: Route.MetaFunction = ({ loaderData }) => [{ title: `${loaderData?.source.name ?? "信源"} · ${SITE.name} 後臺` }];
 
 type Draft = Pick<AdminSource, "name" | "kind" | "interval_minutes" | "tier" | "selection_class" | "participation_mode" | "uses" | "signal_group_id" | "first_party" | "owner_entity_id" | "site_fulltext" | "syndicate_fulltext"> & { tags: string; config: string };
 
@@ -114,13 +114,13 @@ export default function SourceDetail({ loaderData }: Route.ComponentProps) {
               if (r) setPreview(r);
             }}
           >
-            预览当前配置
+            預覽當前配置
           </Button>
-          <Button busy={pending === "fetch"} onClick={() => run("POST", `${base}/fetch`, undefined, { label: "fetch", success: "已加入采集队列" })}>
-            立即采集
+          <Button busy={pending === "fetch"} onClick={() => run("POST", `${base}/fetch`, undefined, { label: "fetch", success: "已加入採集佇列" })}>
+            立即採集
           </Button>
           <Button tone={s.enabled ? "danger" : "primary"} onClick={() => setDialog("toggle")}>
-            {s.enabled ? "暂停" : "恢复"}
+            {s.enabled ? "暫停" : "恢復"}
           </Button>
         </>
       }
@@ -131,53 +131,53 @@ export default function SourceDetail({ loaderData }: Route.ComponentProps) {
           value={
             <span className="inline-flex items-center gap-2 text-[18px]">
               <Dot tone={s.enabled ? healthTone(s.health) : "muted"} />
-              {s.enabled ? HEALTH_LABEL[s.health] ?? s.health : "已暂停"}
+              {s.enabled ? HEALTH_LABEL[s.health] ?? s.health : "已暫停"}
             </span>
           }
-          hint={s.fail_count ? `连续失败 ${s.fail_count} 次` : `上次成功 ${s.last_ok_at ? bj(s.last_ok_at) : "—"}`}
+          hint={s.fail_count ? `連續失敗 ${s.fail_count} 次` : `上次成功 ${s.last_ok_at ? bj(s.last_ok_at) : "—"}`}
         />
-        <Stat label="累计条目" value={num(stats.total)} />
+        <Stat label="累計條目" value={num(stats.total)} />
         <Stat label="近 7 天" value={num(stats.last7d)} />
-        <Stat label="入选精选" value={num(stats.selected)} />
+        <Stat label="入選精選" value={num(stats.selected)} />
       </div>
       {s.last_error && s.health !== "ok" && <div className="mb-5 rounded-card bg-hot-soft px-4 py-3 text-[13px] text-hot ring-1 ring-hot/20">{s.last_error}</div>}
 
       {preview && (
-        <Card className="mb-5" title={`预览：${preview.count} 条（${preview.ms}ms，未入库）`} right={<button onClick={() => setPreview(null)}>收起</button>}>
+        <Card className="mb-5" title={`預覽：${preview.count} 條（${preview.ms}ms，未入庫）`} right={<button onClick={() => setPreview(null)}>收起</button>}>
           {preview.items.length ? (
             <ul className="space-y-2.5">
               {preview.items.map((i) => (
                 <li key={i.url} className="text-[13px]">
                   <a href={i.url} target="_blank" rel="noreferrer" className="font-medium text-ink hover:text-accent">{i.title}</a>
-                  <div className="text-[12px] text-ink-4">{i.publishedAt ? bj(i.publishedAt, true) : "无发布时间"} · {i.url}</div>
+                  <div className="text-[12px] text-ink-4">{i.publishedAt ? bj(i.publishedAt, true) : "無釋出時間"} · {i.url}</div>
                   {i.excerpt && <div className="mt-0.5 line-clamp-2 text-[12.5px] text-ink-3">{i.excerpt}</div>}
                 </li>
               ))}
             </ul>
           ) : (
-            <Empty>没有抓到条目。检查地址、选择器或登录要求。</Empty>
+            <Empty>沒有抓到條目。檢查地址、選擇器或登入要求。</Empty>
           )}
         </Card>
       )}
 
       <div className="grid gap-5 xl:grid-cols-[1fr_380px]">
         <div className="space-y-5">
-          <Card title="设置" right={<span>版本 {bj(s.updated_at, true)}</span>}>
+          <Card title="設定" right={<span>版本 {bj(s.updated_at, true)}</span>}>
             <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="名称">
+              <Field label="名稱">
                 <Input value={draft.name} onChange={(e) => setDraft({ ...draft, name: e.target.value })} />
               </Field>
               {(REPLACEABLE_SOURCE_KINDS as readonly string[]).includes(s.kind) && (
-                <Field label="采集方式" hint="调整后保留信源与历史内容；请填写对应的完整配置并预览">
+                <Field label="採集方式" hint="調整後保留信源與歷史內容；請填寫對應的完整配置並預覽">
                   <Select value={draft.kind} onChange={(e) => { setDraft({ ...draft, kind: e.target.value }); setPreview(null); }}>
                     {REPLACEABLE_SOURCE_KINDS.map(kind => <option key={kind} value={kind}>{KIND_LABEL[kind]}</option>)}
                   </Select>
                 </Field>
               )}
-              <Field label="采集间隔（分钟）">
+              <Field label="採集間隔（分鐘）">
                 <Input type="number" min={1} max={1440} value={draft.interval_minutes} onChange={(e) => setDraft({ ...draft, interval_minutes: Number(e.target.value) })} />
               </Field>
-              <Field label="参与方式" hint="氛围只作热点讨论证据，不单独成为内容">
+              <Field label="參與方式" hint="氛圍只作熱點討論證據，不單獨成為內容">
                 <Select value={draft.participation_mode} onChange={(e) => setDraft({ ...draft, participation_mode: e.target.value })}>
                   {Object.entries(MODE_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </Select>
@@ -199,30 +199,30 @@ export default function SourceDetail({ loaderData }: Route.ComponentProps) {
                   </div>
                 </Field>
               )}
-              <Field label="等级" hint="仅 T1 为一手信源">
+              <Field label="等級" hint="僅 T1 為一手信源">
                 <Select value={draft.tier} onChange={(e) => setDraft({ ...draft, tier: e.target.value })}>
                   {Object.entries(TIER_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </Select>
               </Field>
-              <Field label="类别" hint="抬高精选门槛，一手身份不变">
+              <Field label="類別" hint="抬高精選門檻，一手身份不變">
                 <Select value={draft.selection_class ?? ""} onChange={(e) => setDraft({ ...draft, selection_class: e.target.value || null })}>
-                  <option value="">无（按等级）</option>
+                  <option value="">無（按等級）</option>
                   {Object.entries(SELECTION_CLASS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
                 </Select>
               </Field>
-              <Field label="讨论分组 ID" hint="同一机构的多个账号共用，热度只算一次">
+              <Field label="討論分組 ID" hint="同一機構的多個賬號共用，熱度只算一次">
                 <Input value={draft.signal_group_id ?? ""} onChange={(e) => setDraft({ ...draft, signal_group_id: e.target.value })} />
               </Field>
-              <Field label="运营主体 ID">
+              <Field label="營運主體 ID">
                 <Input value={draft.owner_entity_id ?? ""} onChange={(e) => setDraft({ ...draft, owner_entity_id: e.target.value })} />
               </Field>
-              <Field label="标签（逗号分隔）">
+              <Field label="標籤（逗號分隔）">
                 <Input value={draft.tags} onChange={(e) => setDraft({ ...draft, tags: e.target.value })} />
               </Field>
               <div className="flex flex-col justify-end gap-2 text-[13px] text-ink-2">
                 {([
-                  ["site_fulltext", "站内可展示全文"],
-                  ["syndicate_fulltext", "对外接口可带全文"],
+                  ["site_fulltext", "站內可展示全文"],
+                  ["syndicate_fulltext", "對外介面可帶全文"],
                 ] as const).map(([k, label]) => (
                   <label key={k} className="inline-flex items-center gap-2">
                     <input type="checkbox" className="size-4 accent-[var(--accent)]" checked={draft[k]} onChange={(e) => setDraft({ ...draft, [k]: e.target.checked })} />
@@ -232,75 +232,75 @@ export default function SourceDetail({ loaderData }: Route.ComponentProps) {
               </div>
             </div>
             <div className="mt-4">
-              <Field label="采集配置（JSON）">
+              <Field label="採集配置（JSON）">
                 <Textarea className="font-mono !text-[12px]" rows={Math.min(18, draft.config.split("\n").length + 1)} value={draft.config} onChange={(e) => setDraft({ ...draft, config: e.target.value })} spellCheck={false} />
               </Field>
               {configError && <div className="mt-1 text-[12.5px] text-hot">{configError}</div>}
             </div>
             <div className="mt-4 flex items-center justify-end gap-2">
-              {changes > 0 && <span className="text-[12.5px] text-ink-3">{changes} 项改动未保存</span>}
-              <Button tone="ghost" disabled={!changes} onClick={() => setDraft(draftOf(s))}>还原</Button>
-              <Button tone="primary" disabled={!changes} onClick={() => patch() && setDialog("save")}>保存</Button>
+              {changes > 0 && <span className="text-[12.5px] text-ink-3">{changes} 項改動未儲存</span>}
+              <Button tone="ghost" disabled={!changes} onClick={() => setDraft(draftOf(s))}>還原</Button>
+              <Button tone="primary" disabled={!changes} onClick={() => patch() && setDialog("save")}>儲存</Button>
             </div>
           </Card>
 
-          <Card title="最近条目" pad={false}>
+          <Card title="最近條目" pad={false}>
             <DataTable
               rows={items}
               rowKey={(r) => r.id}
-              empty="还没有采集到内容"
+              empty="還沒有採集到內容"
               columns={[
                 {
                   key: "t",
-                  label: "标题",
+                  label: "標題",
                   render: (r) => (
                     <Link to={`/admin/content/${r.id}`} className="line-clamp-2 min-w-[260px] text-ink hover:text-accent">{r.title_zh || r.title}</Link>
                   ),
                 },
-                { key: "s", label: "状态", render: (r) => <span className="flex gap-1">{r.selected && <Badge tone="accent">精选</Badge>}{r.visibility && r.visibility !== "public" && <Badge tone="warn">{VISIBILITY_LABEL[r.visibility]}</Badge>}<Badge>{r.processing_state}</Badge></span> },
-                { key: "d", label: "发现", render: (r) => <Time at={r.discovered_at} /> },
+                { key: "s", label: "狀態", render: (r) => <span className="flex gap-1">{r.selected && <Badge tone="accent">精選</Badge>}{r.visibility && r.visibility !== "public" && <Badge tone="warn">{VISIBILITY_LABEL[r.visibility]}</Badge>}<Badge>{r.processing_state}</Badge></span> },
+                { key: "d", label: "發現", render: (r) => <Time at={r.discovered_at} /> },
               ]}
             />
           </Card>
         </div>
 
         <div className="space-y-5">
-          <Card title="状态">
+          <Card title="狀態">
             <KV
               items={[
                 ["上次抓取", s.last_fetch_at ? bj(s.last_fetch_at, true) : null],
                 ["上次成功", s.last_ok_at ? bj(s.last_ok_at, true) : null],
                 ["下次抓取", s.next_fetch_at ? bj(s.next_fetch_at, true) : null],
-                ["创建", bj(s.created_at, true)],
+                ["建立", bj(s.created_at, true)],
               ]}
             />
-            {s.cursor && <div className="mt-3"><Json value={s.cursor} label="游标" /></div>}
+            {s.cursor && <div className="mt-3"><Json value={s.cursor} label="遊標" /></div>}
           </Card>
-          <Card title="采集记录" pad={false}>
+          <Card title="採集記錄" pad={false}>
             <DataTable
               dense
               rows={runs}
               rowKey={(r) => r.id}
-              empty="还没有采集记录"
+              empty="還沒有采集記錄"
               columns={[
-                { key: "at", label: "时间", render: (r) => <span className="num whitespace-nowrap">{bj(r.started_at)}</span> },
+                { key: "at", label: "時間", render: (r) => <span className="num whitespace-nowrap">{bj(r.started_at)}</span> },
                 {
                   key: "st",
-                  label: "结果",
+                  label: "結果",
                   render: (r) => (
                     <span className="inline-flex gap-1">
                       <Badge tone={r.status === "ok" ? "ok" : r.status === "failed" ? "bad" : "muted"} title={r.error ?? undefined}>{r.status}</Badge>
-                      {!!r.detail?.dropped && <Badge tone="bad" title="有一段更早的帖子没能读完，其中的内容可能漏采">可能漏采</Badge>}
-                      {!r.detail?.dropped && !!r.detail?.backlog && <Badge tone="warn" title="帖子多于一轮能读的页数，余下的在后面几轮接着读">续读 {r.detail.backlog} 段</Badge>}
+                      {!!r.detail?.dropped && <Badge tone="bad" title="有一段更早的帖子沒能讀完，其中的內容可能漏採">可能漏採</Badge>}
+                      {!r.detail?.dropped && !!r.detail?.backlog && <Badge tone="warn" title="帖子多於一輪能讀的頁數，餘下的在後面幾輪接著讀">續讀 {r.detail.backlog} 段</Badge>}
                     </span>
                   ),
                 },
-                { key: "n", label: "发现/新增", align: "right", render: (r) => `${r.found_count ?? "—"}/${r.new_count ?? "—"}` },
-                { key: "ms", label: "耗时", align: "right", render: (r) => duration(r.started_at, r.finished_at) },
+                { key: "n", label: "發現/新增", align: "right", render: (r) => `${r.found_count ?? "—"}/${r.new_count ?? "—"}` },
+                { key: "ms", label: "耗時", align: "right", render: (r) => duration(r.started_at, r.finished_at) },
               ]}
             />
           </Card>
-          <Card title="修改记录">
+          <Card title="修改記錄">
             {history.length ? (
               <ul className="space-y-3 text-[12.5px]">
                 {history.map((h, i) => (
@@ -311,7 +311,7 @@ export default function SourceDetail({ loaderData }: Route.ComponentProps) {
                 ))}
               </ul>
             ) : (
-              <Empty>没有人工修改</Empty>
+              <Empty>沒有人工修改</Empty>
             )}
           </Card>
         </div>
@@ -319,28 +319,28 @@ export default function SourceDetail({ loaderData }: Route.ComponentProps) {
 
       <ReasonDialog
         open={dialog === "save"}
-        title="保存信源设置"
-        description={`${draft.kind !== s.kind ? `采集方式由 ${KIND_LABEL[s.kind]} 调整为 ${KIND_LABEL[draft.kind]}，保留历史内容。` : ""}将修改：${Object.keys(patchPreview(draft, s)).join("、") || "无"}`}
+        title="儲存信源設定"
+        description={`${draft.kind !== s.kind ? `採集方式由 ${KIND_LABEL[s.kind]} 調整為 ${KIND_LABEL[draft.kind]}，保留歷史內容。` : ""}將修改：${Object.keys(patchPreview(draft, s)).join("、") || "無"}`}
         busy={pending === "save"}
         onClose={() => setDialog(null)}
         onSubmit={async (reason) => {
           const p = patch();
           if (!p) return false;
           const body: AdminSourceUpdate = { patch: p, version: new Date(s.updated_at).toISOString(), reason };
-          const r = await run("PATCH", base, body, { label: "save", success: "已保存" });
+          const r = await run("PATCH", base, body, { label: "save", success: "已儲存" });
           return r !== null;
         }}
       />
       <ReasonDialog
         open={dialog === "toggle"}
-        title={s.enabled ? "暂停这个信源" : "恢复这个信源"}
-        description={s.enabled ? "暂停后不再采集，已有内容和历史保留。" : "恢复后会立即排队采集一次。"}
+        title={s.enabled ? "暫停這個信源" : "恢復這個信源"}
+        description={s.enabled ? "暫停後不再採集，已有內容和歷史保留。" : "恢復後會立即排隊採集一次。"}
         danger={s.enabled}
-        confirmLabel={s.enabled ? "暂停" : "恢复"}
+        confirmLabel={s.enabled ? "暫停" : "恢復"}
         busy={pending === "toggle"}
         onClose={() => setDialog(null)}
         onSubmit={async (reason) => {
-          const r = await run("PATCH", base, { patch: { enabled: !s.enabled }, version: new Date(s.updated_at).toISOString(), reason }, { label: "toggle", success: s.enabled ? "已暂停" : "已恢复" });
+          const r = await run("PATCH", base, { patch: { enabled: !s.enabled }, version: new Date(s.updated_at).toISOString(), reason }, { label: "toggle", success: s.enabled ? "已暫停" : "已恢復" });
           return r !== null;
         }}
       />

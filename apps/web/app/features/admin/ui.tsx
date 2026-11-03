@@ -99,7 +99,7 @@ export interface Column<T> {
   align?: "right";
 }
 
-export function DataTable<T>({ rows, columns, rowKey, empty = "暂无数据", onRowClick, dense }: { rows: T[]; columns: Column<T>[]; rowKey: (r: T) => string | number; empty?: ReactNode; onRowClick?: (r: T) => void; dense?: boolean }) {
+export function DataTable<T>({ rows, columns, rowKey, empty = "暫無資料", onRowClick, dense }: { rows: T[]; columns: Column<T>[]; rowKey: (r: T) => string | number; empty?: ReactNode; onRowClick?: (r: T) => void; dense?: boolean }) {
   const scrollable = useContext(InScrollCard);
   if (!rows.length) return <Empty>{empty}</Empty>;
   return (
@@ -250,14 +250,14 @@ export function Pager({ page, hasMore }: { page: number; hasMore: boolean }) {
   if (page <= 1 && !hasMore) return null;
   return (
     <div className="mt-4 flex items-center justify-center gap-2 text-[13px]">
-      {page > 1 && <ButtonLink to={to(page - 1)} size="sm">上一页</ButtonLink>}
-      <span className="num px-2 text-ink-3">第 {page} 页</span>
-      {hasMore && <ButtonLink to={to(page + 1)} size="sm">下一页</ButtonLink>}
+      {page > 1 && <ButtonLink to={to(page - 1)} size="sm">上一頁</ButtonLink>}
+      <span className="num px-2 text-ink-3">第 {page} 頁</span>
+      {hasMore && <ButtonLink to={to(page + 1)} size="sm">下一頁</ButtonLink>}
     </div>
   );
 }
 
-export function Json({ value, collapsed = true, label = "原始数据" }: { value: unknown; collapsed?: boolean; label?: string }) {
+export function Json({ value, collapsed = true, label = "原始資料" }: { value: unknown; collapsed?: boolean; label?: string }) {
   const [open, setOpen] = useState(!collapsed);
   return (
     <details open={open} onToggle={(event) => setOpen(event.currentTarget.open)} className="group rounded-control bg-bg-sunk/70 ring-1 ring-line">
@@ -276,7 +276,7 @@ export function ReasonDialog({
   open,
   title,
   description,
-  confirmLabel = "确认",
+  confirmLabel = "確認",
   danger,
   requireReason = true,
   fieldLabel,
@@ -337,8 +337,8 @@ export function ReasonDialog({
             {children && <div className="mt-4 space-y-3">{children}</div>}
             {requireReason && (
               <div className="mt-4">
-                <Field label={fieldLabel ?? "原因（写进审计记录）"}>
-                  <Textarea ref={ref} value={reason} onChange={(e) => setReason(e.target.value)} placeholder={fieldLabel ? "" : "为什么做这个改动"} rows={2} />
+                <Field label={fieldLabel ?? "原因（寫進審計記錄）"}>
+                  <Textarea ref={ref} value={reason} onChange={(e) => setReason(e.target.value)} placeholder={fieldLabel ? "" : "為什麼做這個改動"} rows={2} />
                 </Field>
               </div>
             )}

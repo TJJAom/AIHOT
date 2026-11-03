@@ -1,5 +1,5 @@
 // Phone search: opens over the page from the bars' magnifier with the keyboard
-// already up — the field is focused inside the same tap, which iOS requires — and searches 全部动态
+// already up — the field is focused inside the same tap, which iOS requires — and searches 全部動態
 // (/all?q=…). Below the field: this browser's recent searches, topics to browse and what is hot now.
 import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { Form, Link, useLocation, useNavigation } from "react-router";
@@ -109,7 +109,7 @@ export function SearchOverlay() {
       ref={panel}
       role="dialog"
       aria-modal="true"
-      aria-label="搜索"
+      aria-label="搜尋"
       tabIndex={-1}
       inert={!shown}
       className={`fixed inset-0 z-[75] flex flex-col bg-bg pl-[env(safe-area-inset-left)] pr-[env(safe-area-inset-right)] transition-[opacity,transform] duration-200 ease-[var(--ease-out-quart)] lg:hidden ${shown ? "translate-y-0 opacity-100" : "pointer-events-none -translate-y-1 opacity-0"}`}
@@ -129,7 +129,7 @@ export function SearchOverlay() {
         className="flex h-14 shrink-0 items-center gap-1 pl-4 pr-1 pt-[env(safe-area-inset-top)]"
       >
         <label className="relative flex-1">
-          <span className="sr-only">搜索标题和摘要</span>
+          <span className="sr-only">搜尋標題和摘要</span>
           <IconSearch size={18} className="pointer-events-none absolute left-3.5 top-1/2 -translate-y-1/2 text-ink-4" />
           <input
             ref={input}
@@ -137,7 +137,7 @@ export function SearchOverlay() {
             type="search"
             onInput={(e) => setHasText(!!e.currentTarget.value)}
             tabIndex={shown ? 0 : -1}
-            placeholder="搜索标题、摘要…"
+            placeholder="搜尋標題、摘要…"
             maxLength={200}
             autoComplete="off"
             enterKeyHint="search"
@@ -169,7 +169,7 @@ export function SearchOverlay() {
           {recent.length > 0 && (
             <section className="pt-3">
               <div className="flex items-center justify-between">
-                <h2 className="text-[13px] font-semibold text-ink-3">最近搜索</h2>
+                <h2 className="text-[13px] font-semibold text-ink-3">最近搜尋</h2>
                 <button type="button" onClick={clearRecentSearches} className="-mr-2 h-11 px-2 text-[13px] text-ink-4">
                   清除
                 </button>
@@ -186,7 +186,7 @@ export function SearchOverlay() {
 
           {companies.length > 0 && (
             <section className="pt-6">
-              <h2 className="text-[13px] font-semibold text-ink-3">按主题找</h2>
+              <h2 className="text-[13px] font-semibold text-ink-3">按主題找</h2>
               <div className="mt-2.5 flex flex-wrap gap-2">
                 {companies.map((t) => (
                   <Link viewTransition key={t.slug} to={`/topics/${t.slug}`} className={`${chip} bg-well text-ink-2 ring-1 ring-inset ring-line-soft active:bg-bg-muted`}>
@@ -195,7 +195,7 @@ export function SearchOverlay() {
                 ))}
                 {inNav("/topics") && (
                   <Link viewTransition to="/topics" className={`${chip} gap-0.5 font-medium text-accent`}>
-                    全部 {more!.topics.length} 个主题
+                    全部 {more!.topics.length} 個主題
                   </Link>
                 )}
               </div>
@@ -204,7 +204,7 @@ export function SearchOverlay() {
 
           {(more?.hot.length ?? 0) > 0 && (
             <section className="pt-6">
-              <h2 className="text-[13px] font-semibold text-ink-3">正在热议</h2>
+              <h2 className="text-[13px] font-semibold text-ink-3">正在熱議</h2>
               <ol className="mt-1 divide-y divide-line-soft">
                 {more!.hot.map((h, i) => (
                   <li key={h.to}>

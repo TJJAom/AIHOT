@@ -1,12 +1,14 @@
+語言規則：所有面向讀者的標題、摘要、推薦理由、譯文、報告與說明均使用台灣繁體中文；使用台灣常用詞。JSON 欄位名稱、程式碼、網址、品牌專名，以及要求逐字引用的原文證據維持原樣。
 
-【标题自洽规则 — 让读者不点开就知道"这是关于谁的什么事"】
 
-1. 标题必须点出核心主体：模型名 / 产品名 / 公司名 / 项目名。
-2. 原标题已经清楚点出主体的：英文标题翻译成中文、中文标题保持原意，不要为改写而改写。
-3. 原标题只是版本号 / 代号 / 没信息量的 teaser（如 "v2.1.159"、"Small is a feature"、"Day 1"、"重磅发布"）时，结合【来源】和正文把主体补进标题。例：原标题 "v2.1.159" + 来源 "Claude Code：GitHub Releases" → "Claude Code v2.1.159 发布"。
-4. 补主体只能用【来源】或正文里真实出现的名字。正文和来源都没点出具体型号时，用上位词（如"开源多模态模型"）兜底，绝不凭"行业常识"编一个具体型号 / 版本 / 数字。
-5. 原标题表达的【文章类型和核心动作】是硬边界：How / Why / Guide / Analysis / Review / Benchmark 这类解释、分析、教程或评测标题，中文标题必须保留这个类型；不能因为正文谈到一个已经存在的模型、产品或新数据，就改写成“发布 / 推出 / 上线 / 开源”。只有原标题明确宣布了发布、推出、上线或开源，中文标题才能使用对应动作。保留文章类型不等于删主体：仍须按第 1-4 条补全正文或来源明确给出的公司、产品、项目名。
-   例：原标题 "How GPT-5.6 fuses frontier intelligence with frontier efficiency" → "GPT-5.6 如何兼顾前沿智能与效率"，不能写成 "OpenAI 发布 GPT-5.6"。
-   例：原标题 "How to build interactive experiences with canvases" + 来源和正文明确是 GitHub Copilot → "GitHub Copilot 如何用 canvases 构建交互体验"，不能只写成缺主体的 "如何用 canvases 构建交互体验"。
-6. 本条的动作和背景里的旧发布要分清：原文把发布写成过去的事（“At DevDay, we introduced …”“Last week we launched …”“上周我们发布了…”），本条是在讲用法、做演示或再次推广时，标题写介绍、演示或讲解，把发布交代成此前的事；不能写成“推出 / 发布 / 上线”，否则读者会当成今天的新闻。只有原文明确某项能力是现在才开放或新增，才对那一项用对应动作。
-   例：正文 "At DevDay, we introduced ChatGPT Space … See how it works below" → "OpenAI 演示 DevDay 发布的 ChatGPT Space 团队协作用法"，不能写成 "OpenAI 在 DevDay 推出 ChatGPT Space"。
+【標題自洽規則 — 讓讀者不點開就知道"這是關於誰的什麼事"】
+
+1. 標題必須點出核心主體：模型名 / 產品名 / 公司名 / 專案名。
+2. 原標題已經清楚點出主體的：英文標題翻譯成中文、中文標題保持原意，不要為改寫而改寫。
+3. 原標題只是版本號 / 代號 / 沒資訊量的 teaser（如 "v2.1.159"、"Small is a feature"、"Day 1"、"重磅釋出"）時，結合【來源】和正文把主體補進標題。例：原標題 "v2.1.159" + 來源 "Claude Code：GitHub Releases" → "Claude Code v2.1.159 釋出"。
+4. 補主體只能用【來源】或正文裡真實出現的名字。正文和來源都沒點出具體型號時，用上位詞（如"開源多模態模型"）兜底，絕不憑"行業常識"編一個具體型號 / 版本 / 數字。
+5. 原標題表達的【文章型別和核心動作】是硬邊界：How / Why / Guide / Analysis / Review / Benchmark 這類解釋、分析、教程或評測標題，中文標題必須保留這個型別；不能因為正文談到一個已經存在的模型、產品或新資料，就改寫成“釋出 / 推出 / 上線 / 開源”。只有原標題明確宣佈了釋出、推出、上線或開源，中文標題才能使用對應動作。保留文章型別不等於刪主體：仍須按第 1-4 條補全正文或來源明確給出的公司、產品、專案名。
+   例：原標題 "How GPT-5.6 fuses frontier intelligence with frontier efficiency" → "GPT-5.6 如何兼顧前沿智慧與效率"，不能寫成 "OpenAI 釋出 GPT-5.6"。
+   例：原標題 "How to build interactive experiences with canvases" + 來源和正文明確是 GitHub Copilot → "GitHub Copilot 如何用 canvases 構建互動體驗"，不能只寫成缺主體的 "如何用 canvases 構建互動體驗"。
+6. 本條的動作和背景裡的舊釋出要分清：原文把釋出寫成過去的事（“At DevDay, we introduced …”“Last week we launched …”“上週我們釋出了…”），本條是在講用法、做演示或再次推廣時，標題寫介紹、演示或講解，把釋出交代成此前的事；不能寫成“推出 / 釋出 / 上線”，否則讀者會當成今天的新聞。只有原文明確某項能力是現在才開放或新增，才對那一項用對應動作。
+   例：正文 "At DevDay, we introduced ChatGPT Space … See how it works below" → "OpenAI 演示 DevDay 釋出的 ChatGPT Space 團隊協作用法"，不能寫成 "OpenAI 在 DevDay 推出 ChatGPT Space"。

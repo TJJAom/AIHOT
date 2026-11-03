@@ -58,7 +58,7 @@ async function submit(): Promise<{ id: number; file: string }> {
   n += 1;
   // Submitted while forwarding is off, so the test drives every attempt itself.
   delete process.env.FEISHU_INTERNAL_ENABLED;
-  const { id } = await submitFeedback({ content: `反馈 ${T}-${n}`, screenshot: { mime: "image/png", data: await sharp({ create: { width: 4, height: 4, channels: 3, background: { r: n, g: 80, b: 120 } } }).png().toBuffer() }, ip: `203.0.113.${n}`, userAgent: "test" });
+  const { id } = await submitFeedback({ content: `回饋 ${T}-${n}`, screenshot: { mime: "image/png", data: await sharp({ create: { width: 4, height: 4, channels: 3, background: { r: n, g: 80, b: 120 } } }).png().toBuffer() }, ip: `203.0.113.${n}`, userAgent: "test" });
   process.env.FEISHU_INTERNAL_ENABLED = "true";
   const [row] = await sql<{ screenshot_key: string }[]>`SELECT screenshot_key FROM feedback WHERE id = ${id}`;
   return { id, file: path.join(config.dataDir, "feedback-screenshots", row!.screenshot_key.slice("local:".length)) };
@@ -66,7 +66,7 @@ async function submit(): Promise<{ id: number; file: string }> {
 const state = async (id: number) =>
   (await sql<{ forwarded: boolean; forward_error: string | null; screenshot_key: string | null }[]>`
     SELECT forwarded_at IS NOT NULL AS forwarded, forward_error, screenshot_key FROM feedback WHERE id = ${id}`)[0]!;
-const sentFor = (id: number) => feishu.sent.find((m) => m.title === `反馈 #${id}`);
+const sentFor = (id: number) => feishu.sent.find((m) => m.title === `回饋 #${id}`);
 const olderBy = (id: number, interval: string) => sql`UPDATE feedback SET created_at = now() - ${interval}::interval WHERE id = ${id}`;
 
 test("a failed screenshot upload keeps the feedback waiting, and the sweep sends it with the image", async () => {
@@ -105,7 +105,7 @@ test("a screenshot that cannot be uploaded for a day is dropped, and the text st
   feishu.uploadFails = false;
   assert.deepEqual({ ...(await state(id)) }, { forwarded: true, forward_error: null, screenshot_key: "gone:upload" });
   assert.ok(!existsSync(file), "no copy of the screenshot is kept");
-  assert.ok(JSON.stringify(sentFor(id)?.content).includes("截图未能上传"), "the chat is told the screenshot is missing");
+  assert.ok(JSON.stringify(sentFor(id)?.content).includes("截圖未能上傳"), "the chat is told the screenshot is missing");
 });
 
 test("a picture Feishu refuses is dropped at once, and the text still goes", async () => {
@@ -140,7 +140,7 @@ test("screenshots left behind are removed after a week, whether or not forwardin
 
 test("imported feedback that was never forwarded is not sent now", async () => {
   const [row] = await sql<{ id: number }[]>`
-    INSERT INTO feedback (content, source_hash, created_at) VALUES (${`旧反馈 ${T}`}, ${`imported:${T}`}, now() - interval '10 minutes') RETURNING id`;
+    INSERT INTO feedback (content, source_hash, created_at) VALUES (${`舊回饋 ${T}`}, ${`imported:${T}`}, now() - interval '10 minutes') RETURNING id`;
   await forwardPendingFeedback();
   assert.equal((await state(row!.id)).forwarded, false);
   assert.equal(sentFor(row!.id), undefined);
@@ -148,13 +148,13 @@ test("imported feedback that was never forwarded is not sent now", async () => {
 
 test("a browser retry creates one feedback and forwards one notification", async () => {
   process.env.FEISHU_INTERNAL_ENABLED = "true";
-  const input = { ip: "203.0.113.190", userAgent: "Firefox", content: `重试的安全报告 ${T}: <script>alert(1)</script>` };
+  const input = { ip: "203.0.113.190", userAgent: "Firefox", content: `重試的安全報告 ${T}: <script>alert(1)</script>` };
   const results = await Promise.all(Array.from({ length: 4 }, () => submitFeedback(input)));
   assert.equal(new Set(results.map(r => r.id)).size, 1);
   const id = results[0]!.id;
   for (let i = 0; i < 100 && !(await state(id)).forwarded; i++) await new Promise(resolve => setTimeout(resolve, 10));
   assert.ok((await state(id)).forwarded);
-  assert.equal(feishu.sent.filter(m => m.title === `反馈 #${id}`).length, 1);
+  assert.equal(feishu.sent.filter(m => m.title === `回饋 #${id}`).length, 1);
   assert.ok(JSON.stringify(sentFor(id)?.content).includes(input.content));
 });
 
@@ -169,12 +169,12 @@ const ask = (content: string, ip: string) => {
 };
 
 test("handling records what each feedback is, and suggestions for the same idea add up by sender", async () => {
-  const idea = `GitHub 热点项目榜 ${T}`;
-  const first = await ask("想要一个 GitHub 热门项目榜", "198.51.100.11");
+  const idea = `GitHub 熱點專案榜 ${T}`;
+  const first = await ask("想要一個 GitHub 熱門專案榜", "198.51.100.11");
   const second = await ask("能不能加 GitHub trending", "198.51.100.12");
-  const again = await ask("还是想要 GitHub 热点", "198.51.100.11");
-  const spam = await ask("GitHub 热点 GitHub 热点", "198.51.100.13");
-  const english = await ask("加一个英文版", "198.51.100.14");
+  const again = await ask("還是想要 GitHub 熱點", "198.51.100.11");
+  const spam = await ask("GitHub 熱點 GitHub 熱點", "198.51.100.13");
+  const english = await ask("加一個英文版", "198.51.100.14");
   await handle(first.id, { kind: "suggestion", idea, status: "triaged" });
   await handle(second.id, { kind: "suggestion", idea: `  ${idea} `, status: "triaged" });
   await handle(again.id, { kind: "suggestion", idea, status: "triaged" });
@@ -194,24 +194,24 @@ test("handling records what each feedback is, and suggestions for the same idea 
 });
 
 test("the pool lists every idea, however many there are", async () => {
-  const named = Array.from({ length: 201 }, (_, i) => `建议池第 ${i + 1} 项 ${T}`);
+  const named = Array.from({ length: 201 }, (_, i) => `建議池第 ${i + 1} 項 ${T}`);
   await sql`INSERT INTO feedback ${sql(named.map((idea, i) => ({ content: `想要${idea}`, source_hash: `pool:${T}:${i}`, status: "triaged", kind: "suggestion", idea })))}`;
   const pool = new Set((await listFeedback({ kind: "suggestion" })).ideas.map((i) => i.idea));
   assert.deepEqual(named.filter((idea) => !pool.has(idea)), []);
 });
 
 test("an unknown kind, an idea outside a suggestion and a stale version are refused; reclassifying leaves the pool", async () => {
-  const { id } = await ask("为什么模型榜上没有千问了", "198.51.100.21");
+  const { id } = await ask("為什麼模型榜上沒有千問了", "198.51.100.21");
   await assert.rejects(handle(id, { kind: "praise" }), /unknown kind/);
-  await assert.rejects(handle(id, { kind: "question", idea: "千问上榜" }), /只有建议/);
+  await assert.rejects(handle(id, { kind: "question", idea: "千問上榜" }), /只有建議/);
   await assert.rejects(handle(id, { kind: "suggestion", idea: "名".repeat(41) }), /40/);
   const stale = new Date((await listFeedback({ id })).rows[0]!.updated_at).toISOString();
-  await handle(id, { kind: "suggestion", idea: `千问上榜 ${T}` });
+  await handle(id, { kind: "suggestion", idea: `千問上榜 ${T}` });
   await assert.rejects(updateFeedback(id, { kind: "question", version: stale }, "test"), (e) => e instanceof Conflict);
   await handle(id, { kind: "question" });
   const [row] = (await listFeedback({ id })).rows;
   assert.deepEqual([row!.kind, row!.idea], ["question", null], "a feedback that is no longer a suggestion leaves the pool");
-  assert.ok(!(await listFeedback({ kind: "suggestion" })).ideas.some((i) => i.idea === `千问上榜 ${T}`));
+  assert.ok(!(await listFeedback({ kind: "suggestion" })).ideas.some((i) => i.idea === `千問上榜 ${T}`));
 });
 
 test("the admin page filters by kind and idea and edits both through the API", async () => {
@@ -228,8 +228,8 @@ test("the admin page filters by kind and idea and edits both through the API", a
     const { token } = await passwordLogin(config.adminPassword, "/admin", "test");
     const cookie = `${SESSION_COOKIE}=${token}`;
     const headers = { cookie, "x-csrf-token": (await app.inject({ method: "GET", url: "/api/admin/me", headers: { cookie } })).json().csrf };
-    const idea = `动态下面能评论 ${T}`;
-    const { id } = await ask("想在每条动态下面评论", "198.51.100.31");
+    const idea = `動態下面能評論 ${T}`;
+    const { id } = await ask("想在每條動態下面評論", "198.51.100.31");
     const version = new Date((await listFeedback({ id })).rows[0]!.updated_at).toISOString();
     const edited = await app.inject({ method: "PATCH", url: `/api/admin/feedback/${id}`, headers, payload: { kind: "suggestion", idea, version } });
     assert.equal(edited.statusCode, 200, edited.body);

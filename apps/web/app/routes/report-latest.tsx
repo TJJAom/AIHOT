@@ -12,7 +12,7 @@ import { ReportPaper, reportOutline } from "../features/report/ReportPaper";
 import { feedLink, kindFromPath } from "../features/report/format";
 import type { Screen } from "../components/shell/screens";
 
-export const handle: Screen = { tab: "daily", name: "日报" };
+export const handle: Screen = { tab: "daily", name: "日報" };
 export { pageHeaders as headers } from "../lib/api.server";
 export const { clientLoader, shouldRevalidate } = pageReuse<typeof loader>();
 
@@ -27,7 +27,7 @@ export function meta({ loaderData, location }: Route.MetaArgs) {
   const report = loaderData?.report;
   // What this issue says, so a search result shows today's date and news rather than what the page is.
   const lead = report?.lead?.leadParagraph ?? report?.overview?.slice(0, 150);
-  const description = report && lead ? `${reportDateLabel(kind, report.key)} ${withSubject("资讯")}：${lead}` : `${REPORTS.descriptions[kind]}。`;
+  const description = report && lead ? `${reportDateLabel(kind, report.key)} ${withSubject("資訊")}：${lead}` : `${REPORTS.descriptions[kind]}。`;
   return [...pageMeta({
     title: withSubject(REPORT_NAMES[kind]),
     description,
@@ -42,7 +42,7 @@ export default function ReportLatestPage() {
   const { kind, report, index, today } = useLoaderData<typeof loader>();
   return (
     <ReportLayout kind={kind} index={index} current={report?.key ?? null} today={today} outline={report ? reportOutline(report) : []}>
-      {report ? <ReportPaper report={report} index={index} /> : <EmptyState title={subjectAfter("还没有发布", REPORT_NAMES[kind])}>第一期发布后会出现在这里。</EmptyState>}
+      {report ? <ReportPaper report={report} index={index} /> : <EmptyState title={subjectAfter("還沒有釋出", REPORT_NAMES[kind])}>第一期釋出後會出現在這裡。</EmptyState>}
     </ReportLayout>
   );
 }

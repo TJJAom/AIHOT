@@ -1,4 +1,4 @@
-// What the owner is told (alerts, recoveries, reports) goes to Agent 自动化中台, which passes it on; the alert group
+// What the owner is told (alerts, recoveries, reports) goes to Agent 自動化中臺, which passes it on; the alert group
 // gets it only when the hub doesn't take it. Failure cases: with the hub set up an alert also goes to the group; a
 // long one reaches the owner cut differently or out of order, or two pieces share a key; a hub that refuses or can't
 // be reached loses the alert; one that takes the first pieces of a long one and then refuses has the group sent the
@@ -64,19 +64,19 @@ after(async () => {
 });
 
 test("with the hub set up, an alert goes to the hub's /tell with the source key, and not to the group", async () => {
-  assert.equal(await sendAlert("🔴 网站停止收录", ["影响：读者看不到新内容"]), "sent");
+  assert.equal(await sendAlert("🔴 網站停止收錄", ["影響：讀者看不到新內容"]), "sent");
   assert.equal(told.length, 1);
   assert.equal(told[0]!.auth, `Bearer source-key-${T}`);
   assert.match(told[0]!.key, /^[a-z0-9][a-z0-9._-]{0,63}$/);
-  assert.equal(unlabelled(told[0]!.text), "🔴 网站停止收录\n影响：读者看不到新内容");
+  assert.equal(unlabelled(told[0]!.text), "🔴 網站停止收錄\n影響：讀者看不到新內容");
   assert.deepEqual(grouped, []);
 });
 
 test("a long report reaches him in pieces, in order, each under its own key", async () => {
-  const lines = Array.from({ length: 1200 }, (_, i) => `第 ${i} 行：某个信源这一周的抓取情况和处理结果`);
-  assert.equal(await sendAlert("📊 信源周报", lines), "sent");
+  const lines = Array.from({ length: 1200 }, (_, i) => `第 ${i} 行：某個信源這一週的抓取情況和處理結果`);
+  assert.equal(await sendAlert("📊 信源週報", lines), "sent");
   assert.ok(told.length > 1);
-  assert.equal(unlabelled(told.map((piece) => piece.text).join("")), ["📊 信源周报", ...lines].join("\n"));
+  assert.equal(unlabelled(told.map((piece) => piece.text).join("")), ["📊 信源週報", ...lines].join("\n"));
   assert.equal(new Set(told.map((piece) => piece.key)).size, told.length);
   assert.ok(told.every((piece) => [...piece.text].length <= 20_000), "each piece is within what the hub takes");
   assert.deepEqual(grouped, []);
@@ -87,29 +87,29 @@ test("when the hub refuses or can't be reached, the alert goes to the group as b
     told.length = 0;
     grouped.length = 0;
     hub = state;
-    assert.equal(await sendAlert("🟠 有服务快到期了", ["域名 11-06 到期"]), "sent");
+    assert.equal(await sendAlert("🟠 有服務快到期了", ["域名 11-06 到期"]), "sent");
     assert.equal(told.length, 1, state);
-    assert.deepEqual(grouped.map(unlabelled), ["🟠 有服务快到期了\n域名 11-06 到期"], state);
+    assert.deepEqual(grouped.map(unlabelled), ["🟠 有服務快到期了\n域名 11-06 到期"], state);
   }
 });
 
 test("when the hub takes the first piece of a long report and then refuses, the group gets only the rest", async () => {
-  const lines = Array.from({ length: 1200 }, (_, i) => `第 ${i} 行：某个信源这一周的抓取情况和处理结果`);
+  const lines = Array.from({ length: 1200 }, (_, i) => `第 ${i} 行：某個信源這一週的抓取情況和處理結果`);
   for (const group of ["chat", "bot webhook"] as const) {
     told.length = 0;
     grouped.length = 0;
     hub = "takes one";
     if (group === "bot webhook") process.env.FEISHU_ALERT_WEBHOOK_URL = `https://open.feishu.cn/open-apis/bot/v2/hook/test-${T}`;
-    assert.equal(await sendAlert("📊 信源周报", lines), "sent");
+    assert.equal(await sendAlert("📊 信源週報", lines), "sent");
     assert.equal(told.length, 2, group);
     assert.ok(grouped.length > 0, group);
-    assert.equal(unlabelled(told[0]!.text + grouped.join("")), ["📊 信源周报", ...lines].join("\n"), group);
+    assert.equal(unlabelled(told[0]!.text + grouped.join("")), ["📊 信源週報", ...lines].join("\n"), group);
   }
 });
 
 test("with sending off nothing goes out, to the hub or the group", async () => {
   process.env.FEISHU_INTERNAL_ENABLED = "false";
-  assert.equal(await sendAlert("🔴 测试", ["不该发出"]), "disabled");
+  assert.equal(await sendAlert("🔴 測試", ["不該發出"]), "disabled");
   assert.deepEqual(told, []);
   assert.deepEqual(grouped, []);
 });

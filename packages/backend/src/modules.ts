@@ -38,7 +38,7 @@ export interface ModelStep {
 export interface AgentAbility {
   /** Address under /api/v1/agent: "/status". */
   path: string;
-  /** Named in the guide's first sentence, after the engine's abilities: "服务状态". */
+  /** Named in the guide's first sentence, after the engine's abilities: "服務狀態". */
   title: string;
   /** The guide's table row: what the user wants to know. */
   ask: string;
@@ -62,7 +62,7 @@ export interface AgentAbility {
 export interface LlmsLines {
   /** The public API list, after the engine's news endpoints. */
   api?: string[];
-  /** Polling rhythm, a clause each, before the RSS one ("X 每 10 分钟读一次 …；"). */
+  /** Polling rhythm, a clause each, before the RSS one ("X 每 10 分鐘讀一次 …；"). */
   pace?: string[];
   /** The site's main pages, after the topics. */
   pages?: string[];
@@ -172,7 +172,7 @@ export interface ServerModule {
     abilities?: AgentAbility[];
     /** The guide's "目前查不到的" list, after the engine's first entry. */
     unavailable?: string[];
-    /** The guide's "请求" list (how to ask), after the engine's first entry. */
+    /** The guide's "請求" list (how to ask), after the engine's first entry. */
     requests?: string[];
   };
   llms?: () => Promise<LlmsLines> | LlmsLines;
