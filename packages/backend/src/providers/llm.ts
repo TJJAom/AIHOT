@@ -120,13 +120,14 @@ function requestFor<S extends z.ZodType>(opts: ChatJsonOptions<S>, spec: ModelSp
   // Never below 512: a smaller cap cut short structured answers down to an empty response (production, 2026-06-19).
   const maxTokens = Math.max(opts.maxTokens ?? 1500, 512) + (spec.reasoningTokens ?? 0);
   const userText = typeof opts.user === "string" ? opts.user : JSON.stringify(opts.user);
+  const extra = spec.model === "gpt-6-luna" ? { ...spec.extra, reasoning_effort: "none" } : spec.extra;
   const request: ReceiptRequest = {
     service: spec.service, model: spec.model, purpose: opts.purpose, subject: opts.subject,
-    identity: { model: spec.model, promptVersion: opts.promptVersion, system: sha256(opts.system), user: sha256(userText), temperature, maxTokens, extra: spec.extra ?? null },
+    identity: { model: spec.model, promptVersion: opts.promptVersion, system: sha256(opts.system), user: sha256(userText), temperature, maxTokens, extra: extra ?? null },
     requestSummary: { promptVersion: opts.promptVersion, systemHash: sha256(opts.system), userHash: sha256(userText), userChars: userText.length, temperature, maxTokens },
     attemptTag: opts.attemptTag,
   };
-  return { request, temperature, maxTokens, userText };
+  return { request, temperature, maxTokens, userText, extra };
 }
 
 /** A call without a backup waits this long for its answer. */
@@ -161,7 +162,19 @@ export async function chatJson<S extends z.ZodType>(opts: ChatJsonOptions<S>): P
   }
 }
 
+// 本站只讓單一 worker 呼叫模型；不同佇列與排程共用此序列，等待不占用網路逾時。
+let lunaTail = Promise.resolve();
 async function chatOnce<S extends z.ZodType>(opts: ChatJsonOptions<S>, circuit = false, fallbackFor?: string): Promise<ChatJsonResult<z.infer<S>>> {
+  if (MODELS[opts.model]?.model !== "gpt-6-luna") return chatOnceReady(opts, circuit, fallbackFor);
+  const previous = lunaTail;
+  let release!: () => void;
+  lunaTail = new Promise<void>(resolve => { release = resolve; });
+  await previous;
+  try { return await chatOnceReady(opts, circuit, fallbackFor); }
+  finally { release(); }
+}
+
+async function chatOnceReady<S extends z.ZodType>(opts: ChatJsonOptions<S>, circuit = false, fallbackFor?: string): Promise<ChatJsonResult<z.infer<S>>> {
   const spec = MODELS[opts.model];
   if (!spec) throw new Error(`Unknown model ${opts.model}`);
   if (!config.modelCallsEnabled) throw new ModelUnavailableError("Model calls are disabled (MODEL_CALLS_ENABLED=false)");
@@ -169,7 +182,7 @@ async function chatOnce<S extends z.ZodType>(opts: ChatJsonOptions<S>, circuit =
   const apiKey = credential("models", spec.apiKeyEnv);
   if (!baseUrl || !apiKey || !spec.model) throw new ModelUnavailableError(`Model ${opts.model} is not configured (${spec.baseUrlEnv}, ${spec.apiKeyEnv}${spec.key === "default" ? ", LLM_MODEL" : ""})`);
 
-  const { request, temperature, maxTokens, userText } = requestFor(opts, spec);
+  const { request, temperature, maxTokens, userText, extra } = requestFor(opts, spec);
   const timeoutMs = opts.timeoutMs ?? (circuit ? FAILOVER_TIMEOUT_MS : TIMEOUT_MS);
   let permit: CircuitPermit;
   const body: Record<string, unknown> = {
@@ -183,8 +196,12 @@ async function chatOnce<S extends z.ZodType>(opts: ChatJsonOptions<S>, circuit =
     temperature,
     max_tokens: maxTokens,
     ...(spec.jsonMode && opts.json !== false ? { response_format: { type: "json_object" } } : {}),
-    ...(spec.extra ?? {}),
+    ...(extra ?? {}),
   };
+  if (spec.model === "gpt-6-luna") {
+    body.max_completion_tokens = maxTokens;
+    delete body.max_tokens;
+  }
 
   const receipt = await paidRequest(
     { ...request, fallbackFor },

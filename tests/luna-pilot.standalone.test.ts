@@ -32,6 +32,8 @@ test("僅使用 Luna、轉換 OpenAI 輸出參數、禁止重新導向", async (
   assert.equal(transport.requests(), 1);
   await transport.fetch(endpoint, { ...request(), body: request().body.replace("1500", "16384") });
   assert.equal(sent?.max_completion_tokens, 16384);
+  await transport.fetch(endpoint, { ...request(), body: request().body.replace('"max_tokens"', '"max_completion_tokens"') });
+  assert.equal(sent?.max_completion_tokens, 1500, "正式 provider 已轉換的請求也可用於有界批次");
 });
 
 test("80 次後拒絕新付費請求，計數不因錯誤或重新導向重置", async () => {

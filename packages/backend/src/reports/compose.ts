@@ -86,11 +86,15 @@ function windowPoint(at: Date): string {
  * the editors judged with nothing new in it still has its issue: no entries, and a lead that says so
  * (REPORTS.quiet).
  */
-export async function composeDaily(date: string, reason?: string): Promise<{ key: string; entries: number }> {
+export async function composeDaily(date: string, reason?: string, window?: { start: Date; asOf: Date }): Promise<{ key: string; entries: number }> {
+  const end = window?.asOf ?? beijingAt(date, EDITION_TIMES.daily);
+  const start = window?.start ?? new Date(end.getTime() - 86400000);
+  if (window && (!reason?.trim() || !Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime())
+    || end <= start || end.getTime() > Date.now() || start.getTime() !== beijingAt(date, "00:00").getTime()
+    || end > beijingAt(addDays(date, 1), "00:00"))) throw new Error("手動補刊須說明原因，從指定日零時起算，截止不可晚於目前時間或該日結束");
   const previous = await savedReport("daily", date);
   if (previous && reason === undefined) return { key: date, entries: previous.entries };
-  const end = beijingAt(date, EDITION_TIMES.daily);
-  const start = new Date(end.getTime() - 86400000);
+  await assertDailyReady(start, end);
   const edition = await dailyEdition(date, start, end);
   // Nothing judged in the window is a failure upstream, not a quiet day: the run fails and is caught up later.
   if (edition.entries.length === 0 && edition.stats.judgedReports === 0) throw new Error(`daily ${date}: nothing judged in its window`);
@@ -114,6 +118,25 @@ export async function composeDaily(date: string, reason?: string): Promise<{ key
   };
   await saveReport("daily", date, start, end, content, reason, null, []);
   return { key: date, entries: issue.main.length };
+}
+
+/** 尚未分析的已收錄材料也算待辦；低分公開文章仍須完成正文，封鎖／下架不要求生成。 */
+async function assertDailyReady(start: Date, end: Date): Promise<void> {
+  const pending = await sql<{ id: string }[]>`SELECT a.id FROM articles a JOIN sources s ON s.id=a.source_id
+    LEFT JOIN publications p ON p.article_id=a.id
+    LEFT JOIN analyses an ON an.id=(SELECT id FROM analyses WHERE article_id=a.id AND input_revision=a.revision ORDER BY id DESC LIMIT 1)
+    LEFT JOIN editorial_overrides e ON e.article_id=a.id
+    LEFT JOIN article_readings r ON r.article_id=a.id AND r.input_revision=a.revision AND r.analysis_id=p.analysis_id
+      AND r.override_version=coalesce(e.version,0)
+    WHERE s.participation_mode='editorial' AND NOT a.backfill
+      AND coalesce(p.visibility,'public')='public' AND coalesce(e.visibility,'public')<>'withdrawn'
+      AND (a.discovered_at>=${start} AND a.discovered_at<${end}
+        OR p.eligible AND greatest(p.timeline_at,p.visible_after)>=${start} AND greatest(p.timeline_at,p.visible_after)<${end})
+      AND a.processing_state NOT IN ('blocked','skipped')
+      AND (a.processing_state<>'analyzed' OR an.id IS NULL OR an.relevance IS NULL OR an.relevance='pass' AND (p.article_id IS NULL OR p.eligible AND
+        (an.id IS DISTINCT FROM p.analysis_id OR a.grouping_status<>'complete' OR a.body_status<>'ok' OR r.article_id IS NULL)))
+    ORDER BY a.id LIMIT 30`;
+  if (pending.length) throw new Error(`日報窗口仍有未完成的分析／歸組／文章內容：${pending.map(a => a.id).join(', ')}；保留待下次重試`);
 }
 
 /** A weekly's or monthly's size: the events it carries, chosen and ordered by rule. */
@@ -302,7 +325,7 @@ const nextMonth = (label: string) => {
  * filled too. A kind with no issue yet only gets its latest due one. An issue that fails does not hold
  * up the others; at most `limit` issues are written per run, the next run continues.
  */
-export async function composeDueReports(now = new Date(), limit = 8): Promise<{ generated: string[]; failed: string[] }> {
+export async function composeDueReports(now = new Date(), limit = 8, enabled: readonly ReportKind[] = ["daily", "weekly", "monthly"]): Promise<{ generated: string[]; failed: string[] }> {
   const generated: string[] = [];
   const failed: string[] = [];
   const kinds: Array<{ kind: ReportKind; due: string; next: (k: string) => string; end: (k: string) => string; compose: (k: string) => Promise<unknown> }> = [
@@ -314,6 +337,7 @@ export async function composeDueReports(now = new Date(), limit = 8): Promise<{ 
   // up and is not due (a site started mid-month would otherwise fail that month's issue on every run).
   const [{ first: firstDaily }] = await sql<{ first: string | null }[]>`SELECT min(key) AS first FROM reports WHERE kind = 'daily'`;
   kinds: for (const k of kinds) {
+    if (!enabled.includes(k.kind)) continue;
     const have = new Set((await sql<{ key: string }[]>`SELECT key FROM reports WHERE kind = ${k.kind}`).map((r) => r.key));
     const first = [...have].sort()[0] ?? k.due;
     for (let key = first; key <= k.due; key = k.next(key)) {

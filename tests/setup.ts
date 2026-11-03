@@ -46,6 +46,21 @@ export function pointModels(url: string, models = ["qwen3.7-flash", "glm-5.3-fla
   }
 }
 
+/** 日報測試的已完成材料；不呼叫模型，保留測試本來要驗證的公開時間與內容。 */
+export async function readyReportArticle(articleId: string, grouped = true) {
+  const { sql } = await import("@aihot/backend/db");
+  let [analysis] = await sql`SELECT an.id FROM analyses an JOIN articles a ON a.id=an.article_id
+    WHERE a.id=${articleId} AND an.input_revision=a.revision ORDER BY an.id DESC LIMIT 1`;
+  if (!analysis) [analysis] = await sql`INSERT INTO analyses (article_id,input_revision,origin,relevance,title_zh,summary_zh,score,selected)
+    SELECT id,revision,'rule','pass',title,'測試摘要',90,true FROM articles WHERE id=${articleId} RETURNING id`;
+  await sql`UPDATE articles SET processing_state='analyzed',body_status='ok',body_text=coalesce(body_text,'完整測試來源'),
+    grouping_status=CASE WHEN ${grouped} THEN 'complete' ELSE grouping_status END WHERE id=${articleId}`;
+  await sql`UPDATE publications SET analysis_id=${analysis!.id} WHERE article_id=${articleId}`;
+  await sql`INSERT INTO article_readings (article_id,input_revision,analysis_id,override_version,input_hash,prompt_version,sections)
+    SELECT id,revision,${analysis!.id},0,'fixture','fixture','[{"heading":"內容","paragraphs":["測試正文第一段，說明這篇事件的內容。","測試正文第二段，提供來源支持的詳細資訊。"]}]'::jsonb FROM articles WHERE id=${articleId}
+    ON CONFLICT (article_id) DO NOTHING`;
+}
+
 /**
  * A local HTTP stub standing in for a paid provider; `answer` builds every response from the request
  * (it may wait, to hold a request open while a test changes something).

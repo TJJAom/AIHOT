@@ -1,4 +1,4 @@
-import { editionAt, gate, tag } from "./setup.ts";
+import { editionAt, gate, tag, readyReportArticle } from "./setup.ts";
 // A selected item released across the daily edition time must appear in the next issue exactly once.
 import { after, before, test } from "node:test";
 import assert from "node:assert/strict";
@@ -36,6 +36,7 @@ async function analyzed(label: string, timelineAt: Date): Promise<string> {
   assert.equal(backfill, false);
   await sql`INSERT INTO analyses (article_id, input_revision, origin, relevance, category, title_zh, summary_zh, score, selected)
             VALUES (${articleId}, 1, 'rule', 'pass', 'ai-models', ${`標題 ${label}`}, ${`摘要 ${label}`}, 90, true)`;
+  await readyReportArticle(articleId, false);
   return articleId;
 }
 
@@ -43,6 +44,7 @@ async function selected(label: string, timelineAt: Date, releasedAt: Date): Prom
   const articleId = await analyzed(label, timelineAt);
   const published = await publishArticle(articleId, { now: releasedAt, releasedAt });
   assert.equal(published?.selected, true);
+  await sql`UPDATE articles SET grouping_status='complete' WHERE id=${articleId}`;
   return articleId;
 }
 

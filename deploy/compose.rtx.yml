@@ -1,8 +1,43 @@
-# RTX 本機模型；與根目錄 docker-compose.yml 合併使用。
+# RTX 雲端自動處理與獨立本機模型；與根目錄 docker-compose.yml 合併使用。
 # 不發布模型主機埠，也不使用 Windows 既有 embedding Ollama 的模型目錄。
 services:
   worker:
-    profiles: [local-ai]
+    profiles: [automation]
+    cpus: "1.0"
+    mem_limit: 2g
+    memswap_limit: 2g
+    environment:
+      MODEL_CALLS_ENABLED: "true"
+      COLLECT_ENABLED: "true"
+      LLM_BASE_URL: https://api.openai.com/v1
+      LLM_API_KEY: ${OPENAI_API_KEY:-}
+      LLM_MODEL: gpt-6-luna
+      LLM_EXTRA_JSON: '{"reasoning_effort":"none"}'
+      LLM_REASONING_TOKENS: "0"
+      LLM_JSON_MODE: "true"
+      LLM_VISION: "false"
+      PREFILTER_MODEL: default
+      SCORE_MODEL: default
+      UNDERSTAND_MODEL: default
+      SUMMARIZE_MODEL: default
+      WORDING_MODEL: default
+      STRUCTURE_MODEL: default
+      GROUP_MODEL: default
+      GROUP_REVIEW_MODEL: default
+      DIGEST_MODEL: default
+      REPORT_MODEL: default
+      TRANSLATE_MODEL: default
+      EMBEDDING_API_KEY: ""
+      DASHSCOPE_API_KEY: ""
+      DEEPSEEK_API_KEY: ""
+      ZHIPU_API_KEY: ""
+      XIAOMI_MIMO_API_KEY: ""
+      JINA_API_KEY: ""
+      SOCIALDATA_API_KEY: ""
+      DAJIALA_KEY: ""
+      FEISHU_CONTENT_PUSH_ENABLED: "false"
+      FEISHU_INTERNAL_ENABLED: "false"
+      INDEXNOW_SUBMIT_ENABLED: "false"
 
   ollama:
     profiles: [local-ai]

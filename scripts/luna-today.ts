@@ -18,6 +18,11 @@ export function inToday(candidate: { publishedAt?: Date | null }, window: { star
   return at !== undefined && at >= window.start && at < window.end;
 }
 
+export function completedTodayArticle(article: { processing_state: string; grouping_status: string }): boolean {
+  return ["blocked", "skipped"].includes(article.processing_state)
+    || article.processing_state === "analyzed" && article.grouping_status === "complete";
+}
+
 interface Item {
   sourceId: string; sourceName: string; candidate: Candidate;
   state: "ready" | "existing" | "unavailable" | "analyzed" | "completed";
@@ -121,7 +126,7 @@ async function main() {
             seen.add(candidate.identityKey);
             const [existing] = await sql<{ id: string; processing_state: string; grouping_status: string }[]>`SELECT id,processing_state,grouping_status FROM articles WHERE identity_key=${candidate.identityKey}`;
             if (existing) {
-              assert.ok(["analyzed", "blocked", "skipped"].includes(existing.processing_state) && existing.grouping_status === "complete", "既有文章未完成，需先核對處理進度");
+              assert.ok(completedTodayArticle(existing), "既有文章未完成，需先核對處理進度");
               manifest.items.push({ sourceId: id, sourceName: source.name, candidate, articleId: existing.id, state: "existing" });
               continue;
             }

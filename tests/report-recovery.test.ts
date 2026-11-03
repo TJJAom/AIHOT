@@ -1,6 +1,6 @@
 // Failure cases: automatic runs rewrite published issues; report/receipt commits split; empty gaps
 // starve later daily/weekly/monthly issues or make a failed run look successful. All use a local model stub.
-import { editionAt, stub, tag } from "./setup.ts";
+import { editionAt, stub, tag, readyReportArticle } from "./setup.ts";
 import assert from "node:assert/strict";
 import { after, before, beforeEach, test } from "node:test";
 import { closeDb, sql } from "@aihot/backend/db";
@@ -33,9 +33,24 @@ async function item(date: string) {
     VALUES (${id}, ${SOURCE}, ${id}, 'https://example.com/report', ${id}, ${at}, ${at})`;
   await sql`INSERT INTO publications (article_id, title, source_id, channel, url, discovered_at, timeline_at, sort_at, eligible, selected, visible_after, visibility, score)
     VALUES (${id}, ${id}, ${SOURCE}, 'news', 'https://example.com/report', ${at}, ${at}, ${at}, true, true, ${at}, 'public', 90)`;
+  await readyReportArticle(id);
   return id;
 }
 const report = async (kind: string, key: string) => (await sql`SELECT content, revision, generated_at FROM reports WHERE kind = ${kind} AND key = ${key}`)[0];
+
+test("只日報排程等待正文完成再重試，不順便生成週報月報", async () => {
+  await dailies("2024-01-29", "2024-02-04", ["2024-01-30"]);
+  const id = await item("2024-02-05");
+  await sql`DELETE FROM article_readings WHERE article_id=${id}`;
+  const now = editionAt("daily", "2024-02-05", 60), calls = provider.hits();
+  await assert.rejects(composeDueReports(now, 8, ["daily"]), /reports:/);
+  assert.equal(await report("daily", "2024-02-05"), undefined);
+  await readyReportArticle(id);
+  assert.deepEqual(await composeDueReports(now, 8, ["daily"]), { generated: ["daily:2024-02-05"], failed: [] });
+  assert.equal(await report("weekly", "2024-W05"), undefined);
+  assert.equal(await report("monthly", "2024-01"), undefined);
+  assert.equal(provider.hits(), calls);
+});
 
 async function daily(date: string, id?: string) {
   const sections = id ? [{ label: "行業動態", items: [{ itemId: id, title: id }] }] : [];

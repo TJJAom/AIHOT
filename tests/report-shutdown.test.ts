@@ -1,7 +1,7 @@
 // A weekly writer request sent before the stop that the provider then refuses: after the stop began,
 // the catch-up run treats it as an interruption (no failed issue, no failed run, nothing published).
 // The stop is the worker's own signal, aborted in this file's process; the provider is a local stub.
-import { editionAt, gate, Reply, stub, tag } from "./setup.ts";
+import { editionAt, gate, Reply, stub, tag, readyReportArticle } from "./setup.ts";
 import assert from "node:assert/strict";
 import { after, before, test } from "node:test";
 import { closeDb, sql } from "@aihot/backend/db";
@@ -36,6 +36,7 @@ test("a weekly writer refused after the stop began leaves catch-up without a fai
       VALUES (${id}, ${SOURCE}, ${id}, ${`https://example.com/${id}`}, ${id}, ${at}, ${at})`;
     await sql`INSERT INTO publications (article_id, title, source_id, channel, url, discovered_at, timeline_at, sort_at, eligible, selected, visible_after, visibility, score)
       VALUES (${id}, ${id}, ${SOURCE}, 'news', ${`https://example.com/${id}`}, ${at}, ${at}, ${at}, true, true, ${at}, 'public', 90)`;
+    await readyReportArticle(id);
     await composeDaily(date);
   }
   const reports = async () => (await sql<{ kind: string; key: string }[]>`SELECT kind, key FROM reports ORDER BY kind, key`).map((r) => `${r.kind}:${r.key}`);

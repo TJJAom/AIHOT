@@ -38,7 +38,7 @@ export function createLunaTransport(upstream: typeof fetch, alreadySent = 0, ref
       if (typeof init.body !== "string" || Buffer.byteLength(init.body) > 196608) throw refusal("單次輸入超過試跑限制");
       const body = JSON.parse(init.body) as Record<string, unknown>;
       if (body.model !== "gpt-6-luna" || body.reasoning_effort !== "none") throw refusal("本批只允許 Luna 非推理模式");
-      const maxTokens = Number(body.max_tokens);
+      const maxTokens = Number(body.max_completion_tokens ?? body.max_tokens);
       if (!Number.isInteger(maxTokens) || maxTokens < 1 || maxTokens > 16384) throw refusal("單次輸出必須介於 1 與 16384 token");
       if (!Array.isArray(body.messages) || body.messages.length > 5 || body.messages.some(m => typeof m.content !== "string")) throw refusal("本批僅處理文字訊息");
       body.max_completion_tokens = maxTokens;

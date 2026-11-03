@@ -38,6 +38,32 @@ test("a daily with nothing judged in its window is refused, not published as a q
   assert.equal(row, undefined);
 });
 
+test("手動補刊使用實際日界與截止，等所有公開文章含非精選完成正文後才發布", async () => {
+  const date = "2024-03-12", start = new Date("2024-03-11T16:00:00Z"), end = new Date("2024-03-12T14:30:00Z");
+  const source = `daily-ready-${T}`, id = `daily-ready-${T}`;
+  await sql`INSERT INTO sources (id,name,kind,tier) VALUES (${source},'Ready','rss','T1')`;
+  await sql`INSERT INTO articles (id,source_id,identity_key,url,title,discovered_at,timeline_at,body_text,body_status)
+    VALUES (${id},${source},${id},'https://example.com/ready','Ready',${start},${start},'完整來源','ok')`;
+  const options = { start, asOf: end };
+  await assert.rejects(composeDaily(date, "補刊", options), /未完成/);
+  const [analysis] = await sql`INSERT INTO analyses (article_id,input_revision,origin,relevance,score,selected,title_zh,summary_zh)
+    VALUES (${id},1,'rule',NULL,30,false,'完整新聞','導讀') RETURNING id`;
+  await assert.rejects(composeDaily(date, "分析中", options), /未完成/);
+  await sql`UPDATE analyses SET relevance='pass' WHERE id=${analysis!.id}`;
+  await sql`UPDATE articles SET processing_state='analyzed',grouping_status='complete' WHERE id=${id}`;
+  await publishArticle(id, { releasedAt: start });
+  await assert.rejects(composeDaily(date, "補刊", options), /未完成/);
+  await sql`INSERT INTO article_readings (article_id,input_revision,analysis_id,override_version,input_hash,prompt_version,sections)
+    VALUES (${id},1,${analysis!.id},0,'fixture','fixture','[{"heading":"內容","paragraphs":["完整內容第一段，資料來自原文。","完整內容第二段，包含具體細節。"]}]')`;
+  await composeDaily(date, "補刊", options);
+  const [saved] = await sql`SELECT window_start,window_end,revision FROM reports WHERE kind='daily' AND key=${date}`;
+  assert.equal(saved!.window_start.toISOString(), start.toISOString());
+  assert.equal(saved!.window_end.toISOString(), end.toISOString());
+  await assert.rejects(composeDaily(date, "未來", { start, asOf: new Date(Date.now()+60_000) }), /截止/);
+  await composeDaily(date, "修訂補刊", options);
+  assert.equal((await sql`SELECT revision FROM reports WHERE kind='daily' AND key=${date}`)[0]!.revision, 2);
+});
+
 test("a weekly that froze no summaries shows the articles' public summaries", async () => {
   await sql`INSERT INTO sources (id, name, kind, tier, participation_mode, next_fetch_at) VALUES (${SOURCE}, 'Reports', 'rss', 'T1', 'editorial', '2100-01-01')`;
   // Found, published and released a minute ago: a rolling window that ends at the reader's clock holds it.

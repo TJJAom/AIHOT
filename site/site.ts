@@ -9,9 +9,11 @@ import type { Founder } from "@aihot/contracts/site-config";
  * 月報在每月 1 日出。排程、成刊時間視窗、缺期告警和所有提到時間的文案都讀它（public/ 裡的檔案寫佔位
  * {{dailyTime}}、{{weeklyTime}}、{{monthlyTime}}）；排程每半小時檢查一次，所以寫整點或半點。
  */
-export const EDITION_TIMES = { daily: "08:00", weekly: "10:00", monthly: "10:30" };
+export const EDITION_TIMES = { daily: "22:00", weekly: "10:00", monthly: "10:30" };
+/** 本站僅自動產生日報；週報、月報保留閱讀相容，但不排程生成。 */
+export const AUTOMATIC_REPORTS = ["daily"] as const;
 
-/** “每天 08:00”“每週一 10:00”“每月 1 日 10:30”：寫進句子裡的出刊時間。 */
+/** “每天 22:00”“每週一 10:00”“每月 1 日 10:30”：寫進句子裡的出刊時間。 */
 export const EDITION_WHEN = {
   daily: `每天 ${EDITION_TIMES.daily}`,
   weekly: `每週一 ${EDITION_TIMES.weekly}`,
@@ -249,7 +251,7 @@ export const CARDS: Record<string, { kicker: string; title: string; subtitle: st
   site: { kicker: subjectAfter("每日", "精選"), title: SITE.tagline, subtitle: SITE.description },
   all: { kicker: subjectAfter("全部", "動態"), title: "所有信源的最新動態，一站看完", subtitle: "按時間彙總各信源的最新動態，可按類別與標籤篩選。" },
   hot: { kicker: "熱點榜", title: "過去 48 小時，大家在討論什麼", subtitle: "熱度指數、趨勢與組成熱度的公開來源。", accent: "hot" },
-  daily: { kicker: withSubject("日報"), title: subjectAfter(`每天 ${spokenTime(EDITION_TIMES.daily)}，一份讀得完的`, "日報"), subtitle: `${subjectAfter("前一天值得關注的", "動態")}。` },
+  daily: { kicker: withSubject("日報"), title: subjectAfter(`每天 ${spokenTime(EDITION_TIMES.daily)}，一份讀得完的`, "日報"), subtitle: `${subjectAfter("截至出刊時間值得關注的", "動態")}。` },
   weekly: { kicker: withSubject("週報"), title: `一週${REPORTS.entry.noun}，一次看清`, subtitle: "本週的主線、重要釋出與值得回看的討論。" },
   monthly: { kicker: withSubject("月報"), title: "一個月的變化", subtitle: "月度主線與關鍵事件回顧。" },
   about: { kicker: "關於", title: `關於 ${SITE.name}`, subtitle: SITE.description },
