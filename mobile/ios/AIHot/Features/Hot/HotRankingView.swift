@@ -23,9 +23,9 @@ struct HotRankingView: View {
                 ScrollView {
                     LazyVStack(alignment: .leading, spacing: 10) {
                         HStack {
-                            Text("過去 \(res.windowHours) 小時，大家在討論什麼").font(Type.ui(13)).foregroundStyle(palette.text4)
+                            Text("過去 \(res.windowHours) 小時，大家在討論什麼").font(AppFont.ui(13)).foregroundStyle(palette.text4)
                             Spacer()
-                            if let at = res.computedAt { Text("更新於 \(DateText.time(at))").font(Type.ui(12)).monospacedDigit().foregroundStyle(palette.text4) }
+                            if let at = res.computedAt { Text("更新於 \(DateText.time(at))").font(AppFont.ui(12)).monospacedDigit().foregroundStyle(palette.text4) }
                         }
                         .padding(.horizontal, 16).padding(.top, 4)
                         ForEach(Array(res.entries.enumerated()), id: \.element.id) { i, e in
@@ -33,17 +33,17 @@ struct HotRankingView: View {
                                 HStack(alignment: .top, spacing: 14) {
                                     Text("\(e.rank)").font(.system(size: 24, weight: .black)).monospacedDigit().foregroundStyle(rankColor(i)).frame(width: 28, alignment: .leading)
                                     VStack(alignment: .leading, spacing: 8) {
-                                        Text(e.story.title).font(Type.ui(16, .semibold)).lineSpacing(3).foregroundStyle(palette.text).fixedSize(horizontal: false, vertical: true)
+                                        Text(e.story.title).font(AppFont.ui(16, .semibold)).lineSpacing(3).foregroundStyle(palette.text).fixedSize(horizontal: false, vertical: true)
                                         if let s = e.summary ?? e.latest, !s.isEmpty {
-                                            Text(s).font(Type.ui(13.5)).lineSpacing(4).foregroundStyle(palette.text3).lineLimit(2).fixedSize(horizontal: false, vertical: true)
+                                            Text(s).font(AppFont.ui(13.5)).lineSpacing(4).foregroundStyle(palette.text3).lineLimit(2).fixedSize(horizontal: false, vertical: true)
                                         }
                                         HStack(spacing: 10) {
                                             Faces(participants: e.participants, total: e.participantCount)
-                                            Text("\(e.sourceCount) 個來源").font(Type.ui(12)).foregroundStyle(palette.text4)
+                                            Text("\(e.sourceCount) 個來源").font(AppFont.ui(12)).foregroundStyle(palette.text4)
                                             Spacer()
                                             HStack(spacing: 3) {
-                                                Text("\(Int(e.heat.rounded()))").font(Type.ui(13.5, .semibold)).monospacedDigit().foregroundStyle(palette.text2)
-                                                Text("熱度").font(Type.ui(12)).foregroundStyle(palette.text4)
+                                                Text("\(Int(e.heat.rounded()))").font(AppFont.ui(13.5, .semibold)).monospacedDigit().foregroundStyle(palette.text2)
+                                                Text("熱度").font(AppFont.ui(12)).foregroundStyle(palette.text4)
                                             }
                                             ForEach(e.badges, id: \.self) { b in
                                                 Badge(text: b == "surge" ? "飆升" : b == "new" ? "新" : "上升", tone: b == "surge" ? .hot : .accent)

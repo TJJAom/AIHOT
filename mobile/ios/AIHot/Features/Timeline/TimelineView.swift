@@ -190,24 +190,24 @@ struct FeedEnd: View {
             Spacer()
             if loading {
                 HStack(spacing: 8) { ProgressView().controlSize(.small); Text("正在載入") }
-                    .font(Type.ui(12.5)).foregroundStyle(palette.text4)
+                    .font(AppFont.ui(12.5)).foregroundStyle(palette.text4)
             } else if error {
                 Button { Task { await onMore() } } label: {
-                    Text("載入失敗，點此重試").font(Type.ui(13)).foregroundStyle(palette.hot)
+                    Text("載入失敗，點此重試").font(AppFont.ui(13)).foregroundStyle(palette.hot)
                         .padding(.horizontal, 16).frame(height: 36)
                         .overlay(Capsule().strokeBorder(palette.hot.opacity(0.3), lineWidth: 1))
                 }.buttonStyle(.plain)
             } else if hasMore {
                 if manual {
                     Button { Task { await onMore() } } label: {
-                        Text("載入更多").font(Type.ui(13, .medium)).foregroundStyle(palette.text2)
+                        Text("載入更多").font(AppFont.ui(13, .medium)).foregroundStyle(palette.text2)
                             .padding(.horizontal, 20).frame(height: 36)
                             .background(palette.surface, in: Capsule())
                             .overlay(Capsule().strokeBorder(palette.lineStrong, lineWidth: 1))
                     }.buttonStyle(.plain)
                 }
             } else if !empty {
-                Text("已經到底了").font(Type.ui(12)).foregroundStyle(palette.text4)
+                Text("已經到底了").font(AppFont.ui(12)).foregroundStyle(palette.text4)
             }
             Spacer()
         }
@@ -238,12 +238,12 @@ struct HotTopicsPanel: View {
                         Circle().fill(palette.hot.opacity(0.35)).frame(width: 8, height: 8).scaleEffect(pulse ? 2.2 : 1).opacity(pulse ? 0 : 0.6)
                         Circle().fill(palette.hot).frame(width: 8, height: 8)
                     }
-                    Text("當前熱點").font(Type.ui(14, .semibold)).foregroundStyle(palette.text)
+                    Text("當前熱點").font(AppFont.ui(14, .semibold)).foregroundStyle(palette.text)
                 }
                 Spacer()
                 NavigationLink(value: Route.hot) {
                     HStack(spacing: 3) { Text("完整榜單"); Image(systemName: "arrow.right").font(.system(size: 11, weight: .semibold)) }
-                        .font(Type.ui(12.5)).foregroundStyle(palette.text3)
+                        .font(AppFont.ui(12.5)).foregroundStyle(palette.text3)
                 }
             }
             .padding(.bottom, 6)
@@ -273,12 +273,12 @@ struct HotTopicsPanel: View {
                 .font(.system(size: 15, weight: .black)).monospacedDigit()
                 .foregroundStyle(rankColor(i))
                 .frame(width: 20)
-            Text(e.title).font(Type.ui(14.5, .semibold)).foregroundStyle(palette.text).lineLimit(1)
+            Text(e.title).font(AppFont.ui(14.5, .semibold)).foregroundStyle(palette.text).lineLimit(1)
             Spacer(minLength: 8)
             Faces(participants: e.participants, total: e.participantCount)
             HStack(spacing: 3) {
-                Text("\(Int(e.heat.rounded()))").font(Type.ui(13.5, .semibold)).monospacedDigit().foregroundStyle(palette.text2)
-                Text("熱度").font(Type.ui(12.5)).foregroundStyle(palette.text4)
+                Text("\(Int(e.heat.rounded()))").font(AppFont.ui(13.5, .semibold)).monospacedDigit().foregroundStyle(palette.text2)
+                Text("熱度").font(AppFont.ui(12.5)).foregroundStyle(palette.text4)
             }
             .frame(width: 56, alignment: .trailing)
             trend(e.trend).frame(width: 14)
@@ -292,7 +292,7 @@ struct HotTopicsPanel: View {
         switch t {
         case "up": Image(systemName: "arrow.up.right").font(.system(size: 11, weight: .bold)).foregroundStyle(palette.hot)
         case "down": Image(systemName: "arrow.down.right").font(.system(size: 11, weight: .bold)).foregroundStyle(palette.text4)
-        case "new": Text("新").font(Type.ui(10.5, .semibold)).foregroundStyle(palette.accent).padding(.horizontal, 5).background(palette.accentSoft, in: Capsule())
+        case "new": Text("新").font(AppFont.ui(10.5, .semibold)).foregroundStyle(palette.accent).padding(.horizontal, 5).background(palette.accentSoft, in: Capsule())
         case "flat": Image(systemName: "minus").font(.system(size: 11, weight: .bold)).foregroundStyle(palette.text4)
         default: EmptyView()
         }
@@ -312,7 +312,7 @@ struct Faces: View {
                     .overlay(Circle().strokeBorder(palette.surface, lineWidth: 1.5))
             }
             if total > 3 {
-                Text("+\(total - 3)").font(Type.ui(10, .semibold)).foregroundStyle(palette.text4)
+                Text("+\(total - 3)").font(AppFont.ui(10, .semibold)).foregroundStyle(palette.text4)
                     .frame(width: 20, height: 20).background(palette.sunk, in: Circle())
                     .overlay(Circle().strokeBorder(palette.surface, lineWidth: 1.5))
             }

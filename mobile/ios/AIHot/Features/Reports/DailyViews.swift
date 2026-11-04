@@ -131,7 +131,7 @@ struct ReportRecentChips: View {
                         let on = e.key == current
                         NavigationLink(value: Route.report(kind: kind.rawValue, key: e.key)) {
                             Text(chipLabel(e.key))
-                                .font(Type.ui(13, on ? .semibold : .regular))
+                                .font(AppFont.ui(13, on ? .semibold : .regular))
                                 .foregroundStyle(on ? palette.background : palette.text2)
                                 .padding(.horizontal, 16).frame(height: 36)
                                 .background(on ? palette.text : palette.surface, in: Capsule())
@@ -142,7 +142,7 @@ struct ReportRecentChips: View {
                     }
                     if index.count > 3 {
                         NavigationLink(value: Route.dailyArchive) {
-                            Text("更早").font(Type.ui(13)).foregroundStyle(palette.text2)
+                            Text("更早").font(AppFont.ui(13)).foregroundStyle(palette.text2)
                                 .padding(.horizontal, 16).frame(height: 36)
                                 .background(palette.surface, in: Capsule())
                                 .overlay(Capsule().strokeBorder(palette.lineStrong, lineWidth: 1))
@@ -230,10 +230,10 @@ struct ReportOutlineSheet: View {
             List(entries) { e in
                 Button { jump(e.id) } label: {
                     HStack(spacing: 12) {
-                        Text(e.mark).font(Type.mono(13, .bold)).foregroundStyle(palette.accent).frame(width: 28, alignment: .leading)
-                        Text(e.text).font(Type.ui(15, .medium)).foregroundStyle(palette.text)
+                        Text(e.mark).font(AppFont.mono(13, .bold)).foregroundStyle(palette.accent).frame(width: 28, alignment: .leading)
+                        Text(e.text).font(AppFont.ui(15, .medium)).foregroundStyle(palette.text)
                         Spacer()
-                        if let n = e.note { Text(n).font(Type.ui(12)).foregroundStyle(palette.text4) }
+                        if let n = e.note { Text(n).font(AppFont.ui(12)).foregroundStyle(palette.text4) }
                     }
                 }
                 .listRowBackground(palette.surface)
@@ -311,7 +311,7 @@ struct ReportPaper: View {
             ForEach(Array(pages.enumerated()), id: \.element.id) { i, p in
                 SectionPage(id: p.id, no: i + 1, label: p.label) {
                     if let s = p.summary, !s.isEmpty {
-                        (Text("本版導讀  ").font(Type.ui(15, .semibold)).foregroundColor(palette.accent) + Text(s).font(Type.ui(15.5)).foregroundColor(palette.text2))
+                        (Text("本版導讀  ").font(AppFont.ui(15, .semibold)).foregroundColor(palette.accent) + Text(s).font(AppFont.ui(15.5)).foregroundColor(palette.text2))
                             .lineSpacing(7)
                             .padding(.vertical, 18)
                             .overlay(alignment: .bottom) { Rectangle().fill(palette.line).frame(height: 1) }
@@ -335,12 +335,12 @@ struct ReportPaper: View {
             Neighbours(report: report, kind: kind, index: index)
 
             VStack(spacing: 10) {
-                Text("（本期完）").font(Type.ui(13, .semibold)).tracking(8).foregroundStyle(palette.text4)
+                Text("（本期完）").font(AppFont.ui(13, .semibold)).tracking(8).foregroundStyle(palette.text4)
                 HStack(spacing: 0) {
                     Text("日耕 AI 熱點 \(kind.name)根據公開報道自動整理，每條都附原文 · ")
                     NavigationLink(value: Route.dailyArchive) { Text("日報合訂本").fontWeight(.medium).foregroundStyle(palette.text3) }
                 }
-                .font(Type.ui(12)).foregroundStyle(palette.text4)
+                .font(AppFont.ui(12)).foregroundStyle(palette.text4)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 40)
@@ -365,22 +365,22 @@ private struct Masthead: View {
                 Spacer()
                 Text(kind.edition)
             }
-            .font(Type.ui(12)).foregroundStyle(palette.text4)
+            .font(AppFont.ui(12)).foregroundStyle(palette.text4)
             .padding(.top, 12)
 
             HStack(alignment: .center, spacing: 16) {
                 VStack(alignment: .leading, spacing: 12) {
                     Nameplate(kind: kind).frame(height: 46)
-                    Text("日耕 AI 熱點").font(Type.ui(11.5)).tracking(5).foregroundStyle(palette.text4)
+                    Text("日耕 AI 熱點").font(AppFont.ui(11.5)).tracking(5).foregroundStyle(palette.text4)
                 }
                 Spacer(minLength: 0)
                 // 報眼：期數、大號日期（網點）與本月出刊日曆。
                 HStack(spacing: 0) {
                     VStack(spacing: 6) {
-                        Text("第 \(report.issueNumber) 期").font(Type.ui(11)).tracking(2).foregroundStyle(palette.text4)
+                        Text("第 \(report.issueNumber) 期").font(AppFont.ui(11)).tracking(2).foregroundStyle(palette.text4)
                         HalftoneText(text: mark.figure, size: 46)
-                        Text(mark.top).font(Type.ui(11.5)).foregroundStyle(palette.text2)
-                        Text(mark.bottom).font(Type.ui(11.5)).foregroundStyle(palette.text4)
+                        Text(mark.top).font(AppFont.ui(11.5)).foregroundStyle(palette.text2)
+                        Text(mark.bottom).font(AppFont.ui(11.5)).foregroundStyle(palette.text4)
                     }
                     .frame(width: 104).padding(.vertical, 12)
                     // 手機寬度只放日期（右上角的日曆鈕有整月）；iPad 與橫向才把本月出刊點陣放進報眼。
@@ -405,11 +405,11 @@ private struct Masthead: View {
                         ForEach(Array(metricItems(report.metrics).enumerated()), id: \.offset) { _, m in
                             HStack(alignment: .firstTextBaseline, spacing: 5) {
                                 Text("\(m.value)").font(.system(size: 22, weight: .bold)).monospacedDigit().foregroundStyle(palette.text)
-                                Text(m.unit).font(Type.ui(12)).foregroundStyle(palette.text4)
+                                Text(m.unit).font(AppFont.ui(12)).foregroundStyle(palette.text4)
                             }
                         }
                     }
-                    HStack { Spacer(); Text("約 \(report.readingMinutes) 分鐘讀完").font(Type.ui(12)).foregroundStyle(palette.text4) }
+                    HStack { Spacer(); Text("約 \(report.readingMinutes) 分鐘讀完").font(AppFont.ui(12)).foregroundStyle(palette.text4) }
                 }
                 .padding(.vertical, 12)
                 .overlay(alignment: .top) { Rectangle().fill(palette.lineStrong).frame(height: 1) }
@@ -517,12 +517,12 @@ struct IssueDots: View {
         let g = grid
         VStack(spacing: 6) {
             HStack {
-                Text(g.title).font(Type.ui(11, .semibold)).tracking(2).foregroundStyle(palette.text2)
+                Text(g.title).font(AppFont.ui(11, .semibold)).tracking(2).foregroundStyle(palette.text2)
                 Spacer()
-                Text(g.note).font(Type.ui(11)).monospacedDigit().foregroundStyle(palette.text4)
+                Text(g.note).font(AppFont.ui(11)).monospacedDigit().foregroundStyle(palette.text4)
             }
             LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 0), count: 7), spacing: 4) {
-                ForEach(["一", "二", "三", "四", "五", "六", "日"], id: \.self) { Text($0).font(Type.ui(9.5)).foregroundStyle(palette.text4) }
+                ForEach(["一", "二", "三", "四", "五", "六", "日"], id: \.self) { Text($0).font(AppFont.ui(9.5)).foregroundStyle(palette.text4) }
                 ForEach(g.cells) { c in
                     ZStack {
                         if c.state == "current" {
@@ -568,7 +568,7 @@ private struct SourceRow: View {
             Text(c.sourceName).lineLimit(1)
             if c.firstParty { Badge(text: "一手", tone: .accent) }
         }
-        .font(Type.ui(12.5)).foregroundStyle(palette.text3)
+        .font(AppFont.ui(12.5)).foregroundStyle(palette.text3)
     }
 }
 
@@ -584,7 +584,7 @@ private struct Coverage: View {
             }
             if c.followUp != nil { Badge(text: "跟進") }
         }
-        .font(Type.ui(12.5)).foregroundStyle(palette.text4)
+        .font(AppFont.ui(12.5)).foregroundStyle(palette.text4)
     }
 }
 
@@ -595,7 +595,7 @@ private struct OriginalLink: View {
         if let url = URL(string: c.sourceUrl) {
             Button { openExternal(url) } label: {
                 HStack(spacing: 2) { Text("原文"); Image(systemName: "arrow.up.right").font(.system(size: 10, weight: .semibold)) }
-                    .font(Type.ui(12.5, .medium)).foregroundStyle(palette.text3)
+                    .font(AppFont.ui(12.5, .medium)).foregroundStyle(palette.text3)
                     .frame(minHeight: 28)
             }
             .buttonStyle(.plain)
@@ -614,13 +614,13 @@ private struct Related: View {
                     Group {
                         if r.available, let id = r.itemId {
                             NavigationLink(value: Route.item(id: id)) {
-                                (Text(r.title).foregroundColor(palette.text2) + Text("  \(r.sourceName)").font(Type.ui(12)).foregroundColor(palette.text4))
+                                (Text(r.title).foregroundColor(palette.text2) + Text("  \(r.sourceName)").font(AppFont.ui(12)).foregroundColor(palette.text4))
                             }.buttonStyle(.plain)
                         } else {
                             Text(r.title).strikethrough().foregroundStyle(palette.text4)
                         }
                     }
-                    .font(Type.ui(13.5)).lineSpacing(4).multilineTextAlignment(.leading)
+                    .font(AppFont.ui(13.5)).lineSpacing(4).multilineTextAlignment(.leading)
                 }
             }
         }
@@ -661,10 +661,10 @@ private struct FrontPage: View {
                     .aspectRatio(coverRatio(cover), contentMode: .fit)
                     .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
                     .padding(.top, 20)
-                    if let cap = cover.caption { Text("圖 · \(cap)").font(Type.ui(12.5)).foregroundStyle(palette.text4).lineLimit(2).padding(.top, 10) }
+                    if let cap = cover.caption { Text("圖 · \(cap)").font(AppFont.ui(12.5)).foregroundStyle(palette.text4).lineLimit(2).padding(.top, 10) }
                 }
                 if let dek, !dek.isEmpty {
-                    Text(dek).font(Type.ui(16.5)).lineSpacing(9).foregroundStyle(palette.text2)
+                    Text(dek).font(AppFont.ui(16.5)).lineSpacing(9).foregroundStyle(palette.text2)
                         .fixedSize(horizontal: false, vertical: true)
                         .padding(.top, 22)
                 }
@@ -710,10 +710,10 @@ private struct FrontPage: View {
                     Kicker(text: "本期版面").padding(.bottom, 10)
                     ForEach(Array(indexRows.enumerated()), id: \.element.id) { i, p in
                         HStack(alignment: .firstTextBaseline, spacing: 8) {
-                            Text(pad(i + 1)).font(Type.mono(14, .bold)).foregroundStyle(palette.text).frame(width: 28, alignment: .leading)
-                            Text(p.label).font(Type.ui(13.5)).foregroundStyle(palette.text2).lineLimit(1)
+                            Text(pad(i + 1)).font(AppFont.mono(14, .bold)).foregroundStyle(palette.text).frame(width: 28, alignment: .leading)
+                            Text(p.label).font(AppFont.ui(13.5)).foregroundStyle(palette.text2).lineLimit(1)
                             Spacer()
-                            Text(p.n).font(Type.ui(12)).monospacedDigit().foregroundStyle(palette.text4)
+                            Text(p.n).font(AppFont.ui(12)).monospacedDigit().foregroundStyle(palette.text4)
                         }
                         .padding(.vertical, 6)
                     }
@@ -748,10 +748,10 @@ private struct FrontPage: View {
             Text("\(i + 1)").font(.system(size: 26, weight: .black)).monospacedDigit().tracking(-1)
                 .foregroundStyle(h.available ? palette.accent : palette.text4).frame(width: 24, alignment: .leading)
             VStack(alignment: .leading, spacing: 6) {
-                Text(h.title).font(Type.ui(15, .bold)).lineSpacing(4).foregroundStyle(palette.text)
+                Text(h.title).font(AppFont.ui(15, .bold)).lineSpacing(4).foregroundStyle(palette.text)
                     .strikethrough(!h.available)
                     .fixedSize(horizontal: false, vertical: true)
-                Text(h.available ? h.sourceName : withdrawnNote).font(Type.ui(12)).foregroundStyle(palette.text4).lineLimit(1)
+                Text(h.available ? h.sourceName : withdrawnNote).font(AppFont.ui(12)).foregroundStyle(palette.text4).lineLimit(1)
             }
             Spacer(minLength: 0)
         }
@@ -768,7 +768,7 @@ private struct QuietFront: View {
             Text(lead.title).font(.system(size: 30, weight: .black)).lineSpacing(6).foregroundStyle(palette.text)
                 .fixedSize(horizontal: false, vertical: true)
             if !lead.leadParagraph.isEmpty {
-                Text(lead.leadParagraph).font(Type.ui(16.5)).lineSpacing(9).foregroundStyle(palette.text2)
+                Text(lead.leadParagraph).font(AppFont.ui(16.5)).lineSpacing(9).foregroundStyle(palette.text2)
                     .fixedSize(horizontal: false, vertical: true)
             }
         }
@@ -782,7 +782,7 @@ private struct Overview: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             Kicker(text: "本期導讀")
-            Text(text).font(Type.ui(16.5)).lineSpacing(9).foregroundStyle(palette.text2).fixedSize(horizontal: false, vertical: true)
+            Text(text).font(AppFont.ui(16.5)).lineSpacing(9).foregroundStyle(palette.text2).fixedSize(horizontal: false, vertical: true)
         }
         .padding(.vertical, 28)
         .overlay(alignment: .bottom) { Rectangle().fill(palette.line).frame(height: 1) }
@@ -824,7 +824,7 @@ private struct Story: View {
                 SourceRow(c: c)
                 if c.available { Coverage(c: c) }
                 Spacer()
-                if dated, let at = c.publishedAt { Text(String(DateText.dayKey(at).dropFirst(5)).replacingOccurrences(of: "-", with: ".")).font(Type.ui(12)).monospacedDigit().foregroundStyle(palette.text4) }
+                if dated, let at = c.publishedAt { Text(String(DateText.dayKey(at).dropFirst(5)).replacingOccurrences(of: "-", with: ".")).font(AppFont.ui(12)).monospacedDigit().foregroundStyle(palette.text4) }
             }
             if c.available {
                 Group {
@@ -834,14 +834,14 @@ private struct Story: View {
                 }
                 .padding(.top, 12)
                 if let s = c.summary, !s.isEmpty {
-                    Text(s).font(Type.ui(15)).lineSpacing(8).foregroundStyle(palette.text2).lineLimit(4)
+                    Text(s).font(AppFont.ui(15)).lineSpacing(8).foregroundStyle(palette.text2).lineLimit(4)
                         .fixedSize(horizontal: false, vertical: true).padding(.top, 8)
                 }
                 if let related = c.related, !related.isEmpty { Related(items: related).padding(.top, 12) }
                 OriginalLink(c: c).padding(.top, 10)
             } else {
                 (Text(c.title).strikethrough() + Text(" · \(withdrawnNote)"))
-                    .font(Type.ui(14)).foregroundStyle(palette.text4).padding(.top, 12)
+                    .font(AppFont.ui(14)).foregroundStyle(palette.text4).padding(.top, 12)
             }
         }
         .padding(.vertical, 24)
@@ -872,8 +872,8 @@ private struct FlashRow: View {
 
     private var flashText: some View {
         (Text(c.title).foregroundColor(c.available ? palette.text : palette.text4)
-         + Text("  \(c.available ? c.sourceName : withdrawnNote)").font(Type.ui(12)).foregroundColor(palette.text4))
-            .font(Type.ui(14.5)).lineSpacing(5).multilineTextAlignment(.leading)
+         + Text("  \(c.available ? c.sourceName : withdrawnNote)").font(AppFont.ui(12)).foregroundColor(palette.text4))
+            .font(AppFont.ui(14.5)).lineSpacing(5).multilineTextAlignment(.leading)
             .fixedSize(horizontal: false, vertical: true)
     }
 }
@@ -927,8 +927,8 @@ private struct Neighbours: View {
                 Text(label(key, prev: prevSide))
                 if !prevSide { Image(systemName: "arrow.right").font(.system(size: 11, weight: .semibold)) }
             }
-            .font(Type.ui(12)).foregroundStyle(palette.text4)
-            Text(titleOf(key)).font(Type.ui(16, .bold)).lineSpacing(4).foregroundStyle(palette.text).lineLimit(2)
+            .font(AppFont.ui(12)).foregroundStyle(palette.text4)
+            Text(titleOf(key)).font(AppFont.ui(16, .bold)).lineSpacing(4).foregroundStyle(palette.text).lineLimit(2)
                 .multilineTextAlignment(prevSide ? .leading : .trailing)
         }
         .frame(maxWidth: .infinity, alignment: prevSide ? .leading : .trailing)
@@ -975,8 +975,8 @@ struct ReportCalendarSheet: View {
                     List(index) { e in
                         NavigationLink(value: Route.report(kind: kind.rawValue, key: e.key)) {
                             VStack(alignment: .leading, spacing: 3) {
-                                Text(e.key).font(Type.mono(13)).foregroundStyle(palette.text)
-                                if let t = e.title { Text(t).font(Type.ui(13)).foregroundStyle(palette.text3).lineLimit(2) }
+                                Text(e.key).font(AppFont.mono(13)).foregroundStyle(palette.text)
+                                if let t = e.title { Text(t).font(AppFont.ui(13)).foregroundStyle(palette.text3).lineLimit(2) }
                             }
                         }
                         .listRowBackground(palette.surface)
@@ -996,7 +996,7 @@ struct ReportCalendarSheet: View {
         HStack {
             Button { shift(-1) } label: { Image(systemName: "chevron.left").frame(width: 36, height: 36) }
             Spacer()
-            Text("\(month.prefix(4)) 年 \(Int(month.suffix(2)) ?? 0) 月").font(Type.ui(16, .semibold)).foregroundStyle(palette.text)
+            Text("\(month.prefix(4)) 年 \(Int(month.suffix(2)) ?? 0) 月").font(AppFont.ui(16, .semibold)).foregroundStyle(palette.text)
             Spacer()
             Button { shift(1) } label: { Image(systemName: "chevron.right").frame(width: 36, height: 36) }
                 .disabled(month >= String(DateText.todayKey.prefix(7)))
@@ -1013,7 +1013,7 @@ struct ReportCalendarSheet: View {
         let today = DateText.todayKey
         let e = entries
         return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 7), spacing: 6) {
-            ForEach(["一", "二", "三", "四", "五", "六", "日"], id: \.self) { Text($0).font(Type.ui(11)).foregroundStyle(palette.text4) }
+            ForEach(["一", "二", "三", "四", "五", "六", "日"], id: \.self) { Text($0).font(AppFont.ui(11)).foregroundStyle(palette.text4) }
             ForEach(0..<lead, id: \.self) { _ in Color.clear.frame(height: 40) }
             ForEach(1...days, id: \.self) { d in
                 let k = String(format: "%04d-%02d-%02d", year, m, d)
@@ -1033,7 +1033,7 @@ struct ReportCalendarSheet: View {
 
     private func dayCell(_ d: Int, has: Bool, current: Bool, today: Bool) -> some View {
         VStack(spacing: 3) {
-            Text("\(d)").font(Type.ui(15, has ? .semibold : .regular)).monospacedDigit()
+            Text("\(d)").font(AppFont.ui(15, has ? .semibold : .regular)).monospacedDigit()
                 .foregroundStyle(current ? palette.accentContrast : has ? palette.text : palette.text4.opacity(0.6))
             Circle().fill(current ? palette.accentContrast.opacity(0.9) : has ? palette.accent : .clear).frame(width: 4, height: 4)
         }
@@ -1046,23 +1046,23 @@ struct ReportCalendarSheet: View {
         let list = entries.values.filter { $0.key.hasPrefix(month) }.sorted { $0.key > $1.key }
         return List {
             if list.isEmpty {
-                Text("這個月還沒有\(kind.name)").font(Type.ui(13)).foregroundStyle(palette.text4).listRowBackground(palette.surface)
+                Text("這個月還沒有\(kind.name)").font(AppFont.ui(13)).foregroundStyle(palette.text4).listRowBackground(palette.surface)
             }
             ForEach(list) { e in
                 NavigationLink(value: Route.report(kind: "daily", key: e.key)) {
                     HStack(alignment: .top, spacing: 12) {
                         VStack(spacing: 2) {
                             Text(String(e.key.suffix(2))).font(.system(size: 19, weight: .black)).monospacedDigit().foregroundStyle(e.key == current ? palette.accent : palette.text)
-                            Text(DateText.weekdayShort(e.key)).font(Type.ui(10)).foregroundStyle(palette.text4)
+                            Text(DateText.weekdayShort(e.key)).font(AppFont.ui(10)).foregroundStyle(palette.text4)
                         }
                         .frame(width: 34)
                         VStack(alignment: .leading, spacing: 3) {
-                            Text(e.title ?? "\(kind.name) \(e.key)").font(Type.ui(13.5, e.key == current ? .semibold : .regular)).foregroundStyle(palette.text).lineLimit(2)
+                            Text(e.title ?? "\(kind.name) \(e.key)").font(AppFont.ui(13.5, e.key == current ? .semibold : .regular)).foregroundStyle(palette.text).lineLimit(2)
                             HStack(spacing: 6) {
                                 Text("第 \(e.issueNumber) 期")
                                 if let c = e.count { Text("· \(c) 件") }
                             }
-                            .font(Type.ui(11.5)).foregroundStyle(palette.text4)
+                            .font(AppFont.ui(11.5)).foregroundStyle(palette.text4)
                         }
                     }
                     .padding(.vertical, 2)
@@ -1107,16 +1107,16 @@ struct DailyArchiveView: View {
                                     HStack(alignment: .top, spacing: 12) {
                                         VStack(spacing: 2) {
                                             Text(String(e.key.suffix(2))).font(.system(size: 19, weight: .black)).monospacedDigit().foregroundStyle(palette.text)
-                                            Text(DateText.weekdayShort(e.key)).font(Type.ui(10)).foregroundStyle(palette.text4)
+                                            Text(DateText.weekdayShort(e.key)).font(AppFont.ui(10)).foregroundStyle(palette.text4)
                                         }
                                         .frame(width: 34)
                                         VStack(alignment: .leading, spacing: 3) {
-                                            Text(e.title ?? "日報 \(e.key)").font(Type.ui(13.5)).foregroundStyle(palette.text).lineLimit(2)
+                                            Text(e.title ?? "日報 \(e.key)").font(AppFont.ui(13.5)).foregroundStyle(palette.text).lineLimit(2)
                                             HStack(spacing: 6) {
                                                 Text("第 \(e.issueNumber) 期")
                                                 if let c = e.count { Text("· \(c) 件") }
                                             }
-                                            .font(Type.ui(11.5)).foregroundStyle(palette.text4)
+                                            .font(AppFont.ui(11.5)).foregroundStyle(palette.text4)
                                         }
                                     }
                                     .padding(.vertical, 2)
@@ -1124,7 +1124,7 @@ struct DailyArchiveView: View {
                                 .listRowBackground(palette.surface)
                             }
                         } header: {
-                            Text("\(month.prefix(4)) 年 \(Int(month.suffix(2)) ?? 0) 月").font(Type.ui(13, .semibold)).foregroundStyle(palette.text)
+                            Text("\(month.prefix(4)) 年 \(Int(month.suffix(2)) ?? 0) 月").font(AppFont.ui(13, .semibold)).foregroundStyle(palette.text)
                         }
                     }
                 }

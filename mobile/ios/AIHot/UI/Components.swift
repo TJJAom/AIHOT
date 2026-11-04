@@ -101,7 +101,7 @@ func byDay<T>(_ items: [T], at: (T) -> String) -> [DayGroup<T>] {
 
 // MARK: 字體（對應網頁版的像素值）
 
-enum Type {
+enum AppFont {
     static func ui(_ size: CGFloat, _ weight: Font.Weight = .regular) -> Font { .system(size: size, weight: weight) }
     static func mono(_ size: CGFloat, _ weight: Font.Weight = .semibold) -> Font { .system(size: size, weight: weight, design: .monospaced) }
 }
@@ -148,10 +148,10 @@ struct ScoreLabel: View {
                 : (palette.text4, .clear, palette.lineSoft)
             HStack(spacing: 5) {
                 if !compact {
-                    Text("AI 評分").font(Type.ui(11, .medium)).opacity(0.8)
+                    Text("AI 評分").font(AppFont.ui(11, .medium)).opacity(0.8)
                     Rectangle().fill(fg.opacity(0.25)).frame(width: 1, height: 10)
                 }
-                Text("\(score)").font(Type.mono(12.5, .bold))
+                Text("\(score)").font(AppFont.mono(12.5, .bold))
             }
             .foregroundStyle(fg)
             .padding(.horizontal, 8).frame(height: 20)
@@ -178,7 +178,7 @@ struct Badge: View {
         }
         HStack(spacing: 4) {
             if dot { Circle().fill(fg).frame(width: 5, height: 5) }
-            Text(text).font(Type.ui(11, .medium))
+            Text(text).font(AppFont.ui(11, .medium))
         }
         .foregroundStyle(fg)
         .padding(.horizontal, 8).frame(height: 18)
@@ -206,7 +206,7 @@ struct ToggleChip: View {
                     }
                 }
                 .frame(width: 16, height: 16)
-                Text(title).font(Type.ui(13, .medium))
+                Text(title).font(AppFont.ui(13, .medium))
             }
             .foregroundStyle(on ? palette.accent : palette.text2)
             .padding(.leading, 8).padding(.trailing, 14).frame(height: 32)
@@ -233,7 +233,7 @@ struct PillTabs<Key: Hashable>: View {
                     withAnimation(.spring(duration: 0.3)) { selected = item.key }
                 } label: {
                     Text(item.label)
-                        .font(Type.ui(13.5, on ? .semibold : .medium))
+                        .font(AppFont.ui(13.5, on ? .semibold : .medium))
                         .foregroundStyle(on ? palette.text : palette.text3)
                         .padding(.horizontal, 14)
                         .frame(maxWidth: fill ? .infinity : nil)
@@ -256,7 +256,7 @@ struct Kicker: View {
     var body: some View {
         HStack(spacing: 10) {
             Rectangle().fill(palette.accent).frame(width: 18, height: 2)
-            Text(text).font(Type.ui(12, .semibold)).tracking(3).foregroundStyle(palette.accent)
+            Text(text).font(AppFont.ui(12, .semibold)).tracking(3).foregroundStyle(palette.accent)
         }
     }
 }
@@ -273,10 +273,10 @@ struct SourceLine: View {
             Text(source).lineLimit(1)
             if let at, !at.isEmpty {
                 Text("·")
-                Text(relative ? DateText.relative(at) : DateText.time(at)).font(Type.mono(12, .regular))
+                Text(relative ? DateText.relative(at) : DateText.time(at)).font(AppFont.mono(12, .regular))
             }
         }
-        .font(Type.ui(12.5))
+        .font(AppFont.ui(12.5))
         .foregroundStyle(palette.text4)
     }
 }
@@ -300,7 +300,7 @@ struct DayHeader<Aside: View>: View {
             } label: {
                 HStack(spacing: 8) {
                     Text(day == today ? "今天" : DateText.monthDay(day, today: today))
-                        .font(Type.ui(17, .bold)).foregroundStyle(palette.text)
+                        .font(AppFont.ui(17, .bold)).foregroundStyle(palette.text)
                     if onToggle != nil {
                         Image(systemName: "chevron.down").font(.system(size: 11, weight: .semibold))
                             .foregroundStyle(palette.text4)
@@ -311,7 +311,7 @@ struct DayHeader<Aside: View>: View {
                         Text(DateText.weekdayShort(day))
                         if let count { Text(" · \(count) 條") }
                     }
-                    .font(Type.ui(12.5)).foregroundStyle(palette.text4)
+                    .font(AppFont.ui(12.5)).foregroundStyle(palette.text4)
                 }
             }
             .buttonStyle(.plain)
@@ -338,7 +338,7 @@ struct TimelineSlot<Content: View>: View {
     var body: some View {
         HStack(alignment: .top, spacing: 0) {
             Text(DateText.time(at))
-                .font(Type.mono(12.5))
+                .font(AppFont.mono(12.5))
                 .foregroundStyle(palette.text3)
                 .frame(width: 46, alignment: .leading)
                 .padding(.top, dotY - 8)
@@ -384,7 +384,7 @@ struct FeedCard: View {
         let read = readStore.ids.contains(item.id) && !forceUnread
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 8) {
-                Text(item.source.name).font(Type.ui(12.5)).foregroundStyle(palette.text4).lineLimit(1)
+                Text(item.source.name).font(AppFont.ui(12.5)).foregroundStyle(palette.text4).lineLimit(1)
                 if item.selected && showReason {
                     if let same = item.sameEvent, !same.id.isEmpty { Badge(text: "同事件") } else { Badge(text: "精選", tone: .selected, dot: true) }
                 }
@@ -405,7 +405,7 @@ struct FeedCard: View {
             .frame(minHeight: 20)
 
             Text(item.title)
-                .font(Type.ui(17, .semibold))
+                .font(AppFont.ui(17, .semibold))
                 .lineSpacing(4)
                 .foregroundStyle(read ? palette.text4 : palette.text)
                 .lineLimit(3)
@@ -414,7 +414,7 @@ struct FeedCard: View {
 
             if let summary = item.summary, !summary.isEmpty {
                 Text(summary)
-                    .font(Type.ui(14.5))
+                    .font(AppFont.ui(14.5))
                     .lineSpacing(5)
                     .foregroundStyle(palette.text3)
                     .lineLimit(2)
@@ -427,25 +427,25 @@ struct FeedCard: View {
                     if let c = Category.label(for: item.category) { Text(c) }
                     ForEach(item.tags.prefix(3), id: \.self) { Text("#\($0)") }
                 }
-                .font(Type.ui(12)).foregroundStyle(palette.text4)
+                .font(AppFont.ui(12)).foregroundStyle(palette.text4)
                 .lineLimit(1)
                 .padding(.top, 8)
             }
 
             if let same = item.sameEvent {
                 Text("同一件事，精選收錄的是《\(same.title)》")
-                    .font(Type.ui(12.5)).foregroundStyle(palette.text4).lineLimit(1).padding(.top, 8)
+                    .font(AppFont.ui(12.5)).foregroundStyle(palette.text4).lineLimit(1).padding(.top, 8)
             }
 
             if let group, group.additionalSourceCount > 0 || group.reportCount > 1 {
                 Text("另外 \(max(group.additionalSourceCount, group.reportCount - 1)) 家也報道了")
-                    .font(Type.ui(12.5, .medium)).foregroundStyle(palette.accent).padding(.top, 8)
+                    .font(AppFont.ui(12.5, .medium)).foregroundStyle(palette.accent).padding(.top, 8)
             }
 
             if showReason, let reason = item.reason, !reason.isEmpty {
                 Divider().overlay(palette.lineSoft).padding(.top, 10)
                 Text("推薦理由：\(reason)")
-                    .font(Type.ui(13))
+                    .font(AppFont.ui(13))
                     .lineSpacing(4)
                     .foregroundStyle(palette.note)
                     .lineLimit(2)

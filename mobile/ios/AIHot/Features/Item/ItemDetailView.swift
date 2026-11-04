@@ -71,10 +71,10 @@ struct ItemDetailView: View {
                         // 「文章內容 · AI 重點整理」分隔與說明（網頁版 item.tsx）
                         VStack(alignment: .leading, spacing: 8) {
                             Text("文章內容 · \(item.body?.zhKind == "reading" ? "AI 重點整理" : item.body?.zhKind == "translation" ? "繁體翻譯" : "原文")")
-                                .font(Type.ui(12.5, .medium)).foregroundStyle(palette.text4)
+                                .font(AppFont.ui(12.5, .medium)).foregroundStyle(palette.text4)
                             if item.body?.zhKind == "reading" {
                                 Text("依來源材料整理重點、背景與細節，並非原文全文或逐字翻譯；完整報導請閱讀原文。")
-                                    .font(Type.ui(12.5)).foregroundStyle(palette.text4)
+                                    .font(AppFont.ui(12.5)).foregroundStyle(palette.text4)
                             }
                         }
                         .padding(.top, 20).padding(.bottom, 28)
@@ -112,12 +112,12 @@ struct ItemDetailView: View {
     private func header(_ item: SiteItemDetail) -> some View {
         VStack(alignment: .leading, spacing: 0) {
             HStack(spacing: 6) {
-                Text(item.source.name).font(Type.ui(12.5, .semibold)).foregroundStyle(palette.text)
+                Text(item.source.name).font(AppFont.ui(12.5, .semibold)).foregroundStyle(palette.text)
                 if let author = item.author, !author.isEmpty { Text("· \(author)") }
                 Text("·")
-                Text(DateText.full(item.publishedAt ?? item.timelineAt)).font(Type.mono(12, .regular))
+                Text(DateText.full(item.publishedAt ?? item.timelineAt)).font(AppFont.mono(12, .regular))
             }
-            .font(Type.ui(12.5)).foregroundStyle(palette.text4).lineLimit(1)
+            .font(AppFont.ui(12.5)).foregroundStyle(palette.text4).lineLimit(1)
 
             Text(item.title)
                 .font(.system(size: 26, weight: .bold)).lineSpacing(6).tracking(-0.3)
@@ -126,7 +126,7 @@ struct ItemDetailView: View {
                 .padding(.top, 12)
             if let original = item.originalTitle, original != item.title {
                 Text(original)
-                    .font(Type.ui(14.5)).lineSpacing(4)
+                    .font(AppFont.ui(14.5)).lineSpacing(4)
                     .foregroundStyle(palette.text4)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 8)
@@ -134,7 +134,7 @@ struct ItemDetailView: View {
 
             if let summary = item.summary, !summary.isEmpty {
                 VStack(alignment: .leading, spacing: 12) {
-                    Text("AI 導讀").font(Type.ui(12.5, .semibold)).foregroundStyle(palette.accent)
+                    Text("AI 導讀").font(AppFont.ui(12.5, .semibold)).foregroundStyle(palette.accent)
                     Text(summary)
                         .font(.system(size: 18 * CGFloat(themeStore.fontScale))).lineSpacing(10)
                         .foregroundStyle(palette.text)
@@ -145,7 +145,7 @@ struct ItemDetailView: View {
 
             if let reason = item.reason, !reason.isEmpty {
                 Text("推薦理由：\(reason)")
-                    .font(Type.ui(13.5)).lineSpacing(5).foregroundStyle(palette.note)
+                    .font(AppFont.ui(13.5)).lineSpacing(5).foregroundStyle(palette.note)
                     .fixedSize(horizontal: false, vertical: true)
                     .padding(.top, 16)
             }
@@ -159,7 +159,7 @@ struct ItemDetailView: View {
                     openExternal(url)
                 } label: {
                     HStack(spacing: 6) { Text("開啟原文"); Image(systemName: "arrow.up.right.square").font(.system(size: 13)) }
-                        .font(Type.ui(14.5, .medium))
+                        .font(AppFont.ui(14.5, .medium))
                         .foregroundStyle(palette.text)
                         .frame(maxWidth: .infinity).frame(height: 44)
                         .background(palette.surface, in: Capsule())
@@ -207,7 +207,7 @@ struct ItemDetailView: View {
 
     private func metaRow<V: View>(_ label: String, @ViewBuilder _ value: () -> V) -> some View {
         VStack(alignment: .leading, spacing: 8) {
-            Text(label).font(Type.ui(12.5, .semibold)).foregroundStyle(palette.text)
+            Text(label).font(AppFont.ui(12.5, .semibold)).foregroundStyle(palette.text)
             value()
         }
         .padding(.vertical, 10)
@@ -217,7 +217,7 @@ struct ItemDetailView: View {
     private func linkRow(_ text: String, icon: String) -> some View {
         HStack(spacing: 10) {
             Image(systemName: icon).foregroundStyle(palette.accent)
-            Text(text).font(Type.ui(14.5, .medium)).foregroundStyle(palette.text).lineLimit(2)
+            Text(text).font(AppFont.ui(14.5, .medium)).foregroundStyle(palette.text).lineLimit(2)
             Spacer()
             Image(systemName: "chevron.right").font(.system(size: 12, weight: .semibold)).foregroundStyle(palette.text4)
         }
@@ -230,7 +230,7 @@ struct ItemDetailView: View {
     private func noticeCard(icon: String, text: String) -> some View {
         HStack(alignment: .top, spacing: 10) {
             Image(systemName: icon).foregroundStyle(palette.accent)
-            Text(text).font(Type.ui(13.5)).lineSpacing(4).foregroundStyle(palette.text3)
+            Text(text).font(AppFont.ui(13.5)).lineSpacing(4).foregroundStyle(palette.text3)
         }
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)

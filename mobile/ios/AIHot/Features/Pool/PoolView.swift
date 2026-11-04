@@ -92,7 +92,7 @@ struct PoolView: View {
                         Spacer()
                         if model.state.value != nil {
                             Text("找到 \(model.total >= 2000 ? "2000+" : "\(model.total)") 條")
-                                .font(Type.ui(12)).foregroundStyle(palette.text4)
+                                .font(AppFont.ui(12)).foregroundStyle(palette.text4)
                         }
                     }
                     .padding(.horizontal, 16).padding(.bottom, 12)
