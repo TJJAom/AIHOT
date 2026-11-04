@@ -140,8 +140,8 @@ struct PoolView: View {
             .padding(.bottom, 24)
         }
         .themedBackground()
-        .navigationTitle(searching ? "搜尋" : "全部 AI 動態")
-        .navigationBarTitleDisplayMode(.large)
+        .navigationTitle(searching ? "搜尋" : "全部動態")
+        .navigationBarTitleDisplayMode(.inline)
         .searchable(text: $model.query, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "搜尋標題、摘要…")
         .onChange(of: model.query) { _, _ in
             searchTask?.cancel()

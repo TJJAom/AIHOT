@@ -161,7 +161,8 @@ struct TimelineView: View {
         }
         .themedBackground()
         .navigationTitle("精選")
-        .navigationBarTitleDisplayMode(.large)
+        // 小標題列：大標題會在分類列上方多佔約 50pt，列表頁以內容優先（網頁手機版也是單行標題列）。
+        .navigationBarTitleDisplayMode(.inline)
         .refreshable { await model.reload() }
         .task { if model.cards.isEmpty { await model.reload() } }
         .onChange(of: unreadOnly) { _, on in

@@ -78,7 +78,7 @@ export default {
           sandbox: devices.filter((d) => d.environment === "sandbox").length,
           production: devices.filter((d) => d.environment === "production").length,
           seenItems: seen.length,
-          lastRun: await env.PUSH_KV.get("meta:lastRun"),
+          lastChange: await env.PUSH_KV.get("meta:lastRun"),
         });
       }
       if (path === "/admin/run" && request.method === "POST") {
@@ -196,11 +196,11 @@ async function runCycle(env: Env, opts: { dryRun: boolean }): Promise<CycleRepor
   if (seeded) {
     // 第一次執行只記錄現狀，不推送，避免把既有幾十篇一次全推出去。
     report.seeded = true;
-    if (!opts.dryRun) { await saveSeen(env, nextSeen); await env.PUSH_KV.put("meta:lastRun", new Date().toISOString()); }
+    if (!opts.dryRun) await persistSeen(env, seen, nextSeen);
     return report;
   }
   if (newSelected.length === 0 && newAll.length === 0) {
-    if (!opts.dryRun) { await saveSeen(env, nextSeen); await env.PUSH_KV.put("meta:lastRun", new Date().toISOString()); }
+    if (!opts.dryRun) await persistSeen(env, seen, nextSeen);
     return report;
   }
 
@@ -219,7 +219,7 @@ async function runCycle(env: Env, opts: { dryRun: boolean }): Promise<CycleRepor
     report.sent = results.sent; report.failed = results.failed; report.removed = results.removed; report.errors.push(...results.errors);
   }
 
-  if (!opts.dryRun) { await saveSeen(env, nextSeen); await env.PUSH_KV.put("meta:lastRun", new Date().toISOString()); }
+  if (!opts.dryRun) await persistSeen(env, seen, nextSeen);
   return report;
 }
 
@@ -317,6 +317,17 @@ async function siteGet(env: Env, path: string): Promise<unknown | null> {
 async function loadSeen(env: Env): Promise<string[]> {
   const v = (await env.PUSH_KV.get(SEEN_KEY, "json")) as string[] | null;
   return Array.isArray(v) ? v : [];
+}
+
+/**
+ * 只在已見清單有變動時寫入（含最後變動時間）。排程每 5 分鐘跑一次，每次都寫會吃掉 Cloudflare 免費方案
+ * 每天 1,000 次的 KV 寫入額度；沒有新文章的輪次不寫。
+ */
+async function persistSeen(env: Env, before: string[], next: string[]): Promise<void> {
+  const known = new Set(before);
+  if (next.length === before.length && next.every((id) => known.has(id))) return;
+  await saveSeen(env, next);
+  await env.PUSH_KV.put("meta:lastRun", new Date().toISOString());
 }
 
 async function saveSeen(env: Env, ids: string[]): Promise<void> {
