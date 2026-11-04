@@ -18,6 +18,14 @@ enum Route: Hashable {
 struct AppDestinations: ViewModifier {
     func body(content: Content) -> some View {
         content.navigationDestination(for: Route.self) { route in
+            destination(route)
+                // 分頁根頁面隱藏了系統導覽列（RootChrome）；推進去的頁面明確要回來，返回鈕才不會消失。
+                .toolbar(.visible, for: .navigationBar)
+        }
+    }
+
+    @ViewBuilder
+    private func destination(_ route: Route) -> some View {
             switch route {
             case let .item(id): ItemDetailView(itemID: id)
             case let .story(publicId): StoryDetailView(publicId: publicId)
@@ -31,7 +39,6 @@ struct AppDestinations: ViewModifier {
             case .notifications: NotificationSettingsView()
             case .hot: HotRankingView()
             }
-        }
     }
 }
 

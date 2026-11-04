@@ -81,6 +81,8 @@ struct PoolView: View {
         let days = days
         ScrollView {
             LazyVStack(alignment: .leading, spacing: 0, pinnedViews: [.sectionHeaders]) {
+                SearchField(text: $model.query)
+                    .padding(.horizontal, 16).padding(.top, 4).padding(.bottom, 10)
                 CategoryTabs(selected: $model.filter)
                     .padding(.top, 4).padding(.bottom, 12)
                     .onChange(of: model.filter) { _, _ in Task { await model.reload() } }
@@ -140,9 +142,7 @@ struct PoolView: View {
             .padding(.bottom, 24)
         }
         .themedBackground()
-        .navigationTitle(searching ? "搜尋" : "全部動態")
-        .navigationBarTitleDisplayMode(.inline)
-        .searchable(text: $model.query, placement: .navigationBarDrawer(displayMode: .automatic), prompt: "搜尋標題、摘要…")
+        .rootChrome("全部動態")
         .onChange(of: model.query) { _, _ in
             searchTask?.cancel()
             searchTask = Task {

@@ -552,3 +552,74 @@ struct FlowLayout: Layout {
         }
     }
 }
+
+
+// MARK: 分頁頂欄
+
+/// 分頁根頁面的單行頂欄（網頁手機版 PhoneBar）。系統導覽列在這些頁面隱藏：
+/// iOS 26 起根頁面的導覽列即使設成 inline，仍會在分類列上方保留大標題區，造成不必要的留白。
+struct RootHeader<Trailing: View>: View {
+    @Environment(\.palette) private var palette
+    let title: String
+    @ViewBuilder var trailing: () -> Trailing
+
+    var body: some View {
+        HStack(spacing: 10) {
+            Text(title).font(AppFont.ui(20, .bold)).foregroundStyle(palette.text)
+            Spacer(minLength: 0)
+            trailing()
+        }
+        .padding(.horizontal, 16)
+        .frame(height: 44)
+        .frame(maxWidth: .infinity)
+        .background(palette.background)
+    }
+}
+
+extension RootHeader where Trailing == EmptyView {
+    init(title: String) { self.init(title: title) { EmptyView() } }
+}
+
+/// 分頁根頁面：隱藏系統導覽列、頂部放單行頂欄。推進去的子頁面仍有系統返回列。
+struct RootChrome: ViewModifier {
+    let title: String
+    func body(content: Content) -> some View {
+        content
+            .navigationTitle(title)
+            .toolbar(.hidden, for: .navigationBar)
+            .safeAreaInset(edge: .top, spacing: 0) { RootHeader(title: title) }
+    }
+}
+
+extension View {
+    func rootChrome(_ title: String) -> some View { modifier(RootChrome(title: title)) }
+}
+
+/// 搜尋框藥丸（全部動態）。
+struct SearchField: View {
+    @Environment(\.palette) private var palette
+    @Binding var text: String
+    var prompt = "搜尋標題、摘要…"
+    @FocusState private var focused: Bool
+
+    var body: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "magnifyingglass").font(.system(size: 14, weight: .medium)).foregroundStyle(palette.text4)
+            TextField(prompt, text: $text)
+                .font(AppFont.ui(15))
+                .foregroundStyle(palette.text)
+                .submitLabel(.search)
+                .autocorrectionDisabled()
+                .focused($focused)
+            if !text.isEmpty {
+                Button { text = ""; focused = false } label: {
+                    Image(systemName: "xmark.circle.fill").foregroundStyle(palette.text4)
+                }
+                .buttonStyle(.plain)
+            }
+        }
+        .padding(.horizontal, 14).frame(height: 38)
+        .background(palette.sunk, in: Capsule())
+        .overlay(Capsule().strokeBorder(palette.lineSoft, lineWidth: 1))
+    }
+}
