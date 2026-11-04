@@ -5,3 +5,5 @@ DerivedData/
 .verification/
 *.ipa
 *.p8
+AIHot/Support/Info.plist
+AIHot/Support/AIHot.entitlements
