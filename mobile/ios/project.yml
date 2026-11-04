@@ -57,7 +57,7 @@ targets:
             CFBundleURLSchemes: [aihot]
         AIHotAPIBaseURL: https://aihot.dayacre.com
         # Cloudflare Worker 部署後填入，例如 https://aihot-push.<你的帳號>.workers.dev
-        AIHotPushRegistrationURL: ""
+        AIHotPushRegistrationURL: https://push.dayacre.com
     settings:
       base:
         PRODUCT_BUNDLE_IDENTIFIER: com.dayacre.aihot

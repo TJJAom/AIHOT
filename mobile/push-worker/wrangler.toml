@@ -1,6 +1,6 @@
 # 日耕 iOS 推播 Worker。部署：
 #   cd mobile/push-worker && npm install
-#   npx wrangler kv namespace create PUSH_KV        # 把回傳的 id 填到下方
+#   （KV 已建立：PUSH_KV 2aa40bd9…）
 #   npx wrangler secret put APNS_KEY_P8              # 貼上 .p8 內容（含 BEGIN/END 行）
 #   npx wrangler secret put APNS_KEY_ID
 #   npx wrangler secret put APNS_TEAM_ID
@@ -11,12 +11,16 @@ main = "src/index.ts"
 compatibility_date = "2026-10-01"
 compatibility_flags = ["nodejs_compat"]
 
+# 綁在 dayacre.com 的子網域（2026-11-05 建立）；排程觸發仍需帳號有 workers.dev 子網域。
+workers_dev = false
+routes = [{ pattern = "push.dayacre.com", custom_domain = true }]
+
 [triggers]
 crons = ["*/5 * * * *"]
 
 [[kv_namespaces]]
 binding = "PUSH_KV"
-id = "REPLACE_WITH_KV_NAMESPACE_ID"
+id = "2aa40bd9dae84a5b8fda57bec1bf03d6"
 
 [vars]
 SITE_BASE = "https://aihot.dayacre.com"

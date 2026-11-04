@@ -247,7 +247,8 @@ async function sendToDevices(
   devices: Device[],
   messagesFor: (device: Device) => ApnsMessage | ApnsMessage[] | null,
 ): Promise<{ sent: number; failed: number; removed: number; errors: string[] }> {
-  const creds: ApnsCredentials = { keyP8: env.APNS_KEY_P8, keyId: env.APNS_KEY_ID, teamId: env.APNS_TEAM_ID };
+  // 密鑰以 wrangler secret 寫入時可能帶入結尾換行（例如由 PowerShell 管線傳入），一律去除頭尾空白。
+  const creds: ApnsCredentials = { keyP8: (env.APNS_KEY_P8 ?? "").trim(), keyId: (env.APNS_KEY_ID ?? "").trim(), teamId: (env.APNS_TEAM_ID ?? "").trim() };
   if (!creds.keyP8 || !creds.keyId || !creds.teamId) return { sent: 0, failed: 0, removed: 0, errors: ["APNs secrets not configured"] };
   const result = { sent: 0, failed: 0, removed: 0, errors: [] as string[] };
   const queue = [...devices];
@@ -318,8 +319,9 @@ async function saveSeen(env: Env, ids: string[]): Promise<void> {
 // MARK: 工具
 
 function isAdmin(request: Request, env: Env): boolean {
-  const auth = request.headers.get("authorization") ?? "";
-  return Boolean(env.ADMIN_TOKEN) && auth === `Bearer ${env.ADMIN_TOKEN}`;
+  const token = (env.ADMIN_TOKEN ?? "").trim();
+  const auth = (request.headers.get("authorization") ?? "").trim();
+  return token.length > 0 && auth === `Bearer ${token}`;
 }
 
 function json(data: unknown, status = 200): Response {
