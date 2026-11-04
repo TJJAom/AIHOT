@@ -8,7 +8,7 @@ enum ReportKind: String, CaseIterable, Identifiable {
     case daily, weekly, monthly
     var id: String { rawValue }
     var name: String { switch self { case .daily: "日報"; case .weekly: "週報"; case .monthly: "月報" } }
-    var edition: String { switch self { case .daily: "每天 22:00 出刊"; case .weekly: "每週一出刊"; case .monthly: "每月 1 日出刊" } }
+    var edition: String { switch self { case .daily: "每天 08:00 出刊"; case .weekly: "每週一出刊"; case .monthly: "每月 1 日出刊" } }
     var motto: String { switch self { case .daily: "AI · 每日要聞"; case .weekly: "AI · 每週綜述"; case .monthly: "AI · 每月盤點" } }
 }
 
@@ -184,7 +184,7 @@ struct ReportPaperView<Top: View>: View {
                             .padding(.horizontal, 16)
                     } else {
                         EmptyStateView(icon: "newspaper", title: "還沒有釋出\(kind.name)",
-                                       detail: kind == .daily ? "日報每天台灣時間 22:00 前後出刊；往期可從右上角的日曆進入。" : "第一期釋出後會出現在這裡。")
+                                       detail: kind == .daily ? "日報每天台灣時間 08:00 前後出刊；往期可從右上角的日曆進入。" : "第一期釋出後會出現在這裡。")
                             .padding(.top, 60)
                     }
                 }
