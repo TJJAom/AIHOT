@@ -1,0 +1,17 @@
+{
+  "name": "aihot-push-worker",
+  "private": true,
+  "version": "1.0.0",
+  "description": "日耕 iOS 推播：輪詢網站公開 API，經 APNs 通知新文章",
+  "scripts": {
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "typecheck": "tsc --noEmit",
+    "tail": "wrangler tail"
+  },
+  "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261103.1",
+    "typescript": "^5.6.0",
+    "wrangler": "^4.0.0"
+  }
+}

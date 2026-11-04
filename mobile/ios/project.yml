@@ -1,0 +1,93 @@
+# XcodeGen 專案定義。於 Mac 上執行：
+#   brew install xcodegen && cd mobile/ios && xcodegen generate
+# 產生 AIHot.xcodeproj（不提交到 Git）。
+name: AIHot
+options:
+  bundleIdPrefix: com.dayacre
+  deploymentTarget:
+    iOS: "17.0"
+  xcodeVersion: "16.0"
+  createIntermediateGroups: true
+  generateEmptyDirectories: true
+  developmentLanguage: zh-Hant
+settings:
+  base:
+    SWIFT_VERSION: "5.10"
+    MARKETING_VERSION: "1.0.0"
+    CURRENT_PROJECT_VERSION: "1"
+    # 請在 Mac 上改成自己的 Apple Team ID（或在 Xcode Signing 頁選擇 Team）。
+    DEVELOPMENT_TEAM: ""
+    CODE_SIGN_STYLE: Automatic
+    TARGETED_DEVICE_FAMILY: "1"
+    SWIFT_STRICT_CONCURRENCY: minimal
+targets:
+  AIHot:
+    type: application
+    platform: iOS
+    sources:
+      - path: AIHot
+        excludes:
+          - "**/.DS_Store"
+    entitlements:
+      path: AIHot/Support/AIHot.entitlements
+      properties:
+        aps-environment: development
+    info:
+      path: AIHot/Support/Info.plist
+      properties:
+        CFBundleDisplayName: 日耕
+        CFBundleName: AIHot
+        CFBundleShortVersionString: $(MARKETING_VERSION)
+        CFBundleVersion: $(CURRENT_PROJECT_VERSION)
+        CFBundleDevelopmentRegion: zh-Hant
+        CFBundleLocalizations: [zh-Hant]
+        UILaunchScreen: {}
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+          - UIInterfaceOrientationLandscapeLeft
+          - UIInterfaceOrientationLandscapeRight
+        UIBackgroundModes: [remote-notification]
+        ITSAppUsesNonExemptEncryption: false
+        NSAppTransportSecurity:
+          NSAllowsArbitraryLoads: false
+        CFBundleURLTypes:
+          - CFBundleURLName: com.dayacre.aihot
+            CFBundleURLSchemes: [aihot]
+        AIHotAPIBaseURL: https://aihot.dayacre.com
+        # Cloudflare Worker 部署後填入，例如 https://aihot-push.<你的帳號>.workers.dev
+        AIHotPushRegistrationURL: ""
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dayacre.aihot
+        INFOPLIST_KEY_UIUserInterfaceStyle: Automatic
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
+        SUPPORTS_MACCATALYST: false
+  AIHotTests:
+    type: bundle.unit-test
+    platform: iOS
+    sources:
+      - path: AIHotTests
+      - path: Fixtures
+        type: folder
+        buildPhase: resources
+    dependencies:
+      - target: AIHot
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: com.dayacre.aihot.tests
+schemes:
+  AIHot:
+    build:
+      targets:
+        AIHot: all
+        AIHotTests: [test]
+    run:
+      config: Debug
+    test:
+      config: Debug
+      targets: [AIHotTests]
+    archive:
+      config: Release

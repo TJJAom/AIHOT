@@ -1,0 +1,27 @@
+# 日耕 iOS 推播 Worker。部署：
+#   cd mobile/push-worker && npm install
+#   npx wrangler kv namespace create PUSH_KV        # 把回傳的 id 填到下方
+#   npx wrangler secret put APNS_KEY_P8              # 貼上 .p8 內容（含 BEGIN/END 行）
+#   npx wrangler secret put APNS_KEY_ID
+#   npx wrangler secret put APNS_TEAM_ID
+#   npx wrangler secret put ADMIN_TOKEN              # 任意長隨機字串，給 /admin/* 用
+#   npx wrangler deploy
+name = "aihot-push"
+main = "src/index.ts"
+compatibility_date = "2026-10-01"
+compatibility_flags = ["nodejs_compat"]
+
+[triggers]
+crons = ["*/5 * * * *"]
+
+[[kv_namespaces]]
+binding = "PUSH_KV"
+id = "REPLACE_WITH_KV_NAMESPACE_ID"
+
+[vars]
+SITE_BASE = "https://aihot.dayacre.com"
+APNS_TOPIC = "com.dayacre.aihot"
+# 每輪最多推幾則獨立通知；超過則合併成一則「有 N 則新精選」
+MAX_INDIVIDUAL_PER_RUN = "3"
+# 只推超過此分數的文章（網站列表門檻為 40）
+MIN_SCORE = "40"

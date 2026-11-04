@@ -1,0 +1,7 @@
+AIHot.xcodeproj/
+*.xcworkspace/
+xcuserdata/
+DerivedData/
+.verification/
+*.ipa
+*.p8
