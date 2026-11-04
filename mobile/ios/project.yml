@@ -63,9 +63,9 @@ targets:
         PRODUCT_BUNDLE_IDENTIFIER: com.dayacre.aihot
         INFOPLIST_KEY_UIUserInterfaceStyle: Automatic
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
-        # 預設 AppIcon＝D03 靜日；其餘 29 款可在「我的 → App 圖示」更換
+        # 預設 AppIcon＝D14 初曦訊；其餘 29 款可在「我的 → App 圖示」更換
         ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS: YES
-        ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES: "AppIcon-D01 AppIcon-D02 AppIcon-D04 AppIcon-D05 AppIcon-D06 AppIcon-D07 AppIcon-D08 AppIcon-D09 AppIcon-D10 AppIcon-D11 AppIcon-D12 AppIcon-D13 AppIcon-D14 AppIcon-D15 AppIcon-D16 AppIcon-D17 AppIcon-D18 AppIcon-D19 AppIcon-D20 AppIcon-D21 AppIcon-D22 AppIcon-D23 AppIcon-D24 AppIcon-D25 AppIcon-D26 AppIcon-D27 AppIcon-D28 AppIcon-D29 AppIcon-D30"
+        ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES: "AppIcon-D01 AppIcon-D02 AppIcon-D03 AppIcon-D04 AppIcon-D05 AppIcon-D06 AppIcon-D07 AppIcon-D08 AppIcon-D09 AppIcon-D10 AppIcon-D11 AppIcon-D12 AppIcon-D13 AppIcon-D15 AppIcon-D16 AppIcon-D17 AppIcon-D18 AppIcon-D19 AppIcon-D20 AppIcon-D21 AppIcon-D22 AppIcon-D23 AppIcon-D24 AppIcon-D25 AppIcon-D26 AppIcon-D27 AppIcon-D28 AppIcon-D29 AppIcon-D30"
         ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME: AccentColor
         SUPPORTS_MACCATALYST: false
   AIHotTests:

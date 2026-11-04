@@ -175,18 +175,18 @@ struct ThemePreviewCard: View {
     }
 }
 
-/// 一款 App 圖示。D03 靜日是預設（主圖示），其他是備用圖示 AppIcon-Dnn。
+/// 一款 App 圖示。D14 初曦訊是預設（主圖示），其他是備用圖示 AppIcon-Dnn。
 struct AppIconChoice: Identifiable, Hashable {
     let id: String
     let title: String
-    static let defaultID = "D03"
+    static let defaultID = "D14"
     /// setAlternateIconName 用的名字；預設圖示是 nil。
     var alternateName: String? { id == Self.defaultID ? nil : "AppIcon-\(id)" }
     var previewName: String { "IconPreview-\(id)" }
 
     static var current: AppIconChoice {
         let name = UIApplication.shared.alternateIconName
-        return all.first { $0.alternateName == name } ?? all[2]
+        return all.first { $0.alternateName == name } ?? all.first { $0.id == defaultID }!
     }
 
     static let all: [AppIconChoice] = [
