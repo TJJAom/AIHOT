@@ -9,6 +9,7 @@ enum Route: Hashable {
     case topic(slug: String)
     case group(factId: String, title: String)
     case themes
+    case appIcon
     case notifications
 }
 
@@ -23,6 +24,7 @@ struct AppDestinations: ViewModifier {
             case let .topic(slug): TopicDetailView(slug: slug)
             case let .group(factId, title): GroupReportsView(factId: factId, title: title)
             case .themes: ThemePickerView()
+            case .appIcon: AppIconPickerView()
             case .notifications: NotificationSettingsView()
             }
         }

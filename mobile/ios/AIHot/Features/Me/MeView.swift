@@ -5,6 +5,7 @@ struct MeView: View {
     @Environment(FavoritesStore.self) private var favorites
     @Environment(ThemeStore.self) private var themeStore
     @Environment(PushManager.self) private var push
+    @State private var appIcon = AppIconChoice.current
 
     var body: some View {
         List {
@@ -44,6 +45,16 @@ struct MeView: View {
                     }
                 }
                 .listRowBackground(palette.surface)
+                NavigationLink(value: Route.appIcon) {
+                    HStack {
+                        Label("App 圖示", systemImage: "app.badge")
+                        Spacer()
+                        Image(appIcon.previewName).resizable().frame(width: 24, height: 24)
+                            .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
+                        Text(appIcon.title).foregroundStyle(palette.secondaryText)
+                    }
+                }
+                .listRowBackground(palette.surface)
                 VStack(alignment: .leading, spacing: 6) {
                     HStack {
                         Label("內文字級", systemImage: "textformat.size")
@@ -80,6 +91,7 @@ struct MeView: View {
         }
         .themedBackground()
         .navigationTitle("我的")
+        .onAppear { appIcon = AppIconChoice.current }
     }
 
     private var pushStatusText: String {
@@ -160,6 +172,77 @@ struct ThemePreviewCard: View {
         }
         .padding(10)
         .background(current.surface, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+    }
+}
+
+/// 一款 App 圖示。D03 靜日是預設（主圖示），其他是備用圖示 AppIcon-Dnn。
+struct AppIconChoice: Identifiable, Hashable {
+    let id: String
+    let title: String
+    static let defaultID = "D03"
+    /// setAlternateIconName 用的名字；預設圖示是 nil。
+    var alternateName: String? { id == Self.defaultID ? nil : "AppIcon-\(id)" }
+    var previewName: String { "IconPreview-\(id)" }
+
+    static var current: AppIconChoice {
+        let name = UIApplication.shared.alternateIconName
+        return all.first { $0.alternateName == name } ?? all[2]
+    }
+
+    static let all: [AppIconChoice] = [
+        ("D01", "日光畝田"), ("D02", "晨光一頁"), ("D03", "靜日"), ("D04", "耘光"), ("D05", "耕讀"),
+        ("D06", "光的收成"), ("D07", "曉頁"), ("D08", "田序"), ("D09", "閱弧"), ("D10", "日輯"),
+        ("D11", "知畦"), ("D12", "日緣"), ("D13", "耕卷"), ("D14", "初曦訊"), ("D15", "日初字腔"),
+        ("D16", "書頁合字"), ("D17", "耕讀襯線"), ("D18", "摺頁日常"), ("D19", "洞見合字"), ("D20", "畝格字標"),
+        ("D21", "日印"), ("D22", "日構"), ("D23", "晨光篇序"), ("D24", "田野濾光"), ("D25", "地平索引"),
+        ("D26", "耕域透鏡"), ("D27", "晨選之皿"), ("D28", "日光編田"), ("D29", "洞見天際"), ("D30", "每日萃光")
+    ].map { AppIconChoice(id: $0.0, title: $0.1) }
+}
+
+/// 我的 → App 圖示：點一下換主畫面上的圖示。
+struct AppIconPickerView: View {
+    @Environment(\.palette) private var palette
+    @State private var current = UIApplication.shared.alternateIconName
+    @State private var error: String?
+
+    private let columns = [GridItem(.adaptive(minimum: 88), spacing: 12)]
+
+    var body: some View {
+        ScrollView {
+            if let error { Text(error).font(.caption).foregroundStyle(.red).padding(.horizontal, 16) }
+            LazyVGrid(columns: columns, spacing: 18) {
+                ForEach(AppIconChoice.all) { icon in
+                    let selected = current == icon.alternateName
+                    Button { Task { await choose(icon) } } label: {
+                        VStack(spacing: 6) {
+                            Image(icon.previewName).resizable().scaledToFit().frame(width: 68, height: 68)
+                                .clipShape(RoundedRectangle(cornerRadius: 15, style: .continuous))
+                                .overlay(RoundedRectangle(cornerRadius: 15, style: .continuous)
+                                    .strokeBorder(selected ? palette.accent : palette.divider, lineWidth: selected ? 3 : 0.5))
+                            Text(icon.title).font(.caption).foregroundStyle(palette.text).lineLimit(1).minimumScaleFactor(0.7)
+                            Text(icon.id == AppIconChoice.defaultID ? "預設" : icon.id).font(.caption2).foregroundStyle(palette.secondaryText)
+                        }
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("圖示 \(icon.title)\(selected ? "，使用中" : "")")
+                }
+            }
+            .padding(16)
+        }
+        .themedBackground()
+        .navigationTitle("App 圖示（\(AppIconChoice.all.count) 款）")
+    }
+
+    @MainActor
+    private func choose(_ icon: AppIconChoice) async {
+        guard UIApplication.shared.supportsAlternateIcons, current != icon.alternateName else { return }
+        do {
+            try await UIApplication.shared.setAlternateIconName(icon.alternateName)
+            current = icon.alternateName
+            error = nil
+        } catch {
+            self.error = "換圖示失敗：\(error.localizedDescription)"
+        }
     }
 }
 
