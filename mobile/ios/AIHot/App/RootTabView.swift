@@ -69,6 +69,9 @@ struct RootTabView: View {
             open(link)
             router.pending = nil
         }
+        .onAppear {
+            if let link = router.pending { open(link); router.pending = nil }
+        }
         .task {
             // 第一次開啟就詢問通知；之後交給設定頁。
             if !askedForPush {

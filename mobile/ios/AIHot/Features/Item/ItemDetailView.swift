@@ -42,6 +42,7 @@ struct ItemDetailView: View {
     }
 
     private func load() async {
+        guard state.value == nil else { return }
         state = .loading
         do {
             let item = try await APIClient.shared.item(id: itemID)
@@ -241,6 +242,7 @@ struct GroupReportsView: View {
     }
 
     private func load() async {
+        guard state.value == nil else { return }
         state = .loading
         do { state = .loaded(try await APIClient.shared.groupReports(factId: factId)) }
         catch { state = .failed(error) }

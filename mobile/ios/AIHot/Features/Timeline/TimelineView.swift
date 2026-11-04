@@ -13,16 +13,22 @@ final class TimelineViewModel {
 
     private let api = APIClient.shared
 
+    private var generation = 0
+
     @MainActor
     func reload() async {
+        generation += 1
+        let issued = generation
         state = .loading
         do {
             let page = try await api.timeline(category: category)
+            guard issued == generation else { return }
             cards = page.cards
             hot = page.hot ?? []
             nextCursor = page.nextCursor
             state = .loaded(())
         } catch {
+            guard issued == generation else { return }
             if cards.isEmpty { state = .failed(error) } else { state = .loaded(()) }
         }
     }

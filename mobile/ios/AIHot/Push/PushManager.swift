@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 import UIKit
 import UserNotifications
 
@@ -50,6 +51,7 @@ final class PushManager {
         let settings = await UNUserNotificationCenter.current().notificationSettings()
         switch settings.authorizationStatus {
         case .authorized, .provisional, .ephemeral:
+            if status == .notConfigured { UIApplication.shared.registerForRemoteNotifications(); return }
             if case .registered = status { return }
             status = .authorized
             UIApplication.shared.registerForRemoteNotifications()

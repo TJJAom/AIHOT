@@ -8,7 +8,7 @@ struct ArticleBodyView: View {
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
-            ForEach(blocks) { block in
+            ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
                 render(block)
             }
         }
@@ -23,7 +23,7 @@ struct ArticleBodyView: View {
             Text(attributed(inline, base: headingFont(level)))
                 .foregroundStyle(palette.text)
                 .padding(.top, level == 2 ? 10 : 4)
-                .id(anchor)
+                .id(anchor ?? "")
                 .fixedSize(horizontal: false, vertical: true)
         case let .paragraph(inline):
             Text(attributed(inline, base: .system(size: 17 * scale)))
@@ -38,6 +38,7 @@ struct ArticleBodyView: View {
                     .lineSpacing(5 * scale)
                     .fixedSize(horizontal: false, vertical: true)
             }
+            .fixedSize(horizontal: false, vertical: true)
             .padding(12)
             .background(palette.surfaceAlt, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
         case let .list(ordered, items):
@@ -119,7 +120,7 @@ struct ArticleBodyView: View {
             if let link = run.link {
                 piece.link = link
                 piece.foregroundColor = palette.link
-                piece.underlineStyle = .single
+                piece.underlineStyle = Text.LineStyle.single
             }
             out.append(piece)
         }

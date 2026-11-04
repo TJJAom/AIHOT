@@ -38,7 +38,8 @@ struct HTMLBlockParser {
         var inlineBuffer: [InlineRun] = []
         var styleStack: [String] = []          // strong / em / code / a
         var linkStack: [URL?] = []
-        var currentBlock: String? = nil        // p / h2 / blockquote / li / pre / figcaption
+        var currentBlock: String? = nil        // p / h2 / li / pre / figcaption
+        var quoteDepth = 0
         var headingLevel = 2
         var headingAnchor: String? = nil
         var listStack: [(ordered: Bool, items: [[InlineRun]])] = []
@@ -64,13 +65,11 @@ struct HTMLBlockParser {
             switch currentBlock {
             case "h2", "h3", "h4", "h5":
                 blocks.append(.heading(level: headingLevel, inline: runs, anchor: headingAnchor))
-            case "blockquote":
-                blocks.append(.quote(runs))
             case "li":
                 if !listStack.isEmpty { listStack[listStack.count - 1].items.append(runs) }
                 else { blocks.append(.paragraph(runs)) }
             default:
-                blocks.append(.paragraph(runs))
+                blocks.append(quoteDepth > 0 ? .quote(runs) : .paragraph(runs))
             }
         }
 
@@ -79,20 +78,21 @@ struct HTMLBlockParser {
             case let .text(raw):
                 if inTable { cellBuffer += raw; continue }
                 if inPre { preBuffer += raw; continue }
-                let text = decodeEntities(raw)
+                let text = decodeEntities(raw.replacingOccurrences(of: "\n", with: " "))
                 guard !text.isEmpty else { continue }
                 inlineBuffer.append(styledRun(text))
 
             case let .open(name, attrs):
                 switch name {
                 case "p", "figcaption", "dt", "dd":
-                    flushInline(); currentBlock = "p"
+                    flushInline()
+                    if currentBlock != "li" { currentBlock = "p" }
                 case "h2", "h3", "h4", "h5":
                     flushInline(); currentBlock = name
                     headingLevel = Int(name.dropFirst()) ?? 2
                     headingAnchor = attrs["id"]
                 case "blockquote":
-                    flushInline(); currentBlock = "blockquote"
+                    flushInline(); quoteDepth += 1; currentBlock = nil
                 case "ul", "ol":
                     flushInline()
                     listStack.append((ordered: name == "ol", items: []))
@@ -128,7 +128,12 @@ struct HTMLBlockParser {
 
             case let .close(name):
                 switch name {
-                case "p", "figcaption", "dt", "dd", "h2", "h3", "h4", "h5", "blockquote", "li":
+                case "p", "figcaption", "dt", "dd":
+                    flushInline()
+                    if currentBlock != "li" { currentBlock = nil }
+                case "blockquote":
+                    flushInline(); quoteDepth = max(0, quoteDepth - 1); currentBlock = nil
+                case "h2", "h3", "h4", "h5", "li":
                     flushInline(); currentBlock = nil; headingAnchor = nil
                 case "ul", "ol":
                     flushInline()
@@ -254,7 +259,7 @@ struct HTMLBlockParser {
     static func decodeEntities(_ s: String) -> String {
         guard s.contains("&") else { return s }
         var out = s
-        let map: [String: String] = ["&amp;": "&", "&lt;": "<", "&gt;": ">", "&quot;": "\"", "&#39;": "'", "&apos;": "'", "&nbsp;": "\u{00A0}", "&hellip;": "…", "&mdash;": "—", "&ndash;": "–", "&ldquo;": "“", "&rdquo;": "”", "&lsquo;": "‘", "&rsquo;": "’"]
+        let map: [String: String] = ["&lt;": "<", "&gt;": ">", "&quot;": "\"", "&#39;": "'", "&apos;": "'", "&nbsp;": "\u{00A0}", "&hellip;": "…", "&mdash;": "—", "&ndash;": "–", "&ldquo;": "“", "&rdquo;": "”", "&lsquo;": "‘", "&rsquo;": "’"]
         for (k, v) in map { out = out.replacingOccurrences(of: k, with: v) }
         // 數值實體 &#123; / &#x1F600;
         if let regex = try? NSRegularExpression(pattern: "&#(x?)([0-9a-fA-F]+);") {
@@ -273,6 +278,7 @@ struct HTMLBlockParser {
             result += ns.substring(from: last)
             out = result
         }
+        out = out.replacingOccurrences(of: "&amp;", with: "&")
         return out
     }
 }

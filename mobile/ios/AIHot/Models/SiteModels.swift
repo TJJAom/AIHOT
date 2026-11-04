@@ -376,7 +376,7 @@ struct ReportDetail: Codable {
     var sections: [ReportSection]
     var flashes: [ReportCitation]
     var cover: ReportCover?
-    var metrics: [String: Int]
+    var metrics: [String: Double]
     var readingMinutes: Int
     var prev: String?
     var next: String?

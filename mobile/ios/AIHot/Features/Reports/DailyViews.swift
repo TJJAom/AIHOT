@@ -58,6 +58,7 @@ struct DailyReportView: View {
     }
 
     private func load() async {
+        guard state.value == nil else { return }
         state = .loading
         do { state = .loaded(try await APIClient.shared.daily(key: key)) }
         catch { state = .failed(error) }
@@ -96,6 +97,7 @@ struct DailyArchiveView: View {
     }
 
     private func load() async {
+        guard state.value == nil else { return }
         state = .loading
         do { state = .loaded(try await APIClient.shared.dailyIndex()) }
         catch { state = .failed(error) }

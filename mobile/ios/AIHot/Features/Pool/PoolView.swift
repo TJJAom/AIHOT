@@ -16,16 +16,22 @@ final class PoolViewModel {
 
     private let api = APIClient.shared
 
+    private var generation = 0
+
     @MainActor
     func reload() async {
+        generation += 1
+        let issued = generation
         state = .loading
         do {
             let q = query.trimmingCharacters(in: .whitespacesAndNewlines)
             let effectiveTab = q.isEmpty ? "time" : tab
             let res = try await api.pool(q: q.isEmpty ? nil : q, tab: effectiveTab, page: 1, category: category)
+            guard issued == generation else { return }
             items = res.items; page = res.page; pageCount = res.pageCount; total = res.total; todayCount = res.todayCount
             state = .loaded(())
         } catch {
+            guard issued == generation else { return }
             if items.isEmpty { state = .failed(error) } else { state = .loaded(()) }
         }
     }

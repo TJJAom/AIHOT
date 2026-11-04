@@ -1,4 +1,5 @@
 import Foundation
+import Observation
 
 /// 收藏：目前只存裝置本機（Application Support/favorites.json）。帳號同步尚未核定。
 @Observable
@@ -53,17 +54,22 @@ final class FavoritesStore {
 @Observable
 final class ReadStore {
     private(set) var ids: Set<String> = []
+    private var ordered: [String] = []
     private let key = "read.ids"
 
     init() {
-        if let saved = UserDefaults.standard.array(forKey: key) as? [String] { ids = Set(saved) }
+        if let saved = UserDefaults.standard.array(forKey: key) as? [String] { ordered = saved; ids = Set(saved) }
     }
 
     func markRead(_ id: String) {
         guard !ids.contains(id) else { return }
         ids.insert(id)
-        var list = Array(ids)
-        if list.count > 2000 { list = Array(list.suffix(2000)) }
-        UserDefaults.standard.set(list, forKey: key)
+        ordered.append(id)
+        if ordered.count > 2000 {
+            let dropped = ordered.prefix(ordered.count - 2000)
+            dropped.forEach { ids.remove($0) }
+            ordered = Array(ordered.suffix(2000))
+        }
+        UserDefaults.standard.set(ordered, forKey: key)
     }
 }

@@ -24,7 +24,8 @@ struct MeView: View {
                         .listRowBackground(palette.surface)
                     }
                     .onDelete { offsets in
-                        for i in offsets { favorites.remove(id: favorites.entries[i].id) }
+                        let ids = offsets.map { favorites.entries[$0].id }
+                        ids.forEach { favorites.remove(id: $0) }
                     }
                 }
             }

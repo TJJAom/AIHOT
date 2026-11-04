@@ -21,6 +21,7 @@ struct StoryDetailView: View {
     }
 
     private func load() async {
+        guard state.value == nil else { return }
         state = .loading
         do { state = .loaded(try await APIClient.shared.story(publicId: publicId)) }
         catch { state = .failed(error) }

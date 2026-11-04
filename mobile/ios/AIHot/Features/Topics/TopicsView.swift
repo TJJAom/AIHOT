@@ -118,6 +118,7 @@ struct TopicDetailView: View {
     }
 
     private func load() async {
+        guard state.value == nil else { return }
         state = .loading
         do {
             let res = try await APIClient.shared.topic(slug: slug, page: 1)
