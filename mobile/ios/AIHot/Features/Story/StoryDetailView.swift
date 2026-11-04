@@ -32,7 +32,7 @@ struct StoryDetailView: View {
             VStack(alignment: .leading, spacing: 16) {
                 Text(story.title).font(.title2.bold()).foregroundStyle(palette.text).fixedSize(horizontal: false, vertical: true)
                 HStack(spacing: 8) {
-                    TagChip(text: statusLabel(story.status), highlighted: true)
+                    Badge(text: statusLabel(story.status), tone: .accent)
                     Text("\(story.reportCount) 篇報導 · \(story.sourceCount) 個來源").font(.caption).foregroundStyle(palette.secondaryText)
                 }
                 if let text = story.digest ?? story.summary, !text.isEmpty {
@@ -52,7 +52,7 @@ struct StoryDetailView: View {
                         NavigationLink(value: Route.item(id: fact.representative.id)) {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(fact.title).font(.headline).foregroundStyle(palette.text)
-                                SourceLine(source: fact.representative.source.name, at: fact.firstReportAt)
+                                SourceLine(source: fact.representative.source.name, at: fact.firstReportAt, relative: true)
                             }
                             .padding(12).frame(maxWidth: .infinity, alignment: .leading)
                             .background(palette.surface, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
@@ -68,7 +68,7 @@ struct StoryDetailView: View {
                                 Circle().fill(report.selected ? palette.accent : palette.divider).frame(width: 8, height: 8).padding(.top, 6)
                                 VStack(alignment: .leading, spacing: 3) {
                                     Text(report.title).font(.subheadline).foregroundStyle(palette.text)
-                                    SourceLine(source: report.source.name, at: report.publishedAt)
+                                    SourceLine(source: report.source.name, at: report.publishedAt, relative: true)
                                 }
                             }
                         }
@@ -78,7 +78,7 @@ struct StoryDetailView: View {
                 if !story.topics.isEmpty {
                     FlowLayout(spacing: 8) {
                         ForEach(story.topics) { t in
-                            NavigationLink(value: Route.topic(slug: t.slug)) { TagChip(text: t.name, highlighted: true) }.buttonStyle(.plain)
+                            NavigationLink(value: Route.topic(slug: t.slug)) { Badge(text: t.name, tone: .accent) }.buttonStyle(.plain)
                         }
                     }
                 }

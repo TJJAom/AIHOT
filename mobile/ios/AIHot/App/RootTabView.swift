@@ -5,12 +5,14 @@ enum Route: Hashable {
     case item(id: String)
     case story(publicId: String)
     case daily(key: String)
+    case report(kind: String, key: String)
     case dailyArchive
     case topic(slug: String)
     case group(factId: String, title: String)
     case themes
     case appIcon
     case notifications
+    case hot
 }
 
 struct AppDestinations: ViewModifier {
@@ -20,12 +22,14 @@ struct AppDestinations: ViewModifier {
             case let .item(id): ItemDetailView(itemID: id)
             case let .story(publicId): StoryDetailView(publicId: publicId)
             case let .daily(key): DailyReportView(key: key)
+            case let .report(kind, key): DailyReportView(key: key, kind: ReportKind(rawValue: kind) ?? .daily)
             case .dailyArchive: DailyArchiveView()
             case let .topic(slug): TopicDetailView(slug: slug)
             case let .group(factId, title): GroupReportsView(factId: factId, title: title)
             case .themes: ThemePickerView()
             case .appIcon: AppIconPickerView()
             case .notifications: NotificationSettingsView()
+            case .hot: HotRankingView()
             }
         }
     }

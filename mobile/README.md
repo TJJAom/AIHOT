@@ -14,7 +14,7 @@ Mac 端接手請直接讀 **`mobile/ios/CLAUDE-MAC-交接.md`**，裡面是逐�
 - 五個分頁：精選（含熱點橫條、分類篩選、同事件分組）、全部動態（搜尋、相關度排序、主題建議）、日報（最新一期＋往期）、主題（分組／主題詳頁）、我的（收藏、主題、字級、通知、關於）。
 - 文章頁：`/api/site/items/{id}` 的 `body.zh` 以原生 SwiftUI 渲染（自寫 HTML 區塊解析，不用 WebView），支援小標目錄、清單、引文、程式碼、表格、圖片、連結、Dynamic Type 與字級倍率；`body` 為 null 或 `summary-only` 時明確顯示狀態並仍提供原文連結。
 - 事件頁 `/api/site/stories/{publicId}`、同事件報導 `/api/site/groups/{factId}/reports`。
-- 14 套主題（`AIHot/Theme/AppTheme.swift`），含跟隨系統、純黑、宣紙、碳纖螢綠等。
+- 16 套主題（`AIHot/Theme/AppTheme.swift`）：預設「日耕原色」即網站的淺色＋深色色票，另有固定淺色、固定深色、碳纖螢綠、宣紙、純黑等。
 - 收藏與已讀只存本機。
 - 推播：第一次開啟詢問授權，device token 送到 Worker 的 `POST /devices`；可選「只推精選／全部動態」與類別。點通知直接開文章（`itemId`）。URL scheme `aihot://items/<id>`、`aihot://story/<id>`、`aihot://daily/<yyyy-mm-dd>`，也接受網站 https 連結。
 - 網路層：單一 `APIClient` actor，ETag／304、503 `Retry-After`、404、離線都有對應錯誤文字；相對媒體 URL 以網站基底解析。

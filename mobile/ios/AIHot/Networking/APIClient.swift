@@ -92,17 +92,27 @@ actor APIClient {
         try await get("/api/site/stories/\(publicId)")
     }
 
-    func latestDaily() async throws -> ReportLatestPage {
-        try await get("/api/site/reports/daily/latest-page")
+    // 日報／週報／月報共用：kind = daily | weekly | monthly
+    func latestReport(kind: String = "daily") async throws -> ReportLatestPage {
+        try await get("/api/site/reports/\(kind)/latest-page")
     }
 
-    func dailyIndex() async throws -> ReportIndexResponse {
-        try await get("/api/site/reports/daily")
+    func reportIndex(kind: String = "daily") async throws -> ReportIndexResponse {
+        try await get("/api/site/reports/\(kind)")
     }
 
-    func daily(key: String) async throws -> ReportDetail {
-        try await get("/api/site/reports/daily/\(key)")
+    func report(kind: String = "daily", key: String) async throws -> ReportDetail {
+        try await get("/api/site/reports/\(kind)/\(key)")
     }
+
+    /// 某個月份的日報索引（`YYYY-MM`），供日曆用。
+    func dailyMonth(_ month: String) async throws -> ReportNavigationResponse {
+        try await get("/api/site/reports/daily/months/\(month)")
+    }
+
+    func latestDaily() async throws -> ReportLatestPage { try await latestReport(kind: "daily") }
+    func dailyIndex() async throws -> ReportIndexResponse { try await reportIndex(kind: "daily") }
+    func daily(key: String) async throws -> ReportDetail { try await report(kind: "daily", key: key) }
 
     // MARK: 共用 GET
 
@@ -191,4 +201,5 @@ enum AppConfig {
     static func webURL(forItem id: String) -> URL { apiBaseURL.appendingPathComponent("items/\(id)") }
     static func webURL(forStory publicId: String) -> URL { apiBaseURL.appendingPathComponent("story/\(publicId)") }
     static func webURL(forDaily key: String) -> URL { apiBaseURL.appendingPathComponent("daily/\(key)") }
+    static func webURL(forReport kind: String, key: String) -> URL { apiBaseURL.appendingPathComponent("\(kind)/\(key)") }
 }

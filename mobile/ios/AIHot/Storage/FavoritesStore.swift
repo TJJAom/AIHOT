@@ -57,8 +57,12 @@ final class ReadStore {
     private var ordered: [String] = []
     private let key = "read.ids"
 
+    /// 「只看未讀」篩選，精選與全部共用、跨啟動保留。
+    var unreadOnly: Bool { didSet { UserDefaults.standard.set(unreadOnly, forKey: "read.unreadOnly") } }
+
     init() {
         if let saved = UserDefaults.standard.array(forKey: key) as? [String] { ordered = saved; ids = Set(saved) }
+        unreadOnly = UserDefaults.standard.bool(forKey: "read.unreadOnly")
     }
 
     func markRead(_ id: String) {

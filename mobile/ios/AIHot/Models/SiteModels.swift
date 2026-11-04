@@ -400,6 +400,10 @@ struct ReportIndexResponse: Codable {
     var items: [ReportNavigationEntry]
 }
 
+struct ReportNavigationResponse: Codable {
+    var items: [ReportNavigationEntry]
+}
+
 // MARK: 分類
 
 enum Category: String, CaseIterable, Identifiable {
