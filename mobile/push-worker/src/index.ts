@@ -172,7 +172,9 @@ async function runCycle(env: Env, opts: { dryRun: boolean }): Promise<CycleRepor
   const minScore = Number(env.MIN_SCORE || "40");
   const maxIndividual = Number(env.MAX_INDIVIDUAL_PER_RUN || "3");
 
-  const [selected, all] = await Promise.all([fetchSelected(env), fetchAll(env)]);
+  // 依序抓取，避免同時打兩個請求被網站限流（503／429）。
+  const selected = await fetchSelected(env);
+  const all = await fetchAll(env);
   report.fetched = { selected: selected.length, all: all.length };
   if (selected.length === 0 && all.length === 0) { report.errors.push("site returned nothing"); return report; }
 
@@ -297,14 +299,19 @@ async function fetchAll(env: Env): Promise<FeedItem[]> {
 }
 
 async function siteGet(env: Env, path: string): Promise<unknown | null> {
-  try {
-    const res = await fetch(`${env.SITE_BASE}${path}`, { headers: { accept: "application/json", "user-agent": "aihot-push-worker/1.0" } });
-    if (!res.ok) { console.warn("site", path, res.status); return null; }
-    return await res.json();
-  } catch (e) {
-    console.warn("site fetch failed", path, String(e));
-    return null;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const res = await fetch(`${env.SITE_BASE}${path}`, { headers: { accept: "application/json", "user-agent": "aihot-push-worker/1.0" } });
+      if (res.ok) return await res.json();
+      console.warn("site", path, res.status);
+      if (res.status !== 429 && res.status !== 503) return null;
+      const wait = Math.min(5, Number(res.headers.get("retry-after")) || 2);
+      await new Promise((r) => setTimeout(r, wait * 1000));
+    } catch (e) {
+      console.warn("site fetch failed", path, String(e));
+    }
   }
+  return null;
 }
 
 async function loadSeen(env: Env): Promise<string[]> {
