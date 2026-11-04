@@ -257,12 +257,13 @@ struct HotTopicsPanel: View {
             }
         }
         .padding(.horizontal, 14).padding(.top, 12).padding(.bottom, 8)
-        .background(
+        .background {
             ZStack {
                 palette.surface
                 RadialGradient(colors: [palette.hotSoft, .clear], center: .topTrailing, startRadius: 0, endRadius: 320)
-            },
-            in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+            }
+            .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
+        }
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(palette.line, lineWidth: 1))
         .onAppear { withAnimation(.easeOut(duration: 1.6).repeatForever(autoreverses: false)) { pulse = true } }
     }

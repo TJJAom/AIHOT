@@ -101,7 +101,7 @@ struct TopicDetailView: View {
                             EmptyStateView(icon: "tray", title: "這個主題還沒有文章")
                         }
                         ForEach(items) { item in
-                            NavigationLink(value: Route.item(id: item.id)) { FeedCardView(item: item) }
+                            NavigationLink(value: Route.item(id: item.id)) { FeedCard(item: item, showTags: true) }
                                 .buttonStyle(.plain)
                                 .onAppear { if item.id == items.last?.id { Task { await loadMore() } } }
                         }

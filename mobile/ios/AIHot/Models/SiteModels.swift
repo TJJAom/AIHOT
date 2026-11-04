@@ -275,6 +275,7 @@ struct HotEntry: Codable, Identifiable {
     var participantCount: Int
     var sourceCount: Int
     var sourceNames: [String]
+    var participants: [HotParticipant]?
     var summary: String?
     var latest: String?
     var id: String { story.publicId }
