@@ -86,3 +86,26 @@ test("a weekly that froze no summaries shows the articles' public summaries", as
   await publishArticle(articleId);
   assert.equal((await loadReport("weekly", WEEK))?.sections[0]?.items[0]?.firstParty, false);
 });
+
+test("正文確認失敗是終態，不再擋住日報；自動出刊從上一期截止接著算", async () => {
+  const date = "2097-05-02", prevEnd = new Date("2097-05-01T14:36:59Z"), at = new Date("2097-05-01T18:00:00Z");
+  const source = `daily-terminal-${T}`;
+  await sql`INSERT INTO sources (id,name,kind,tier) VALUES (${source},'Terminal','rss','T1')`;
+  await sql`INSERT INTO reports (kind,key,window_start,window_end,content,generated_at)
+    VALUES ('daily','2097-05-01',${new Date(prevEnd.getTime() - 86400000)},${prevEnd},'{}',${prevEnd})`;
+  const add = async (id: string, bodyStatus: string) => {
+    await sql`INSERT INTO articles (id,source_id,identity_key,url,title,discovered_at,timeline_at,body_status,processing_state,grouping_status)
+      VALUES (${id},${source},${id},${`https://example.com/${id}`},${id},${at},${at},${bodyStatus},'analyzed','complete')`;
+    await sql`INSERT INTO analyses (article_id,input_revision,origin,relevance,score,selected,title_zh,summary_zh)
+      VALUES (${id},1,'rule','pass',80,true,${`新聞 ${id}`},'導讀摘要')`;
+    await publishArticle(id, { releasedAt: at });
+  };
+  await add(`terminal-a-${T}`, "unconfirmed");
+  await add(`terminal-b-${T}`, "pending");
+  await assert.rejects(composeDaily(date), new RegExp(`未完成.*terminal-b-${T}`), "仍在抓取的正文要等");
+  await sql`UPDATE articles SET body_status='unconfirmed' WHERE id=${`terminal-b-${T}`}`;
+  await composeDaily(date);
+  const [saved] = await sql`SELECT window_start,window_end FROM reports WHERE kind='daily' AND key=${date}`;
+  assert.equal(saved!.window_start.toISOString(), prevEnd.toISOString(), "從上一期截止接著算，不重疊");
+  assert.equal(saved!.window_end.toISOString(), editionAt("daily", date).toISOString());
+});

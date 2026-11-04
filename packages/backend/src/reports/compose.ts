@@ -88,7 +88,8 @@ function windowPoint(at: Date): string {
  */
 export async function composeDaily(date: string, reason?: string, window?: { start: Date; asOf: Date }): Promise<{ key: string; entries: number }> {
   const end = window?.asOf ?? beijingAt(date, EDITION_TIMES.daily);
-  const start = window?.start ?? new Date(end.getTime() - 86400000);
+  // 自動出刊從上一期截止接著算（最長 24 小時）：出刊時間改過或上一期手動補刊截止較晚時，兩期不重疊也不漏。
+  const start = window?.start ?? await dailyStart(date, end);
   if (window && (!reason?.trim() || !Number.isFinite(start.getTime()) || !Number.isFinite(end.getTime())
     || end <= start || end.getTime() > Date.now() || start.getTime() !== beijingAt(date, "00:00").getTime()
     || end > beijingAt(addDays(date, 1), "00:00"))) throw new Error("手動補刊須說明原因，從指定日零時起算，截止不可晚於目前時間或該日結束");
@@ -120,7 +121,18 @@ export async function composeDaily(date: string, reason?: string, window?: { sta
   return { key: date, entries: issue.main.length };
 }
 
-/** 尚未分析的已收錄材料也算待辦；低分公開文章仍須完成正文，封鎖／下架不要求生成。 */
+/** 自動日報的起點：上一期截止與「出刊前 24 小時」較晚者，但不晚於本期截止。 */
+async function dailyStart(date: string, end: Date): Promise<Date> {
+  const day = new Date(end.getTime() - 86400000);
+  const [prev] = await sql<{ window_end: Date }[]>`SELECT window_end FROM reports WHERE kind = 'daily' AND key < ${date} ORDER BY key DESC LIMIT 1`;
+  return prev && prev.window_end > day && prev.window_end < end ? prev.window_end : day;
+}
+
+/**
+ * 尚未分析的已收錄材料也算待辦；低分公開文章仍須完成正文，封鎖／下架不要求生成。
+ * 正文仍在抓取（pending）才等待；抓取重試用盡（unconfirmed）或沒有正文（none）是終態，依導讀摘要編入，
+ * 不再擋住整期日報（來源拒絕存取時不會自己變好）。
+ */
 async function assertDailyReady(start: Date, end: Date): Promise<void> {
   const pending = await sql<{ id: string }[]>`SELECT a.id FROM articles a JOIN sources s ON s.id=a.source_id
     LEFT JOIN publications p ON p.article_id=a.id
@@ -134,7 +146,7 @@ async function assertDailyReady(start: Date, end: Date): Promise<void> {
         OR p.eligible AND greatest(p.timeline_at,p.visible_after)>=${start} AND greatest(p.timeline_at,p.visible_after)<${end})
       AND a.processing_state NOT IN ('blocked','skipped')
       AND (a.processing_state<>'analyzed' OR an.id IS NULL OR an.relevance IS NULL OR an.relevance='pass' AND (p.article_id IS NULL OR p.eligible AND
-        (an.id IS DISTINCT FROM p.analysis_id OR a.grouping_status<>'complete' OR a.body_status<>'ok' OR r.article_id IS NULL)))
+        (an.id IS DISTINCT FROM p.analysis_id OR a.grouping_status<>'complete' OR a.body_status='pending' OR a.body_status='ok' AND r.article_id IS NULL)))
     ORDER BY a.id LIMIT 30`;
   if (pending.length) throw new Error(`日報窗口仍有未完成的分析／歸組／文章內容：${pending.map(a => a.id).join(', ')}；保留待下次重試`);
 }

@@ -22,9 +22,9 @@ test('the public agent page uses the Taiwan locale and approved site identity', 
   const terms = await fetch(`${web.origin}/terms`);
   assert.equal(terms.status, 200, web.logs());
   const termsText = cheerio.load(await terms.text())('body').text();
-  assert.match(termsText, /生效日期2026-11-03/);
-  assert.match(termsText, /版本1\.3/);
-  assert.match(termsText, /每日台灣時間 22:00/);
+  assert.match(termsText, /生效日期2026-11-05/);
+  assert.match(termsText, /版本1\.4/);
+  assert.match(termsText, /每日台灣時間 08:00/);
   assert.match(termsText, /AI 文章整理依來源材料撰寫重點、背景與細節/);
   assert.match(termsText, /並非原作者全文或逐字翻譯/);
   assert.doesNotMatch(termsText, /尚未生效/);

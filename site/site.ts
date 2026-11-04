@@ -9,11 +9,11 @@ import type { Founder } from "@aihot/contracts/site-config";
  * 月報在每月 1 日出。排程、成刊時間視窗、缺期告警和所有提到時間的文案都讀它（public/ 裡的檔案寫佔位
  * {{dailyTime}}、{{weeklyTime}}、{{monthlyTime}}）；排程每半小時檢查一次，所以寫整點或半點。
  */
-export const EDITION_TIMES = { daily: "22:00", weekly: "10:00", monthly: "10:30" };
+export const EDITION_TIMES = { daily: "08:00", weekly: "10:00", monthly: "10:30" };
 /** 本站僅自動產生日報；週報、月報保留閱讀相容，但不排程生成。 */
 export const AUTOMATIC_REPORTS = ["daily"] as const;
 
-/** “每天 22:00”“每週一 10:00”“每月 1 日 10:30”：寫進句子裡的出刊時間。 */
+/** “每天 08:00”“每週一 10:00”“每月 1 日 10:30”：寫進句子裡的出刊時間。 */
 export const EDITION_WHEN = {
   daily: `每天 ${EDITION_TIMES.daily}`,
   weekly: `每週一 ${EDITION_TIMES.weekly}`,

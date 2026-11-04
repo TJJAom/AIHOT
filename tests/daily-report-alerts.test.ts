@@ -27,7 +27,7 @@ after(async () => { await stopBoss(); await closeDb(); });
 
 test("midnight preserves a missing edition; each date recovers only when its report exists", async () => {
   await attempt("2026-10-06");
-  let result = await checkAlerts(overdue("2026-10-06"));
+  let result = await checkAlerts(at("2026-10-06", "23:30"));
   assert.deepEqual(daily(result.sent), [key("2026-10-06")]);
   result = await checkAlerts(at("2026-10-07", "00:10"));
   assert.deepEqual(daily(result.open), [key("2026-10-06")]);
@@ -49,9 +49,9 @@ test("recent gap detection uses report activity and each edition's overdue time"
   const findings = await collectFindings(overdue("2026-10-07", -1));
   assert.deepEqual(daily(findings.map(f => f.key)), [key("2026-10-05")]);
   await report("2026-09-01");
-  // 22:00 出刊的兩小時寬限在 10/8 零時到期；最近七個日曆日從 10/2 起算。
+  // 08:00 出刊的兩小時寬限在 10/7 10:00 到期；最近七個日曆日從 10/1 起算。
   assert.deepEqual(daily((await collectFindings(overdue("2026-10-07"))).map(f => f.key)),
-    [2,3,4,5,7].map(d => key(`2026-10-0${d}`)));
+    [1,2,3,4,5,7].map(d => key(`2026-10-0${d}`)));
 });
 
 test("open dates outlive disabled generation and restarts keep checking missing editions", async () => {
