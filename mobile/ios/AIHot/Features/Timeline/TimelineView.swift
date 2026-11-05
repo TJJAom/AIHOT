@@ -160,9 +160,9 @@ struct TimelineView: View {
             }
             .padding(.bottom, 24)
         }
+        .pullToRefresh { await model.reload() }
         .themedBackground()
         .rootChrome("精選")
-        .pullToRefresh { await model.reload() }
         .task { if model.cards.isEmpty { await model.reload() } }
         .onChange(of: unreadOnly) { _, on in
             // 開啟篩選後整頁都讀過：自動再翻幾頁，直到有東西可看。

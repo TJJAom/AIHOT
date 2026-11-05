@@ -30,12 +30,12 @@ struct TopicsView: View {
                 }
             }
         }
+        .pullToRefresh { await load() }
         .themedBackground()
         .listStyle(.insetGrouped)
         .listSectionSpacing(.compact)
         .contentMargins(.top, 4, for: .scrollContent)
         .rootChrome("主題")
-        .pullToRefresh { await load() }
         .task { if state.value == nil { await load() } }
     }
 

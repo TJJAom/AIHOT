@@ -141,6 +141,7 @@ struct PoolView: View {
             }
             .padding(.bottom, 24)
         }
+        .pullToRefresh { await model.reload() }
         .themedBackground()
         .rootChrome("全部動態")
         .onChange(of: model.query) { _, _ in
@@ -151,7 +152,6 @@ struct PoolView: View {
                 await model.reload()
             }
         }
-        .pullToRefresh { await model.reload() }
         .task {
             if model.items.isEmpty { await model.reload() }
             await model.loadSuggestions()

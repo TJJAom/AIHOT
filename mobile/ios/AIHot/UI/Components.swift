@@ -601,7 +601,9 @@ struct RootChrome: ViewModifier {
 extension View {
     func rootChrome(_ title: String) -> some View { modifier(RootChrome(title: title)) }
 
-    /// 各分頁共用的下拉重整：強調色轉圈、完成時輕觸回饋。
+    /// 各分頁共用的下拉重整，直接掛在 ScrollView 上。
+    /// 指示器由 App 自己畫：系統轉圈在這些頁面上看不到（11/5 實機與模擬器都只有一段空白），
+    /// 所以系統的轉圈設為透明，改用強調色的箭頭（下拉中，拉夠會轉向並輕觸）與轉圈（重整中）。
     /// 工作放進獨立 Task：重整中畫面更新會取消 refreshable 自己的工作，指示器就收不回來。
     func pullToRefresh(_ action: @escaping @MainActor () async -> Void) -> some View {
         modifier(PullToRefresh(action: action))
@@ -611,17 +613,65 @@ extension View {
 private struct PullToRefresh: ViewModifier {
     @Environment(\.palette) private var palette
     let action: @MainActor () async -> Void
+    @State private var pull: CGFloat = 0
+    @State private var refreshing = false
     @State private var finished = 0
+
+    /// 系統觸發重整的距離約 70pt；箭頭在此轉向。
+    private static let armAt: CGFloat = 70
+    private var armed: Bool { pull >= Self.armAt }
 
     func body(content: Content) -> some View {
         content
+            .trackingPull($pull)
             .refreshable {
+                refreshing = true
                 await Task { @MainActor in await action() }.value
+                withAnimation(.easeOut(duration: 0.2)) { refreshing = false }
                 finished += 1
             }
-            .sensoryFeedback(.impact(weight: .light), trigger: finished)
-            .onAppear { UIRefreshControl.appearance().tintColor = UIColor(palette.accent) }
-            .onChange(of: palette.accent) { _, color in UIRefreshControl.appearance().tintColor = UIColor(color) }
+            .overlay(alignment: .top) { indicator }
+            .sensoryFeedback(.impact(weight: .light), trigger: armed) { _, now in now && !refreshing }
+            .sensoryFeedback(.success, trigger: finished)
+            .onAppear { UIRefreshControl.appearance().tintColor = .clear }
+    }
+
+    @ViewBuilder private var indicator: some View {
+        let visible = refreshing || pull > 6
+        ZStack {
+            if refreshing {
+                ProgressView().controlSize(.regular).tint(palette.accent)
+            } else {
+                Image(systemName: "arrow.down")
+                    .font(.system(size: 15, weight: .bold))
+                    .foregroundStyle(palette.accent)
+                    .rotationEffect(.degrees(armed ? 180 : 0))
+                    .animation(.spring(response: 0.25, dampingFraction: 0.7), value: armed)
+            }
+        }
+        .frame(width: 34, height: 34)
+        .background(Circle().fill(palette.surface).shadow(color: .black.opacity(0.12), radius: 4, y: 1))
+        .overlay(Circle().stroke(palette.line, lineWidth: 0.5))
+        .scaleEffect(refreshing ? 1 : min(1, max(0.4, pull / Self.armAt)))
+        .opacity(visible ? 1 : 0)
+        // 跟著手指往下，最多停在 18pt；重整中固定在頂端那段空白的中間。
+        .offset(y: refreshing ? 14 : min(18, max(0, pull - 40)))
+        .animation(.easeOut(duration: 0.15), value: refreshing)
+        .allowsHitTesting(false)
+        .accessibilityHidden(true)
+    }
+}
+
+private extension View {
+    /// 下拉距離（內容頂端被拉下多少 pt）；iOS 17 沒有捲動幾何 API，只在重整時顯示轉圈。
+    @ViewBuilder func trackingPull(_ pull: Binding<CGFloat>) -> some View {
+        if #available(iOS 18, *) {
+            onScrollGeometryChange(for: CGFloat.self) { max(0, -($0.contentOffset.y + $0.contentInsets.top)) } action: { _, value in
+                pull.wrappedValue = value
+            }
+        } else {
+            self
+        }
     }
 }
 

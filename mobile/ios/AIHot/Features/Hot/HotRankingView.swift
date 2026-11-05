@@ -40,9 +40,9 @@ struct HotRankingView: View {
                 }
             }
         }
+        .pullToRefresh { await load(force: true) }
         .themedBackground()
         .navigationTitle("熱點榜")
-        .pullToRefresh { await load(force: true) }
         .task { await load() }
     }
 
