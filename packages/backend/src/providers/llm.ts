@@ -75,7 +75,7 @@ export interface ChatJsonResult<T> {
   usage: Record<string, unknown> | null;
 }
 
-function extractJson(text: string): unknown {
+export function extractJson(text: string): unknown {
   let t = text.trim();
   const fence = /^```(?:json)?\s*([\s\S]*?)\s*```$/i.exec(t);
   if (fence) t = fence[1]!;

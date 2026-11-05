@@ -2,7 +2,7 @@
 import { z } from "zod";
 import { sql, type Db } from "../db.ts";
 import { sha256 } from "../lib/ids.ts";
-import { chatJson } from "../providers/llm.ts";
+import { chatJson, extractJson } from "../providers/llm.ts";
 import { completeReceipt, ModelOutputError } from "../providers/receipts.ts";
 import { announceArticleReading } from "../publication/reading.ts";
 import { modelFor } from "./models.ts";
@@ -19,6 +19,12 @@ export const ReadingSchema = z.union([
   z.object({ insufficient: z.string().trim().min(1).max(300) }),
 ]);
 export type ReadingSection = z.infer<typeof Sections>[number];
+
+/**
+ * 模型有時把多個小標寫進同一個物件（{"heading":…,"paragraphs":[…],"heading":…}），JSON 只留最後一組。
+ * 段落陣列後直接接下一個 heading 時拆成新物件；字串內的引號必定跳脫，不會誤拆內文。
+ */
+const parseReading = (content: string) => extractJson(content.replace(/\]\s*,\s*"heading"\s*:/g, ']},{"heading":'));
 const VERSION = promptVersion("article-reading");
 const SYSTEM = promptText("article-reading");
 
@@ -77,7 +83,7 @@ export async function composeArticleReading(articleId: string, expectedHash?: st
   let response;
   try {
     response = await chatJson({ model: await modelFor("understand"), purpose: "article_reading", subject,
-      promptVersion: VERSION, system: SYSTEM, user, schema: ReadingSchema, temperature: 0.2, maxTokens: 8192, timeoutMs: 180_000 });
+      promptVersion: VERSION, system: SYSTEM, user, schema: ReadingSchema, parse: parseReading, temperature: 0.2, maxTokens: 8192, timeoutMs: 180_000 });
   } catch (error) {
     if (!(error instanceof ModelOutputError) || error.receiptId === null) throw error;
     return conclude(articleId, input, hash, [], error.receiptId, "unusable", error.message);

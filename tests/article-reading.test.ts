@@ -16,7 +16,7 @@ let duringResponse: (() => Promise<void>) | null = null;
 const provider = await stub(async (_hit, req) => {
   requestText = req.body;
   if (duringResponse) { const run = duringResponse; duringResponse = null; await run(); }
-  return { choices: [{ message: { content: JSON.stringify(answer) } }], usage: { prompt_tokens: 10, completion_tokens: 10 } };
+  return { choices: [{ message: { content: typeof answer === "string" ? answer : JSON.stringify(answer) } }], usage: { prompt_tokens: 10, completion_tokens: 10 } };
 });
 
 test("摘要限定、撤回、blocked 與已改版材料不會洩出舊整理內文", async () => {
@@ -85,6 +85,14 @@ test("只有一段摘要、格式錯或模型判斷材料不足時結案為空�
     await setVisibility(id, { visibility: "withdrawn", reason: "測試清理", version: 0 }, "test");
   }
 });
+test("多個小標擠在同一個物件時拆回各自的小標，不當成格式錯", async () => {
+  const id = await article("merged-sections");
+  answer = '{"sections":[{"heading":"發生什麼事","paragraphs":["研究團隊公開了新的評測結果，結果只適用於這次實驗。"],"heading":"背景與限制","paragraphs":["測試使用固定樣本，原文沒有提供正式上線時程。"]}]}' as unknown as typeof answer;
+  assert.equal((await composeArticleReading(id)).status, "written");
+  const page = await loadItemDetail(id);
+  assert.ok(page.kind === "found" && /發生什麼事/.test(page.item.body?.zh ?? "") && /背景與限制/.test(page.item.body?.zh ?? ""));
+});
+
 process.env.UNDERSTAND_MODEL = "default";
 process.env.LLM_BASE_URL = `${provider.url}/v1`;
 process.env.LLM_API_KEY = "test-key";
