@@ -66,16 +66,24 @@ test("模型標記只當文字；晚到結果不覆蓋人工更正，重跑使�
   assert.doesNotMatch((await exportMarkdown(id))!.body, /<script|<img/);
 });
 
-test("只有一段摘要不算完成，也不自動重送付費請求", async () => {
-  const id = await article("too-short");
-  answer = { sections: [{ heading: "摘要", paragraphs: ["保留的導讀摘要。"] }] };
-  const hits = provider.hits();
-  await assert.rejects(composeArticleReading(id), /至少兩個|導讀/);
-  await assert.rejects(composeArticleReading(id), /至少兩個|導讀/);
-  assert.equal(provider.hits() - hits, 1);
-  const detail = await loadItemDetail(id);
-  if (detail.kind === "found") assert.equal(detail.item.body, null);
-  await setVisibility(id, { visibility: "withdrawn", reason: "測試清理", version: 0 }, "test");
+test("只有一段摘要、格式錯或模型判斷材料不足時結案為空整理：不重送付費、不顯示、不再列為待辦", async () => {
+  const cases: Array<[string, unknown, string]> = [
+    ["too-short", { sections: [{ heading: "摘要", paragraphs: ["保留的導讀摘要。"] }] }, "unusable"],
+    ["malformed", { sections: "不是陣列" }, "unusable"],
+    ["insufficient", { insufficient: "材料只有網站導覽與贊助文字" }, "insufficient"],
+  ];
+  for (const [suffix, reply, status] of cases) {
+    const id = await article(suffix);
+    answer = reply as typeof answer;
+    const hits = provider.hits();
+    assert.equal((await composeArticleReading(id)).status, status);
+    assert.equal((await composeArticleReading(id)).status, "current");
+    assert.equal(provider.hits() - hits, 1);
+    const detail = await loadItemDetail(id);
+    if (detail.kind === "found") assert.equal(detail.item.body, null);
+    assert.ok(!(await composePendingReadings()).some(r => r.articleId === id));
+    await setVisibility(id, { visibility: "withdrawn", reason: "測試清理", version: 0 }, "test");
+  }
 });
 process.env.UNDERSTAND_MODEL = "default";
 process.env.LLM_BASE_URL = `${provider.url}/v1`;

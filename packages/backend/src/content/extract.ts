@@ -506,15 +506,49 @@ export function pageFetchable(url: string, sourceKind: string): boolean {
   }
 }
 
+const CJK = "\\p{Script=Han}\\p{Script=Hiragana}\\p{Script=Katakana}\\p{Script=Hangul}";
+const TERM_RUNS = new RegExp(`[${CJK}]+|(?:(?![${CJK}])[\\p{L}\\p{N}])+`, "gu");
+const CJK_RUN = new RegExp(`^[${CJK}]`, "u");
+
+/** A text's comparable terms: words of three letters or more, numbers, and pairs of CJK characters. */
+function terms(text: string): Set<string> {
+  const out = new Set<string>();
+  for (const [run] of text.toLowerCase().matchAll(TERM_RUNS)) {
+    if (CJK_RUN.test(run)) for (let i = 0; i + 1 < run.length; i += 1) out.add(run.slice(i, i + 2));
+    else if (run.length >= 3 || /^\p{N}+$/u.test(run)) out.add(run);
+  }
+  return out;
+}
+
+/** Below this many terms an excerpt is a label ("Release: v1.2"), too little to compare with a page. */
+const EXCERPT_MIN_TERMS = 8;
+/** The share of the excerpt's terms a page that is that entry carries; a page with almost none read something else. */
+const EXCERPT_MIN_SHARE = 0.25;
+
+/**
+ * Whether a page body shares the words of the feed entry's own excerpt. The real case: a release note of
+ * one sentence was too short for Readability, which then returned the page's tag counts and sponsor box
+ * (237 characters, past the length test) as the article; none of the entry's words were in it.
+ */
+export function bodyCarriesExcerpt(body: string, excerpt: string | null): boolean {
+  const wanted = terms(excerpt ?? "");
+  if (wanted.size < EXCERPT_MIN_TERMS) return true;
+  const found = terms(body);
+  let shared = 0;
+  for (const term of wanted) if (found.has(term)) shared += 1;
+  return shared / wanted.size >= EXCERPT_MIN_SHARE;
+}
+
 /** Fetches and stores the body of one article. Unconfirmed bodies are recorded as such. */
 export async function extractArticleBody(articleId: string): Promise<"ok" | "unconfirmed" | "skipped"> {
-  const [a] = await sql<{ id: string; url: string; body_status: string; revision: number; x_post: { tweetId?: string } | null; config: SourceRow["config"] }[]>`
-    SELECT a.id, a.url, a.body_status, a.revision, a.x_post, s.config
+  const [a] = await sql<{ id: string; url: string; body_status: string; revision: number; excerpt: string | null; x_post: { tweetId?: string } | null; config: SourceRow["config"] }[]>`
+    SELECT a.id, a.url, a.body_status, a.revision, a.excerpt, a.x_post, s.config
     FROM articles a JOIN sources s ON s.id = a.source_id WHERE a.id = ${articleId}`;
   if (!a || a.body_status === "ok") return "skipped";
   if (a.x_post?.tweetId) return extractXArticle(a.id, a.x_post.tweetId, a.revision);
   const got = await extractFromUrl(a.url, `article:${a.id}`, pageRules(a.config));
-  if (!got) {
+  // A page that carries none of the entry's own excerpt read something else (its sidebar, a sponsor box).
+  if (!got || !bodyCarriesExcerpt(got.text, a.excerpt)) {
     return markUnconfirmed(articleId, a.revision);
   }
   // The body is new content: a new revision, so an analysis of the body-less input counts as stale.

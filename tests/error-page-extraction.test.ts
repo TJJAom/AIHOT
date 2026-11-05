@@ -40,7 +40,7 @@ const server = http.createServer((req, res) => {
     return void res.end(readerPages[req.url.split("/").at(-1)!] ?? readerPages.missing);
   }
   // The form itself is long enough to be mistaken for a body by the length and density checks.
-  if (req.url === "/article") return void res.end(html("Password autofill in browsers", autofill));
+  if (req.url === "/article" || req.url?.startsWith("/article/")) return void res.end(html("Password autofill in browsers", autofill));
   if (req.url === "/login") return void res.end(signInPage);
   if (req.url === "/brand/register/") return void res.end(html("The certified products register", prose));
   if (req.url === "/listing") return void res.end(`<html><body>
@@ -113,6 +113,17 @@ test("a redirect to a sign-in form cannot become the body", async () => {
   // A listing's detail read is the other way in: the sign-in form supplies no title, date, summary or body.
   const source = { id: sourceId, config: { url: `${base}/listing`, parseMode: "html" } } as never;
   await assert.rejects(fetchDetail(`${base}/redirect`, source, { title: true, date: true, summary: true, body: true }), /unavailable page/i);
+});
+
+// A one-sentence release note is too short for Readability, which then returned the page's tag counts and
+// sponsor box (past the length test) as the body; none of the feed entry's words were in it.
+test("a page body that carries none of the entry's excerpt stays unconfirmed; one that carries it is kept", async () => {
+  const offTopic = await upsertMaterial({ sourceId, url: `${base}/article/off-${T}`, title: "llm 0.37.1", via: "fetch",
+    excerpt: "Release: llm 0.37.1 A bugfix release for LLM, with contributions from Steven Huang, Tao An, Arjan Mossel and XQ." });
+  assert.equal(await extractArticleBody(offTopic.articleId), "unconfirmed");
+  const matching = await upsertMaterial({ sourceId, url: `${base}/article/kept-${T}`, title: "Password autofill in browsers", via: "fetch",
+    excerpt: "How password managers fill a sign-in form, and why autofill is safer than typing a password by hand." });
+  assert.equal(await extractArticleBody(matching.articleId), "ok");
 });
 
 // A listing's navigation links to the site's sign-in and registration pages; they are not posts.

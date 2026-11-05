@@ -3,17 +3,22 @@ import { z } from "zod";
 import { sql, type Db } from "../db.ts";
 import { sha256 } from "../lib/ids.ts";
 import { chatJson } from "../providers/llm.ts";
-import { completeReceipt } from "../providers/receipts.ts";
+import { completeReceipt, ModelOutputError } from "../providers/receipts.ts";
 import { announceArticleReading } from "../publication/reading.ts";
 import { modelFor } from "./models.ts";
 import { promptText, promptVersion } from "./prompts.ts";
 import { looksZh } from "./writing.ts";
 
-export const ReadingSchema = z.object({ sections: z.array(z.object({
+const Sections = z.array(z.object({
   heading: z.string().trim().min(1).max(120),
   paragraphs: z.array(z.string().trim().min(1).max(8000)).min(1).max(8),
-})).min(1).max(10) });
-export type ReadingSection = z.infer<typeof ReadingSchema>["sections"][number];
+})).min(1).max(10);
+/** 一篇整理，或模型判斷材料不足（只有導覽、標籤、贊助文字，或內容寫不出兩段）時的原因。 */
+export const ReadingSchema = z.union([
+  z.object({ sections: Sections }),
+  z.object({ insufficient: z.string().trim().min(1).max(300) }),
+]);
+export type ReadingSection = z.infer<typeof Sections>[number];
 const VERSION = promptVersion("article-reading");
 const SYSTEM = promptText("article-reading");
 
@@ -50,7 +55,13 @@ export async function planArticleReadings(articleIds?: string[]) {
   return plan;
 }
 
-export async function composeArticleReading(articleId: string, expectedHash?: string): Promise<{ status: "written" | "current" | "skipped" | "stale"; receiptId?: number }> {
+/**
+ * 整理結果：written 寫入新整理；insufficient 模型判斷材料不足；unusable 回覆無法使用（格式錯、只重述導讀、非中文）。
+ * 後兩者記成空整理並結案：這一版材料不再重送付費請求，也不再擋住日報；文章只顯示導讀。材料或提示詞改版後重新整理。
+ */
+export type ReadingStatus = "written" | "current" | "skipped" | "stale" | "insufficient" | "unusable";
+
+export async function composeArticleReading(articleId: string, expectedHash?: string): Promise<{ status: ReadingStatus; receiptId?: number; reason?: string }> {
   const input = await inputOf(articleId);
   if (!input) return { status: "skipped" };
   const hash = fingerprint(input);
@@ -63,33 +74,47 @@ export async function composeArticleReading(articleId: string, expectedHash?: st
   const subject = `article:${articleId}@${input.revision}:${hash}`;
   const unresolved = await sql`SELECT id,status FROM receipts WHERE purpose='article_reading' AND subject=${subject} AND status IN ('pending','unknown','failed')`;
   if (unresolved.length) throw new Error(`文章 ${articleId} 有未核對的整理回執，不自動重送`);
-  const response = await chatJson({ model: await modelFor("understand"), purpose: "article_reading", subject,
-    promptVersion: VERSION, system: SYSTEM, user, schema: ReadingSchema, temperature: 0.2, maxTokens: 8192, timeoutMs: 180_000 });
-  const paragraphs = response.data.sections.flatMap(s => s.paragraphs);
+  let response;
+  try {
+    response = await chatJson({ model: await modelFor("understand"), purpose: "article_reading", subject,
+      promptVersion: VERSION, system: SYSTEM, user, schema: ReadingSchema, temperature: 0.2, maxTokens: 8192, timeoutMs: 180_000 });
+  } catch (error) {
+    if (!(error instanceof ModelOutputError) || error.receiptId === null) throw error;
+    return conclude(articleId, input, hash, [], error.receiptId, "unusable", error.message);
+  }
+  if ("insufficient" in response.data) return conclude(articleId, input, hash, [], response.receiptId, "insufficient", response.data.insufficient);
+  const sections = response.data.sections;
+  const paragraphs = sections.flatMap(s => s.paragraphs);
   const normalized = (text: string) => text.replace(/[\p{P}\s]/gu, "");
   if (new Set(paragraphs.map(normalized).filter(p => p.length >= 12)).size < 2 || normalized(paragraphs.join("")) === normalized(input.summary)) {
-    // 保留 received 回執；再次處理只會重用同一答案，不另付費。
-    throw new Error(`文章 ${articleId} 整理至少兩個實質段落，不可僅重述導讀`);
+    return conclude(articleId, input, hash, [], response.receiptId, "unusable", "整理不足兩個實質段落，或只重述導讀");
   }
-  if (!looksZh(paragraphs.join(""))) throw new Error(`文章 ${articleId} 整理未使用中文，需核對既有回執`);
+  if (!looksZh(paragraphs.join(""))) return conclude(articleId, input, hash, [], response.receiptId, "unusable", "整理未使用中文");
+  return conclude(articleId, input, hash, sections, response.receiptId, "written");
+}
+
+/** 在材料未變時保存整理（空整理表示這一版材料沒有可用整理），並結清回執。 */
+async function conclude(articleId: string, input: Input, hash: string, sections: ReadingSection[], receiptId: number,
+  outcome: "written" | "insufficient" | "unusable", reason?: string): Promise<{ status: ReadingStatus; receiptId: number; reason?: string }> {
   const status = await sql.begin(async tx => {
     await tx`SELECT id FROM articles WHERE id=${articleId} FOR UPDATE`;
     await tx`SELECT article_id FROM publications WHERE article_id=${articleId} FOR UPDATE`;
     const current = await inputOf(articleId, tx);
     if (!current || fingerprint(current) !== hash) {
-      await completeReceipt(tx, response.receiptId);
+      await completeReceipt(tx, receiptId);
       return "stale" as const;
     }
     await tx`INSERT INTO article_readings(article_id,input_revision,analysis_id,override_version,input_hash,prompt_version,sections,receipt_id)
-      VALUES(${articleId},${input.revision},${input.analysis_id},${input.override_version},${hash},${VERSION},${sql.json(response.data.sections)},${response.receiptId})
+      VALUES(${articleId},${input.revision},${input.analysis_id},${input.override_version},${hash},${VERSION},${sql.json(sections)},${receiptId})
       ON CONFLICT(article_id) DO UPDATE SET input_revision=EXCLUDED.input_revision,analysis_id=EXCLUDED.analysis_id,
         override_version=EXCLUDED.override_version,input_hash=EXCLUDED.input_hash,prompt_version=EXCLUDED.prompt_version,
         sections=EXCLUDED.sections,receipt_id=EXCLUDED.receipt_id,updated_at=now()`;
-    await completeReceipt(tx, response.receiptId);
+    await completeReceipt(tx, receiptId);
+    // 空整理也可能取代舊提示詞寫的整理，讀者看到的內容會變。
     await announceArticleReading(tx, articleId);
-    return "written" as const;
+    return outcome;
   });
-  return { status, receiptId: response.receiptId };
+  return { status, receiptId, ...(reason && status !== "stale" ? { reason } : {}) };
 }
 
 /** Worker 補齊所有可公開文章，包括非精選與低分；讀者請求不走此流程。 */
