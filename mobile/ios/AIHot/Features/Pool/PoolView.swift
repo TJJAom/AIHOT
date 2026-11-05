@@ -28,7 +28,7 @@ final class PoolViewModel {
     func reload() async {
         generation += 1
         let issued = generation
-        state = .loading; loadError = false
+        if items.isEmpty { state = .loading }; loadError = false
         do {
             let res = try await api.pool(q: q, tab: q == nil ? "time" : tab, page: 1, channel: filter.channel, category: filter.category)
             guard issued == generation else { return }
@@ -151,7 +151,7 @@ struct PoolView: View {
                 await model.reload()
             }
         }
-        .refreshable { await model.reload() }
+        .pullToRefresh { await model.reload() }
         .task {
             if model.items.isEmpty { await model.reload() }
             await model.loadSuggestions()

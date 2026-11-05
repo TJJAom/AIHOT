@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // MARK: 日期（網站以 +08:00 為準；台灣同時區）
 
@@ -581,18 +582,47 @@ extension RootHeader where Trailing == EmptyView {
 }
 
 /// 分頁根頁面：隱藏系統導覽列、頂部放單行頂欄。推進去的子頁面仍有系統返回列。
+/// 頂欄與捲動區上下排列，不用 safeAreaInset：下拉重整的系統控制項搭配 safeAreaInset 時，
+/// 收回後偶爾留下一大段空白卡住（11/5 實機回報）。
 struct RootChrome: ViewModifier {
+    @Environment(\.palette) private var palette
     let title: String
     func body(content: Content) -> some View {
-        content
-            .navigationTitle(title)
-            .toolbar(.hidden, for: .navigationBar)
-            .safeAreaInset(edge: .top, spacing: 0) { RootHeader(title: title) }
+        VStack(spacing: 0) {
+            RootHeader(title: title)
+            content.frame(maxHeight: .infinity)
+        }
+        .background(palette.background.ignoresSafeArea())
+        .navigationTitle(title)
+        .toolbar(.hidden, for: .navigationBar)
     }
 }
 
 extension View {
     func rootChrome(_ title: String) -> some View { modifier(RootChrome(title: title)) }
+
+    /// 各分頁共用的下拉重整：強調色轉圈、完成時輕觸回饋。
+    /// 工作放進獨立 Task：重整中畫面更新會取消 refreshable 自己的工作，指示器就收不回來。
+    func pullToRefresh(_ action: @escaping @MainActor () async -> Void) -> some View {
+        modifier(PullToRefresh(action: action))
+    }
+}
+
+private struct PullToRefresh: ViewModifier {
+    @Environment(\.palette) private var palette
+    let action: @MainActor () async -> Void
+    @State private var finished = 0
+
+    func body(content: Content) -> some View {
+        content
+            .refreshable {
+                await Task { @MainActor in await action() }.value
+                finished += 1
+            }
+            .sensoryFeedback(.impact(weight: .light), trigger: finished)
+            .onAppear { UIRefreshControl.appearance().tintColor = UIColor(palette.accent) }
+            .onChange(of: palette.accent) { _, color in UIRefreshControl.appearance().tintColor = UIColor(color) }
+    }
 }
 
 /// 搜尋框藥丸（全部動態）。

@@ -25,7 +25,7 @@ struct DailyHomeView: View {
         Group {
             switch state {
             case .idle, .loading: ProgressView().frame(maxWidth: .infinity, maxHeight: .infinity)
-            case let .failed(error): ErrorStateView(error: error) { await load(force: true) }
+            case let .failed(error): ErrorStateView(error: error) { await load() }
             case let .loaded(page):
                 ReportPaperView(kind: kind, report: page.report, index: page.index, showOutline: $showOutline) {
                     ReportRecentChips(kind: kind, index: page.index, current: page.report?.key)
@@ -52,15 +52,15 @@ struct DailyHomeView: View {
                 .presentationDetents([.medium, .large])
                 .presentationDragIndicator(.visible)
         }
-        .refreshable { await load(force: true) }
+        .pullToRefresh { await load() }
         .onChange(of: kind) { _, _ in state = .idle }
-        .task(id: kind) { await load(force: false) }
+        .task(id: kind) { await load() }
     }
 
-    private func load(force: Bool) async {
-        if force || state.value == nil { state = .loading }
+    private func load() async {
+        if state.value == nil { state = .loading }
         do { state = .loaded(try await APIClient.shared.latestReport(kind: kind.rawValue)) }
-        catch { if state.value == nil || force { state = .failed(error) } }
+        catch { if state.value == nil { state = .failed(error) } }
     }
 }
 

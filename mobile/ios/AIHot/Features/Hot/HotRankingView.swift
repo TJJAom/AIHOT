@@ -42,7 +42,7 @@ struct HotRankingView: View {
         }
         .themedBackground()
         .navigationTitle("熱點榜")
-        .refreshable { await load(force: true) }
+        .pullToRefresh { await load(force: true) }
         .task { await load() }
     }
 

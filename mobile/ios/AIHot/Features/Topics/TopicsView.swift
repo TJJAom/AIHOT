@@ -35,7 +35,7 @@ struct TopicsView: View {
         .listSectionSpacing(.compact)
         .contentMargins(.top, 4, for: .scrollContent)
         .rootChrome("主題")
-        .refreshable { await load() }
+        .pullToRefresh { await load() }
         .task { if state.value == nil { await load() } }
     }
 

@@ -47,7 +47,8 @@ final class TimelineViewModel {
     func reload() async {
         generation += 1
         let issued = generation
-        state = .loading
+        // 已有內容時不切到載入狀態：重整中畫面不跳動，下拉指示器也能正常收回。
+        if cards.isEmpty { state = .loading }
         loadError = false
         do {
             let page = try await api.timeline(channel: filter.channel, category: filter.category)
@@ -161,7 +162,7 @@ struct TimelineView: View {
         }
         .themedBackground()
         .rootChrome("精選")
-        .refreshable { await model.reload() }
+        .pullToRefresh { await model.reload() }
         .task { if model.cards.isEmpty { await model.reload() } }
         .onChange(of: unreadOnly) { _, on in
             // 開啟篩選後整頁都讀過：自動再翻幾頁，直到有東西可看。
