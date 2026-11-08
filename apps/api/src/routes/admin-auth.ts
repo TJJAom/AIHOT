@@ -95,6 +95,11 @@ export function registerAdminAuth(app: FastifyInstance) {
     return reply.header("Cache-Control", "no-store").redirect(loginPage(returnTo), 302);
   });
 
+  // A sign-in post cut off on the way (a phone switching apps or networks) leaves the browser on this address,
+  // and reloading it is a GET: send it back to the sign-in page rather than a bare 404.
+  app.get("/api/auth/password", async (req, reply) =>
+    reply.header("Cache-Control", "no-store").redirect(loginPage(String((req.query as Record<string, string>).return ?? SIGN_IN_HOME)), 302));
+
   app.get("/api/auth/options", async (_req, reply) => reply.header("Cache-Control", "no-store").send({ password: !!config.adminPassword, feishu: feishuLoginConfigured() }));
 
   // The sign-in and sign-out forms post as plain HTML forms; only these routes read that format.

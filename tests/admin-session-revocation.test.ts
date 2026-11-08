@@ -259,3 +259,9 @@ test("the session cookie is Secure only when the request itself is HTTPS, whatev
   assert.doesNotMatch(await sessionCookie("/api/auth/logout", {}), /;\s*Secure\b/);
   assert.match(await sessionCookie("/api/auth/logout", { "x-forwarded-proto": "https" }), /;\s*Secure\b/);
 });
+
+test("reloading the sign-in post address returns to the sign-in page", async () => {
+  const res = await realFetch(`${base}/api/auth/password`, { redirect: "manual" });
+  assert.equal(res.status, 302);
+  assert.equal(res.headers.get("location"), "/admin/login?return=%2Fadmin");
+});
