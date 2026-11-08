@@ -2,7 +2,8 @@
 // - POST /devices：App 登錄 device token 與偏好（匿名，只存 token／環境／偏好）
 // - DELETE /devices/:token：取消登錄
 // - Cron（每 5 分鐘）：讀網站精選／全部動態，比對 KV 內已見過的文章，對新文章發 APNs
-// - /admin/*（Bearer ADMIN_TOKEN）：看統計、手動跑一輪、發測試通知
+// - /admin/*（Bearer ADMIN_TOKEN）：看統計、手動跑一輪、發測試通知、指定接收告警的裝置
+// - POST /hub、POST /tell（Bearer HUB_KEY）：網站後端的告警（WEBHOOK_HUB_URL 協議）轉成推播，只送給站長的裝置
 // 只讀網站公開 HTTPS API，不碰正式後端與資料庫；不呼叫任何模型。
 
 import { sendApns, type ApnsCredentials, type ApnsMessage } from "./apns";
@@ -17,6 +18,8 @@ export interface Env {
   APNS_KEY_ID: string;
   APNS_TEAM_ID: string;
   ADMIN_TOKEN: string;
+  HUB_KEY: string;
+  REGISTER_LIMIT: RateLimit;
 }
 
 interface Device {
@@ -48,6 +51,7 @@ const SEEN_KEY = "seen:v1";
 const SEEN_CAP = 800;
 const FRESH_WINDOW_MS = 6 * 3600 * 1000;   // 只推最近 6 小時內進站的文章，避免冷啟動或資料回填時狂推
 const HEX64 = /^[0-9a-f]{64}$/i;
+const OWNERS_KEY = "owners:v1";
 
 export default {
   async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
@@ -58,7 +62,18 @@ export default {
       return json({ ok: true, service: "aihot-push", time: new Date().toISOString() });
     }
 
+    if (path === "/devices" || path.startsWith("/devices/")) {
+      // 每個 IP 每分鐘最多 20 次登錄／取消：正常 App 一次開啟只登錄一次，超過的多半是灌假裝置。
+      const { success } = await env.REGISTER_LIMIT.limit({ key: request.headers.get("cf-connecting-ip") ?? "unknown" });
+      if (!success) return json({ error: "too many requests" }, 429);
+    }
+
     if (request.method === "POST" && path === "/devices") return registerDevice(request, env);
+
+    if (request.method === "POST" && (path === "/hub" || path === "/tell")) {
+      if (!isHub(request, env)) return json({ error: "unauthorized" }, 401);
+      return relayAlert(request, env, path === "/tell");
+    }
 
     if (request.method === "DELETE" && path.startsWith("/devices/")) {
       const token = path.slice("/devices/".length);
@@ -80,6 +95,24 @@ export default {
           seenItems: seen.length,
           lastChange: await env.PUSH_KV.get("meta:lastRun"),
         });
+      }
+      if (path === "/admin/devices" && request.method === "GET") {
+        // 只露出 token 前 8 碼，足以辨認是哪台裝置、指定告警接收者。
+        const owners = new Set(await loadOwners(env));
+        return json((await listDevices(env)).map((d) => ({
+          token8: d.token.slice(0, 8), owner: owners.has(d.token), environment: d.environment, enabled: d.enabled,
+          mode: d.mode, appVersion: d.appVersion, createdAt: d.createdAt, updatedAt: d.updatedAt,
+        })));
+      }
+      if (path === "/admin/owners" && request.method === "POST") {
+        // body: { tokens: string[] } 可給完整 token 或 8 碼以上的前綴；空陣列＝沒有人收告警
+        const body = (await request.json().catch(() => ({}))) as { tokens?: unknown };
+        const wanted = Array.isArray(body.tokens) ? body.tokens.filter((t): t is string => typeof t === "string" && /^[0-9a-f]{8,64}$/i.test(t)) : null;
+        if (!wanted) return json({ error: "tokens[] required" }, 400);
+        const devices = await listDevices(env);
+        const owners = devices.filter((d) => wanted.some((w) => d.token.startsWith(w.toLowerCase()))).map((d) => d.token);
+        await env.PUSH_KV.put(OWNERS_KEY, JSON.stringify(owners));
+        return json({ owners: owners.map((t) => t.slice(0, 8)) });
       }
       if (path === "/admin/run" && request.method === "POST") {
         const report = await runCycle(env, { dryRun: url.searchParams.get("dry") === "1" });
@@ -136,7 +169,11 @@ async function registerDevice(request: Request, env: Env): Promise<Response> {
     updatedAt: now,
     failures: 0,
   };
-  await env.PUSH_KV.put(key, JSON.stringify(device));
+  // App 每次開啟都登錄一次（Apple 建議，token 可能變）；內容沒變就不寫，免費方案每天只有 1,000 次 KV 寫入。
+  const same = existing && !existing.failures && existing.environment === device.environment && existing.enabled === device.enabled
+    && existing.mode === device.mode && existing.categories.join(",") === device.categories.join(",")
+    && existing.locale === device.locale && existing.appVersion === device.appVersion;
+  if (!same) await env.PUSH_KV.put(key, JSON.stringify(device));
   return json({ ok: true, device: { environment, mode, categories, enabled: device.enabled } });
 }
 
@@ -335,6 +372,46 @@ async function saveSeen(env: Env, ids: string[]): Promise<void> {
 }
 
 // MARK: 工具
+
+function isHub(request: Request, env: Env): boolean {
+  const key = (env.HUB_KEY ?? "").trim();
+  return key.length >= 24 && request.headers.get("authorization") === `Bearer ${key}`;
+}
+
+async function loadOwners(env: Env): Promise<string[]> {
+  const v = (await env.PUSH_KV.get(OWNERS_KEY, "json")) as string[] | null;
+  return Array.isArray(v) ? v : [];
+}
+
+/**
+ * 網站後端的告警轉成推播。/hub 收事件（id、summary…），/tell 收給站長的訊息（key、text）。
+ * 同一個 id／key 後端可能重送，兩天內只推一次；沒有指定接收裝置時回 503，後端改走其他管道。
+ */
+async function relayAlert(request: Request, env: Env, tell: boolean): Promise<Response> {
+  const body = (await request.json().catch(() => null)) as Record<string, unknown> | null;
+  const id = String((tell ? body?.key : body?.id) ?? "").slice(0, 200);
+  const text = String((tell ? body?.text : body?.summary) ?? "").trim();
+  if (!id || !text) return json({ error: "id/key and text/summary required" }, 400);
+  const owners = new Set(await loadOwners(env));
+  const devices = (await listDevices(env)).filter((d) => owners.has(d.token));
+  if (devices.length === 0) return json({ error: "no owner device" }, 503);
+  const dedupe = `alert:${await sha256Hex(id)}`;
+  if (await env.PUSH_KV.get(dedupe)) return json({ ok: true, duplicate: true });
+  const [first, ...rest] = text.split("\n");
+  const results = await sendToDevices(env, devices, () => [{
+    title: `日耕告警：${first.slice(0, 60)}`,
+    body: (rest.join("\n").trim() || first).slice(0, 1500),
+    collapseId: `alert-${id.slice(0, 40)}`,
+  }]);
+  if (results.sent === 0) return json({ error: "not delivered", failed: results.failed }, 502);
+  await env.PUSH_KV.put(dedupe, "1", { expirationTtl: 2 * 86400 });
+  return json({ ok: true, sent: results.sent });
+}
+
+async function sha256Hex(text: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(text));
+  return [...new Uint8Array(digest)].map((b) => b.toString(16).padStart(2, "0")).join("").slice(0, 32);
+}
 
 function isAdmin(request: Request, env: Env): boolean {
   const token = (env.ADMIN_TOKEN ?? "").trim();

@@ -5,6 +5,7 @@
 #   npx wrangler secret put APNS_KEY_ID
 #   npx wrangler secret put APNS_TEAM_ID
 #   npx wrangler secret put ADMIN_TOKEN              # 任意長隨機字串，給 /admin/* 用
+#   npx wrangler secret put HUB_KEY                  # 與網站 .env 的 WEBHOOK_HUB_KEY 相同，給 /hub、/tell 用
 #   npx wrangler deploy
 name = "aihot-push"
 main = "src/index.ts"
@@ -17,6 +18,12 @@ routes = [{ pattern = "push.dayacre.com", custom_domain = true }]
 
 [triggers]
 crons = ["*/5 * * * *"]
+
+# 推播登錄的每 IP 頻率限制（Workers Rate Limiting，免費方案可用）
+[[ratelimits]]
+name = "REGISTER_LIMIT"
+namespace_id = "1001"
+simple = { limit = 20, period = 60 }
 
 [[kv_namespaces]]
 binding = "PUSH_KV"
