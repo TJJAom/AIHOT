@@ -87,6 +87,10 @@ Qwen3 8B 模型下載約 5.2 GB，另需 Ollama 映像與執行記憶體。下�
 Luna 的正式 provider 將不同佇列與排程的模型請求統一串行；其他文章可以排隊。這是單一 worker 程序內的限制，不代表只有一篇文章處於處理中；不得同時另開付費單批或多個 worker，也沒有 `WORKER_CONCURRENCY` 這個設定。
 `.env` 的 `COLLECT_ENABLED=false`、`MODEL_CALLS_ENABLED=false` 保持關閉供 API 使用；雲端 worker 由 Compose 專屬環境覆寫為 true。
 
+## 告警送到站長的 iPhone
+
+飛書沒有設定。告警改經 `WEBHOOK_HUB_URL`／`WEBHOOK_HUB_KEY`（協議見 `.env.example`）交給日耕的推播 Worker（`mobile/push-worker`，分支 `ios/app`）：`/hub` 收事件、`/tell` 收給站長的訊息，轉成推播只送給 Worker `/admin/owners` 指定的裝置；同一個 id 兩天內只推一次，沒有指定裝置時回 503，後端照常記在日誌。RTX `.env` 設 `FEISHU_INTERNAL_ENABLED=true`、`WEBHOOK_HUB_URL=https://push.dayacre.com/hub` 與 `WEBHOOK_HUB_KEY`（同值以 `wrangler secret put HUB_KEY` 寫入 Worker），`deploy/compose.rtx.yml` 傳給 worker。金鑰只存在 `.env` 與 Worker secret，不寫進文件或日誌。
+
 ## 啟停與日誌
 
 ```powershell

@@ -36,7 +36,10 @@ services:
       SOCIALDATA_API_KEY: ""
       DAJIALA_KEY: ""
       FEISHU_CONTENT_PUSH_ENABLED: "false"
-      FEISHU_INTERNAL_ENABLED: "false"
+      # 飛書沒有設定；這個開關打開是為了讓告警經 WEBHOOK_HUB_URL 交給推播 Worker，轉成推播送到站長的 iPhone。
+      FEISHU_INTERNAL_ENABLED: ${FEISHU_INTERNAL_ENABLED:-false}
+      WEBHOOK_HUB_URL: ${WEBHOOK_HUB_URL:-}
+      WEBHOOK_HUB_KEY: ${WEBHOOK_HUB_KEY:-}
       INDEXNOW_SUBMIT_ENABLED: "false"
 
   ollama:
