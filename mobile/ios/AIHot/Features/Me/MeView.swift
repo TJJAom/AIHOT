@@ -349,7 +349,7 @@ struct QuietHoursBar: View {
     private static let day = 24 * 60
 
     var body: some View {
-        TimelineView(.periodic(from: .now, by: 60)) { context in
+        SwiftUI.TimelineView(.periodic(from: .now, by: 60)) { context in
             let now = Self.minuteOfDay(context.date)
             VStack(alignment: .leading, spacing: 10) {
                 HStack(alignment: .firstTextBaseline) {
