@@ -16,19 +16,43 @@ final class PushManager {
 
     /// 使用者偏好：只推精選 / 推全部動態；留空類別＝全部類別。
     var mode: String {
-        didSet { UserDefaults.standard.set(mode, forKey: "push.mode"); Task { await self.syncRegistration() } }
+        didSet { UserDefaults.standard.set(mode, forKey: "push.mode"); scheduleSync() }
     }
     var categories: Set<String> {
-        didSet { UserDefaults.standard.set(Array(categories), forKey: "push.categories"); Task { await self.syncRegistration() } }
+        didSet { UserDefaults.standard.set(Array(categories), forKey: "push.categories"); scheduleSync() }
     }
     var enabled: Bool {
-        didSet { UserDefaults.standard.set(enabled, forKey: "push.enabled"); Task { await self.syncRegistration() } }
+        didSet { UserDefaults.standard.set(enabled, forKey: "push.enabled"); scheduleSync() }
+    }
+    /// 勿擾時段：開始、結束為當天第幾分鐘（裝置當地時間）；結束早於開始表示跨午夜。
+    var quietEnabled: Bool {
+        didSet { UserDefaults.standard.set(quietEnabled, forKey: "push.quiet.enabled"); scheduleSync() }
+    }
+    var quietStart: Int {
+        didSet { UserDefaults.standard.set(quietStart, forKey: "push.quiet.start"); scheduleSync() }
+    }
+    var quietEnd: Int {
+        didSet { UserDefaults.standard.set(quietEnd, forKey: "push.quiet.end"); scheduleSync() }
+    }
+
+    /// 轉時間滾輪會連續改值；停手 0.8 秒後才登錄一次，避免每一格都打一次 Worker。
+    @ObservationIgnored private var pendingSync: Task<Void, Never>?
+    private func scheduleSync() {
+        pendingSync?.cancel()
+        pendingSync = Task { [weak self] in
+            try? await Task.sleep(for: .milliseconds(800))
+            guard !Task.isCancelled else { return }
+            await self?.syncRegistration()
+        }
     }
 
     init() {
         mode = UserDefaults.standard.string(forKey: "push.mode") ?? "selected"
         categories = Set(UserDefaults.standard.array(forKey: "push.categories") as? [String] ?? [])
         enabled = UserDefaults.standard.object(forKey: "push.enabled") as? Bool ?? true
+        quietEnabled = UserDefaults.standard.bool(forKey: "push.quiet.enabled")
+        quietStart = UserDefaults.standard.object(forKey: "push.quiet.start") as? Int ?? 23 * 60
+        quietEnd = UserDefaults.standard.object(forKey: "push.quiet.end") as? Int ?? 7 * 60
         deviceToken = UserDefaults.standard.string(forKey: "push.token")
         if AppConfig.pushRegistrationURL == nil { status = .notConfigured }
     }
@@ -90,9 +114,14 @@ final class PushManager {
             var categories: [String]
             var locale: String
             var appVersion: String
+            var quiet: Quiet?
         }
+        struct Quiet: Encodable { var start: Int; var end: Int; var tz: String }
+        let quiet = quietEnabled && quietStart != quietEnd
+            ? Quiet(start: quietStart, end: quietEnd, tz: TimeZone.current.identifier) : nil
         let body = Registration(token: token, environment: environment, enabled: enabled, mode: mode,
-                                categories: Array(categories).sorted(), locale: "zh-Hant-TW", appVersion: AppConfig.userAgent)
+                                categories: Array(categories).sorted(), locale: "zh-Hant-TW", appVersion: AppConfig.userAgent,
+                                quiet: quiet)
         var request = URLRequest(url: url.appendingPathComponent("devices"))
         request.httpMethod = "POST"
         request.setValue("application/json", forHTTPHeaderField: "Content-Type")

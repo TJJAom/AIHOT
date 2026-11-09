@@ -1,7 +1,7 @@
 // 日耕 iOS 推播 Worker
 // - POST /devices：App 登錄 device token 與偏好（匿名，只存 token／環境／偏好）
 // - DELETE /devices/:token：取消登錄
-// - Cron（每 5 分鐘）：讀網站精選／全部動態，比對 KV 內已見過的文章，對新文章發 APNs
+// - Cron（每 5 分鐘）：讀網站精選／全部動態，比對 KV 內已見過的文章，對新文章發 APNs；裝置設了勿擾時段就跳過
 // - /admin/*（Bearer ADMIN_TOKEN）：看統計、手動跑一輪、發測試通知、指定接收告警的裝置
 // - POST /hub、POST /tell（Bearer HUB_KEY）：網站後端的告警（WEBHOOK_HUB_URL 協議）轉成推播，只送給站長的裝置
 // 只讀網站公開 HTTPS API，不碰正式後端與資料庫；不呼叫任何模型。
@@ -33,7 +33,11 @@ interface Device {
   createdAt: string;
   updatedAt: string;
   failures?: number;
+  quiet?: QuietHours;         // 勿擾時段：這段時間不推新文章
 }
+
+/** 裝置當地時間的勿擾時段，以當天第幾分鐘表示；start > end 表示跨午夜（例如 23:00～07:00）。 */
+interface QuietHours { start: number; end: number; tz: string }
 
 interface FeedItem {
   id: string;
@@ -154,6 +158,7 @@ async function registerDevice(request: Request, env: Env): Promise<Response> {
   const environment = body.environment === "sandbox" ? "sandbox" : "production";
   const mode = body.mode === "all" ? "all" : "selected";
   const categories = Array.isArray(body.categories) ? body.categories.filter((c) => typeof c === "string").slice(0, 12) : [];
+  const quiet = parseQuiet(body.quiet);
   const key = `dev:${token}`;
   const existing = (await env.PUSH_KV.get(key, "json")) as Device | null;
   const now = new Date().toISOString();
@@ -168,13 +173,32 @@ async function registerDevice(request: Request, env: Env): Promise<Response> {
     createdAt: existing?.createdAt ?? now,
     updatedAt: now,
     failures: 0,
+    ...(quiet ? { quiet } : {}),
   };
   // App 每次開啟都登錄一次（Apple 建議，token 可能變）；內容沒變就不寫，免費方案每天只有 1,000 次 KV 寫入。
   const same = existing && !existing.failures && existing.environment === device.environment && existing.enabled === device.enabled
     && existing.mode === device.mode && existing.categories.join(",") === device.categories.join(",")
-    && existing.locale === device.locale && existing.appVersion === device.appVersion;
+    && existing.locale === device.locale && existing.appVersion === device.appVersion
+    && JSON.stringify(existing.quiet ?? null) === JSON.stringify(device.quiet ?? null);
   if (!same) await env.PUSH_KV.put(key, JSON.stringify(device));
-  return json({ ok: true, device: { environment, mode, categories, enabled: device.enabled } });
+  return json({ ok: true, device: { environment, mode, categories, enabled: device.enabled, quiet: device.quiet ?? null } });
+}
+
+function parseQuiet(value: unknown): QuietHours | undefined {
+  if (!value || typeof value !== "object") return undefined;
+  const { start, end, tz } = value as Record<string, unknown>;
+  const minute = (m: unknown) => Number.isInteger(m) && (m as number) >= 0 && (m as number) < 1440;
+  if (!minute(start) || !minute(end) || start === end || typeof tz !== "string" || tz.length > 60) return undefined;
+  try { new Intl.DateTimeFormat("en-US", { timeZone: tz }); } catch { return undefined; }
+  return { start: start as number, end: end as number, tz };
+}
+
+/** 現在是否落在裝置的勿擾時段（以裝置自己的時區計算）。 */
+function inQuietHours(quiet: QuietHours | undefined, now: Date): boolean {
+  if (!quiet) return false;
+  const parts = new Intl.DateTimeFormat("en-US", { timeZone: quiet.tz, hour: "2-digit", minute: "2-digit", hourCycle: "h23" }).formatToParts(now);
+  const m = Number(parts.find((p) => p.type === "hour")?.value) * 60 + Number(parts.find((p) => p.type === "minute")?.value);
+  return quiet.start < quiet.end ? m >= quiet.start && m < quiet.end : m >= quiet.start || m < quiet.end;
 }
 
 async function listDevices(env: Env): Promise<Device[]> {
@@ -241,7 +265,8 @@ async function runCycle(env: Env, opts: { dryRun: boolean }): Promise<CycleRepor
     return report;
   }
 
-  const devices = (await listDevices(env)).filter((d) => d.enabled);
+  // 勿擾時段內的裝置這一輪不推；文章照樣記為已見，時段結束後不補推，開 App 就看得到。
+  const devices = (await listDevices(env)).filter((d) => d.enabled && !inQuietHours(d.quiet, new Date()));
   report.devices = devices.length;
 
   if (!opts.dryRun && devices.length > 0) {

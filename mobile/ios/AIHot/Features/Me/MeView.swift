@@ -279,11 +279,41 @@ struct NotificationSettingsView: View {
                     }
                 }
                 .listRowBackground(palette.surface)
+
+                Section {
+                    Toggle(isOn: $push.quietEnabled.animation(.easeInOut(duration: 0.25))) {
+                        Label("勿擾時段", systemImage: "moon.zzz")
+                    }
+                    if push.quietEnabled {
+                        QuietHoursBar(start: push.quietStart, end: push.quietEnd)
+                            .padding(.vertical, 6)
+                        DatePicker("開始", selection: minuteBinding($push.quietStart), displayedComponents: .hourAndMinute)
+                        DatePicker("結束", selection: minuteBinding($push.quietEnd), displayedComponents: .hourAndMinute)
+                    }
+                } header: {
+                    Text("勿擾時段")
+                } footer: {
+                    Text(push.quietEnabled
+                         ? (push.quietStart == push.quietEnd ? "開始和結束是同一個時間，勿擾不會生效。" : "這段時間不推送新文章；時段結束後不補推，打開 App 就看得到。依這支 iPhone 的時區計算。")
+                         : "例如睡覺時段，設定後這段時間不會收到新文章通知。")
+                }
+                .listRowBackground(palette.surface)
             }
         }
+        .tint(palette.accent)
         .themedBackground()
         .navigationTitle("通知")
         .task { await push.refreshAuthorizationStatus() }
+    }
+
+    /// 當天第幾分鐘 ⇄ DatePicker 的時間。
+    private func minuteBinding(_ minutes: Binding<Int>) -> Binding<Date> {
+        Binding(
+            get: { Calendar.current.startOfDay(for: .now).addingTimeInterval(TimeInterval(minutes.wrappedValue * 60)) },
+            set: { date in
+                let c = Calendar.current.dateComponents([.hour, .minute], from: date)
+                minutes.wrappedValue = (c.hour ?? 0) * 60 + (c.minute ?? 0)
+            })
     }
 
     @ViewBuilder
@@ -307,5 +337,81 @@ struct NotificationSettingsView: View {
                 Button("重試") { Task { await push.syncRegistration() } }
             }
         }
+    }
+}
+
+/// 勿擾時段的 24 小時刻度條：安靜的區段以主題強調色標出（可跨午夜），細線標出現在時間。
+struct QuietHoursBar: View {
+    @Environment(\.palette) private var palette
+    let start: Int
+    let end: Int
+
+    private static let day = 24 * 60
+
+    var body: some View {
+        TimelineView(.periodic(from: .now, by: 60)) { context in
+            let now = Self.minuteOfDay(context.date)
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("\(Self.clock(start)) – \(Self.clock(end))")
+                        .font(.title3.weight(.semibold)).monospacedDigit().foregroundStyle(palette.text)
+                    Text(Self.length(start, end)).font(.footnote).foregroundStyle(palette.text4)
+                    Spacer()
+                    if start != end, Self.contains(now, start, end) {
+                        Label("勿擾中", systemImage: "moon.fill")
+                            .font(.caption.weight(.semibold)).foregroundStyle(palette.accent)
+                            .padding(.horizontal, 8).padding(.vertical, 3)
+                            .background(palette.accentSoft, in: Capsule())
+                    }
+                }
+                GeometryReader { geo in
+                    let w = geo.size.width
+                    let x = { (m: Int) in w * CGFloat(m) / CGFloat(Self.day) }
+                    ZStack(alignment: .leading) {
+                        Capsule().fill(palette.sunk)
+                        ForEach(Array(Self.segments(start, end).enumerated()), id: \.offset) { _, seg in
+                            RoundedRectangle(cornerRadius: 5, style: .continuous)
+                                .fill(palette.accent.opacity(0.85))
+                                .frame(width: max(4, x(seg.upperBound) - x(seg.lowerBound)))
+                                .offset(x: x(seg.lowerBound))
+                        }
+                        Rectangle().fill(palette.text)
+                            .frame(width: 2, height: 22)
+                            .offset(x: min(max(0, x(now) - 1), w - 2))
+                    }
+                    .frame(height: 14)
+                    .frame(maxHeight: .infinity)
+                }
+                .frame(height: 22)
+                HStack {
+                    ForEach([0, 6, 12, 18, 24], id: \.self) { h in
+                        Text(String(format: "%02d", h)).font(.caption2).monospacedDigit().foregroundStyle(palette.text4)
+                        if h != 24 { Spacer() }
+                    }
+                }
+            }
+        }
+        .accessibilityElement(children: .ignore)
+        .accessibilityLabel("勿擾時段 \(Self.clock(start)) 到 \(Self.clock(end))，\(Self.length(start, end))")
+    }
+
+    static func minuteOfDay(_ date: Date) -> Int {
+        let c = Calendar.current.dateComponents([.hour, .minute], from: date)
+        return (c.hour ?? 0) * 60 + (c.minute ?? 0)
+    }
+    static func clock(_ m: Int) -> String { String(format: "%02d:%02d", m / 60, m % 60) }
+    static func contains(_ m: Int, _ start: Int, _ end: Int) -> Bool {
+        start < end ? (m >= start && m < end) : (m >= start || m < end)
+    }
+    static func length(_ start: Int, _ end: Int) -> String {
+        let total = (end - start + day) % day
+        if total == 0 { return "未生效" }
+        let h = total / 60, m = total % 60
+        return m == 0 ? "共 \(h) 小時" : (h == 0 ? "共 \(m) 分鐘" : "共 \(h) 小時 \(m) 分")
+    }
+    /// 跨午夜時拆成兩段畫。
+    static func segments(_ start: Int, _ end: Int) -> [ClosedRange<Int>] {
+        if start == end { return [] }
+        return start < end ? [start...end] : [start...day, 0...end].filter { $0.upperBound > $0.lowerBound }
     }
 }
