@@ -160,7 +160,7 @@ export default function StarredPage() {
                     <IconClose size={14} />
                   </button>
                 </div>
-                <h2 className="mt-1.5 text-[16px] font-[650] leading-[1.55] text-ink">
+                <h2 className="mt-1.5 font-serif text-[16px] font-[650] leading-[1.55] text-ink">
                   {unavailable ? (
                     s.title
                   ) : (

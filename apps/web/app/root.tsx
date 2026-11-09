@@ -7,6 +7,14 @@ import { SITE } from "@aihot/site";
 import { RingMark } from "@aihot/site/brand/Logo.tsx";
 import { useEffect, useState, type ReactNode } from "react";
 import type { Route } from "./+types/root";
+// 字型隨網站提供（只下載頁面用到的字）：內文思源黑體，新聞標題思源宋體。
+import "@fontsource/noto-sans-tc/400.css";
+import "@fontsource/noto-sans-tc/500.css";
+import "@fontsource/noto-sans-tc/600.css";
+import "@fontsource/noto-sans-tc/700.css";
+import "@fontsource/noto-serif-tc/600.css";
+import "@fontsource/noto-serif-tc/700.css";
+import "@fontsource/noto-serif-tc/900.css";
 import "./app.css";
 import { Sidebar } from "./components/shell/Sidebar";
 import { TabBar } from "./components/shell/TabBar";

@@ -15,7 +15,7 @@
 
 /* The initial family is the reader's standard browser font, unlike system-ui or sans-serif. */
 :root[data-font="browser"] { font-family: initial; }
-[data-font="browser"] body, [data-font="browser"] .font-sans { font-family: inherit; }
+[data-font="browser"] body, [data-font="browser"] .font-sans, [data-font="browser"] .font-serif { font-family: inherit; }
 /* Touch screens (no hover): pressed states for rows and cards, and the desktop shell's 44px targets on
    tablets, unfolded foldables and large phones held sideways. */
 @custom-variant touch (@media (hover: none));
@@ -23,7 +23,9 @@
 @custom-variant short (@media (max-height: 700px));
 
 @theme {
-  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", "Heiti TC", "PingFang SC", "Hiragino Sans GB", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
+  /* 內文思源黑體、新聞標題思源宋體，由網站提供字型檔，各裝置一致；載入前先用系統字。 */
+  --font-sans: "Noto Sans TC", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", "Noto Sans TC", "Heiti TC", "PingFang SC", "Hiragino Sans GB", "HarmonyOS Sans SC", "Microsoft YaHei", sans-serif;
+  --font-serif: "Noto Serif TC", "Songti TC", "PMingLiU", serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Monaco, Consolas, "Liberation Mono", monospace;
 
   /* Semantic colours. */

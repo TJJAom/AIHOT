@@ -71,7 +71,7 @@ export const FeedItem = memo(function FeedItem({ item, group, filters, read = fa
         </p> : <IntentLink viewTransition to={`/items/${item.id}`} onClick={open} aria-label={`檢視 ${item.x!.authorName} 的帖子`} className="absolute inset-0" />
       ) : (
         <>
-          <h3 className={`mt-1.5 line-clamp-2 text-[17px] font-[650] leading-[1.5] lg:mt-2 lg:line-clamp-none lg:leading-[1.55] ${readTone(read, "text-ink")}`}>
+          <h3 className={`mt-1.5 line-clamp-2 font-serif text-[17px] font-[650] leading-[1.5] lg:mt-2 lg:line-clamp-none lg:leading-[1.55] ${readTone(read, "text-ink")}`}>
             <IntentLink viewTransition to={`/items/${item.id}`} onClick={open} className="after:absolute after:inset-0 after:content-['']">
               {item.title}
             </IntentLink>

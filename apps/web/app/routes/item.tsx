@@ -224,7 +224,7 @@ function ItemPreview({ preview }: { preview: FeedItemSummary }) {
             </span>
           )}
         </div>
-        {!isX && <h1 data-page-title="" className="text-[26px] font-bold leading-[1.38] tracking-[-0.01em] text-ink">{preview.title}</h1>}
+        {!isX && <h1 data-page-title="" className="font-serif text-[26px] font-bold leading-[1.38] tracking-[-0.01em] text-ink">{preview.title}</h1>}
         {preview.summary && (
           <section className={isX ? "mt-4" : "mt-7"}>
             <div className="mb-2 text-[12px] font-semibold text-accent">{isX && preview.summary.replace(/\s+/g, " ").trim() === preview.title ? "原文" : "AI 導讀"}</div>
@@ -510,7 +510,7 @@ function ItemView({ item, followups }: Loaded) {
               </span>
             )}
           </div>
-          {!isX && <h1 data-page-title="" className="text-[26px] font-bold leading-[1.38] tracking-[-0.01em] text-ink lg:text-[32px] lg:leading-[1.34] xl:text-[36px] xl:leading-[1.3]">{item.title}</h1>}
+          {!isX && <h1 data-page-title="" className="font-serif text-[26px] font-bold leading-[1.38] tracking-[-0.01em] text-ink lg:text-[32px] lg:leading-[1.34] xl:text-[36px] xl:leading-[1.3]">{item.title}</h1>}
           {!isX && item.originalTitle && <p className="mt-2.5 text-[14px] leading-relaxed text-ink-4">{item.originalTitle}</p>}
 
           {item.summary && (!isX || item.summary.replace(/\s+/g, " ").trim() !== item.title) && (
