@@ -10,8 +10,8 @@ import type { Founder } from "@aihot/contracts/site-config";
  * {{dailyTime}}、{{weeklyTime}}、{{monthlyTime}}）；排程每半小時檢查一次，所以寫整點或半點。
  */
 export const EDITION_TIMES = { daily: "08:00", weekly: "10:00", monthly: "10:30" };
-/** 本站僅自動產生日報；週報、月報保留閱讀相容，但不排程生成。 */
-export const AUTOMATIC_REPORTS = ["daily"] as const;
+/** 自動出刊的報告：日報每天、週報每週一、月報每月 1 日（2026-11-17 起含週報與月報）。 */
+export const AUTOMATIC_REPORTS = ["daily", "weekly", "monthly"] as const;
 
 /** “每天 08:00”“每週一 10:00”“每月 1 日 10:30”：寫進句子裡的出刊時間。 */
 export const EDITION_WHEN = {
