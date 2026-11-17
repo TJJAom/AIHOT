@@ -103,3 +103,31 @@ test("Luna 首筆遭拒仍釋放序列，後續工作不會整天卡住", async 
     await local.close();
   }
 });
+
+test("an Anthropic base URL goes to the Messages API with the site's extra fields and no temperature", async () => {
+  const realFetch = globalThis.fetch;
+  const sent: Array<{ url: string; headers: Record<string, string>; body: Record<string, unknown> }> = [];
+  globalThis.fetch = (async (url: string | URL, init?: RequestInit) => {
+    if (!String(url).startsWith("https://api.anthropic.com/")) return realFetch(url, init);
+    sent.push({ url: String(url), headers: init!.headers as Record<string, string>, body: JSON.parse(String(init!.body)) });
+    return new Response(JSON.stringify({ id: "msg_1", model: "claude-test", stop_reason: "end_turn",
+      content: [{ type: "thinking", thinking: "…" }, { type: "text", text: '{"ok":true}' }], usage: { input_tokens: 7, output_tokens: 3 } }), { status: 200 });
+  }) as typeof fetch;
+  const saved = { ...process.env };
+  Object.assign(process.env, { LLM_BASE_URL: "https://api.anthropic.com/v1", LLM_MODEL: "claude-test", LLM_EXTRA_JSON: '{"output_config":{"effort":"low"}}' });
+  try {
+    const res = await chatJson({ model: "default", purpose: "test_anthropic", subject: `anthropic-${T}`, promptVersion: "t1",
+      system: "回 JSON", user: "hi", schema: z.object({ ok: z.boolean() }) });
+    assert.deepEqual(res.data, { ok: true });
+    assert.equal(sent.length, 1);
+    assert.equal(sent[0]!.url, "https://api.anthropic.com/v1/messages");
+    assert.equal(sent[0]!.headers["x-api-key"], "test-key");
+    assert.equal(sent[0]!.body.system, "回 JSON");
+    assert.deepEqual(sent[0]!.body.output_config, { effort: "low" });
+    assert.equal("temperature" in sent[0]!.body, false);
+    assert.equal(res.usage?.prompt_tokens, 7);
+  } finally {
+    globalThis.fetch = realFetch;
+    process.env = saved;
+  }
+});

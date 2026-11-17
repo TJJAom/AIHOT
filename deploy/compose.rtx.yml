@@ -9,12 +9,16 @@ services:
     environment:
       MODEL_CALLS_ENABLED: "true"
       COLLECT_ENABLED: "true"
-      LLM_BASE_URL: https://api.openai.com/v1
-      LLM_API_KEY: ${OPENAI_API_KEY:-}
-      LLM_MODEL: gpt-6-luna
-      LLM_EXTRA_JSON: '{"reasoning_effort":"none"}'
-      LLM_REASONING_TOKENS: "0"
-      LLM_JSON_MODE: "true"
+      # 2026-11-17 起暫時改用 Claude Opus 5.5（低 effort，原生 Messages API）；金鑰放 .env 的 ANTHROPIC_API_KEY。
+      # 換回 OpenAI：LLM_BASE_URL https://api.openai.com/v1、LLM_API_KEY ${OPENAI_API_KEY:-}、LLM_MODEL gpt-6-luna、
+      # LLM_EXTRA_JSON '{"reasoning_effort":"none"}'、LLM_REASONING_TOKENS "0"、LLM_JSON_MODE "true"。
+      LLM_BASE_URL: https://api.anthropic.com/v1
+      LLM_API_KEY: ${ANTHROPIC_API_KEY:-}
+      LLM_MODEL: claude-opus-5-5
+      LLM_EXTRA_JSON: '{"output_config":{"effort":"low"}}'
+      # Opus 5.5 一律開著思考，思考也算在 max_tokens 內，多留空間。
+      LLM_REASONING_TOKENS: "2000"
+      LLM_JSON_MODE: "false"
       LLM_VISION: "false"
       PREFILTER_MODEL: default
       SCORE_MODEL: default

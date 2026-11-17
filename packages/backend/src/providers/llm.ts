@@ -115,6 +115,18 @@ function isConnectFailure(error: unknown): boolean {
   return ["ECONNREFUSED", "ENOTFOUND", "EAI_AGAIN", "UND_ERR_CONNECT_TIMEOUT", "CERT_HAS_EXPIRED"].includes(code ?? "");
 }
 
+/** Messages API 的回覆換成 chat/completions 的形狀；思考區塊不算答案，用完上限記為 length。 */
+function fromAnthropic(json: Record<string, unknown>): Record<string, unknown> {
+  if (!Array.isArray(json.content)) return json;
+  const content = (json.content as Array<{ type?: string; text?: string }>).filter(b => b.type === "text").map(b => b.text ?? "").join("");
+  const u = (json.usage ?? {}) as Record<string, number>;
+  return {
+    id: json.id, model: json.model,
+    choices: [{ message: { role: "assistant", content }, finish_reason: json.stop_reason === "max_tokens" ? "length" : "stop" }],
+    usage: { prompt_tokens: u.input_tokens, completion_tokens: u.output_tokens, total_tokens: (u.input_tokens ?? 0) + (u.output_tokens ?? 0), anthropic: u },
+  };
+}
+
 function requestFor<S extends z.ZodType>(opts: ChatJsonOptions<S>, spec: ModelSpec) {
   const temperature = opts.temperature ?? 0.2;
   // Never below 512: a smaller cap cut short structured answers down to an empty response (production, 2026-06-19).
@@ -183,6 +195,8 @@ async function chatOnceReady<S extends z.ZodType>(opts: ChatJsonOptions<S>, circ
   if (!baseUrl || !apiKey || !spec.model) throw new ModelUnavailableError(`Model ${opts.model} is not configured (${spec.baseUrlEnv}, ${spec.apiKeyEnv}${spec.key === "default" ? ", LLM_MODEL" : ""})`);
 
   const { request, temperature, maxTokens, userText, extra } = requestFor(opts, spec);
+  // Anthropic 走原生 Messages API：相容端點不能指定 effort，也拒收 temperature（Claude 4.7 起）與 json_object。
+  const anthropic = /^https:\/\/api\.anthropic\.com\b/.test(baseUrl);
   const timeoutMs = opts.timeoutMs ?? (circuit ? FAILOVER_TIMEOUT_MS : TIMEOUT_MS);
   let permit: CircuitPermit;
   const body: Record<string, unknown> = {
@@ -202,6 +216,13 @@ async function chatOnceReady<S extends z.ZodType>(opts: ChatJsonOptions<S>, circ
     body.max_completion_tokens = maxTokens;
     delete body.max_tokens;
   }
+  const anthropicBody = anthropic ? {
+    model: spec.model,
+    max_tokens: maxTokens,
+    ...(opts.system ? { system: opts.system } : {}),
+    messages: [{ role: "user", content: typeof opts.user === "string" || Array.isArray(opts.user) ? opts.user : userText }],
+    ...(extra ?? {}),
+  } : null;
 
   const receipt = await paidRequest(
     { ...request, fallbackFor },
@@ -210,10 +231,12 @@ async function chatOnceReady<S extends z.ZodType>(opts: ChatJsonOptions<S>, circ
       let res: Response;
       let text: string;
       try {
-        res = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
+        res = await fetch(`${baseUrl.replace(/\/$/, "")}/${anthropic ? "messages" : "chat/completions"}`, {
           method: "POST",
-          headers: { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
-          body: JSON.stringify(body),
+          headers: anthropic
+            ? { "content-type": "application/json", "x-api-key": apiKey, "anthropic-version": "2023-06-01" }
+            : { "content-type": "application/json", authorization: `Bearer ${apiKey}` },
+          body: JSON.stringify(anthropicBody ?? body),
           signal: AbortSignal.timeout(timeoutMs),
         });
         text = await res.text();
@@ -232,6 +255,7 @@ async function chatOnceReady<S extends z.ZodType>(opts: ChatJsonOptions<S>, circ
       } catch {
         json = { unparsable: text.slice(0, 20000) };
       }
+      if (anthropic) json = fromAnthropic(json);
       const usage = (json.usage as Record<string, unknown> | undefined) ?? null;
       return {
         response: { ...json, _latencyMs: Math.round(performance.now() - started) },
